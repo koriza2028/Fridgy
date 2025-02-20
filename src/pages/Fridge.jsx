@@ -1,146 +1,100 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Dimensions, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
-// import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
 // import { ServiceFactory } from "../../services/ServiceFactory";
 
-// import CollapsibleSection from "../GeneralComponents/CollapsableSection";
-// import ModalCreateProduct from "../PageSpecificComponents/FridgeComponents/ModalCreateProduct";
+import CollapsibleSection from "../components/CollapsableSection";
+import ModalCreateProduct from "../components/fridge/ModalCreateProduct";
 
-// import ProductCard from "../PageSpecificComponents/FridgeComponents/ProductCard";
-// import SearchInput from '../GeneralComponents/Search';
-// import AddNewButton from "../GeneralComponents/Button_AddNew";
+import ProductCard from "../components/fridge/ProductCard";
+import SearchInput from '../components/Search';
+import AddNewButton from "../components/Button_AddNew";
 
 import { backgroundColor, MainFont, TextFontSize } from '../../assets/Styles/styleVariables';
-// import { useFonts } from 'expo-font';
-// import { categoryNames } from "../../assets/Variables/categories";
+import { useFonts } from 'expo-font';
+import { categoryNames } from "../../assets/Variables/categories";
+
+import useAuthStore from '../store/authStore';
+import {fetchUserFridgeProducts, fetchArchivedProducts} from '../store/fridgeStore'; 
 
 
 const { width } = Dimensions.get('window');
 
-
 export default function FridgePage({ navigation }) {
-//   const [availableProducts, setAvailableProducts] = useState([]);
-//   const [archivedProducts, setArchivedProducts] = useState([]);
-//   const [filteredAvailable, setFilteredAvailable] = useState([]);
-//   const [filteredArchived, setFilteredArchived] = useState([]);
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const productService = ServiceFactory.createProductService();
+  const userId = useAuthStore((state) => state.user?.uid);
 
-//   const [selectedProduct, setSelectedProduct] = useState(null);
-//   const [isModalVisible, setIsModalVisible] = useState(false);
-//   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [archivedProducts, setArchivedProducts] = useState([]);
+  const [filteredAvailable, setFilteredAvailable] = useState([]);
+  const [filteredArchived, setFilteredArchived] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-//   const [fontsLoaded] = useFonts({
-//     'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
-//   });
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-//   const openModal = (product = null) => {
-//       setSelectedProduct(product);
-//       setIsModalVisible(true);
-//   };
+  const [fontsLoaded] = useFonts({
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+  });
 
-//   const closeModal = () => {
-//       setIsModalVisible(false);
-//       setSelectedProduct(null);
-//   };
+  const openModal = (product = null) => {
+      setSelectedProduct(product);
+      setIsModalVisible(true);
+  };
 
-//   const refreshProducts = async () => {
-//       try {
-//           const fetchedAvailable = await productService.fetchAvailableProducts();
-//           const fetchedArchived = await productService.fetchArchivedProducts();
+  const closeModal = () => {
+      setIsModalVisible(false);
+      setSelectedProduct(null);
+  };
 
-//           setAvailableProducts(fetchedAvailable);
-//           setArchivedProducts(fetchedArchived);
-//           setFilteredAvailable(fetchedAvailable);
-//           setFilteredArchived(fetchedArchived);
-//       } catch (error) {
-//           console.error("Failed to fetch products:", error);
-//       }
-//   };
+  const refreshProducts = async () => {
+      try {
+          const fetchedAvailable = await fetchUserFridgeProducts(userId);
+          const fetchedArchived = await fetchArchivedProducts(userId);
 
-//   useFocusEffect(
-//     React.useCallback(async () => {
-//         refreshProducts();
-//     }, [])
-//   );
+          setAvailableProducts(fetchedAvailable);
+          setArchivedProducts(fetchedArchived);
+          setFilteredAvailable(fetchedAvailable);
+          setFilteredArchived(fetchedArchived);
+      } catch (error) {
+          console.error("Failed to fetch products:", error);
+      }
+  };
 
-//   useEffect(() => {
-//         if (!searchQuery.trim()) {
-//             setFilteredAvailable(availableProducts.filter(product => selectedCategory === 'All' || product.category === selectedCategory));
-//             setFilteredArchived(archivedProducts.filter(product => selectedCategory === 'All' || product.category === selectedCategory));
-//             return;
-//         }
-//         const lowerCaseQuery = searchQuery.toLowerCase();
-//         setFilteredAvailable(
-//             availableProducts.filter(product => {
-//                 product.name.toLowerCase().includes(lowerCaseQuery)&&
-//             (selectedCategory === 'All' || product.category === selectedCategory)
-//   })
-//         );
-//         setFilteredArchived(
-//             archivedProducts.filter(product => product.name.toLowerCase().includes(lowerCaseQuery)&&
-//             (selectedCategory === 'All' || product.category === selectedCategory))
-//         );
-//     }, [searchQuery, availableProducts, archivedProducts, selectedCategory]);
+  useFocusEffect(
+    React.useCallback(async () => {
+        if (userId) {
+            refreshProducts();
+          }
+    }, [userId])
+  );
 
-//   const filterByCategory = (category) => {
-//         setSelectedCategory(category);
-//     };
+  useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredAvailable(availableProducts.filter(product => selectedCategory === 'All' || product.category.tagName === selectedCategory));
+            setFilteredArchived(archivedProducts.filter(product => selectedCategory === 'All' || product.category.tagName === selectedCategory));
+            return;
+        }
+        const lowerCaseQuery = searchQuery.toLowerCase();
+        setFilteredAvailable(
+            availableProducts.filter(product => product.name.toLowerCase().includes(lowerCaseQuery)&&(selectedCategory == 'All' || product.category.tagName === selectedCategory))
+        );
+        setFilteredArchived(
+            archivedProducts.filter(product => product.name.toLowerCase().includes(lowerCaseQuery)&&(selectedCategory == 'All' || product.category.tagName === selectedCategory))
+        );
+    }, [searchQuery, availableProducts, archivedProducts, selectedCategory]);
 
-//   const removeProduct = async (id) => {
-//       try {
-//           await productService.removeProduct(id);
-//           await refreshProducts(); 
-//           closeModal();
-//       } catch (error) {
-//           console.error("Error while removing product:", error);
-//       }
-//   };
-
-//   const moveProductToBasket = async (id) => {
-//         try {
-//             await productService.moveProductToBasket(id);
-//             await refreshProducts();
-//         } catch (error) {
-//             console.error("Error while moving product to basket:", error);
-//         }
-//     };
-
-//   const createOrUpdateProduct = async (product) => {
-//       try {
-//           await productService.createOrUpdateProduct(product);
-//           await refreshProducts(); 
-
-//       } catch (error) {
-//           console.error("Error while creating/updating product:", error);
-//       }
-//   };
-
-//   const addProduct = async (id) => {
-//       try {
-//           await productService.addProduct(id);
-//           await refreshProducts();
-//       } catch (error) {
-//           console.error("Error while adding product:", error);
-//       }
-//   };
-
-//   const decrementProduct = async (id) => {
-//         try {
-//             await productService.decrementProduct(id);
-//             await refreshProducts();
-//         } catch (error) {
-//             console.error("Error while decrementing product:", error);
-//         }
-//     };
+  const filterByCategory = (category) => {
+        setSelectedCategory(category);
+    };
 
   return (
       <View style={styles.FridgePage}>
           <ScrollView>
               <View style={styles.FridgePage_ContentWrapper}>
                   {/* <TextInput style={styles.searchInput} placeholder="Find a product" value={searchQuery} onChangeText={setSearchQuery}/> */}
-                  {/* <SearchInput placeholder={'Find a product'} query={searchQuery} onChangeText={setSearchQuery}></SearchInput>
+                  <SearchInput placeholder={'Find a product'} query={searchQuery} onChangeText={setSearchQuery}></SearchInput>
 
                   <View style={styles.ProductFilter}>
                       {['All', ...categoryNames].map((category, index) => (
@@ -154,10 +108,11 @@ export default function FridgePage({ navigation }) {
                         {filteredAvailable.length > 0 ? (
                             filteredAvailable.map(product => (
                                 <ProductCard
-                                    key={product.id} id={product.id} 
-                                    onAdd={addProduct} onRemove={removeProduct} onDecrement={decrementProduct} onMoveToBasket={moveProductToBasket}
-                                    openModal={() => openModal(product)}
-                                    name={product.name} category={product.category} amount={product.amount} navigation={navigation} image={product.image}/>
+                                    key={product.id}
+                                    onOpenModal={openModal}
+                                    product={product} navigation={navigation}
+                                    onChange={refreshProducts}
+                                />
                             ))
                         ) : (
                             <Text style={{paddingLeft: 4, fontFamily: MainFont}}>No available products found.</Text>
@@ -168,10 +123,11 @@ export default function FridgePage({ navigation }) {
                         {filteredArchived.length > 0 ? (
                             filteredArchived.map(product => (
                                 <ProductCard
-                                    key={product.id} id={product.id}
-                                    onAdd={addProduct} onRemove={removeProduct} onDecrement={decrementProduct} onMoveToBasket={moveProductToBasket}
-                                    openModal={() => openModal(product)}
-                                    name={product.name} category={product.category} amount={product.amount} navigation={navigation} />
+                                    key={product.id}
+                                    onOpenModal={openModal}
+                                    product={product} navigation={navigation}
+                                    onChange={refreshProducts}
+                                />
                             ))
                         ) : (
                             <Text style={{paddingLeft: 4, fontFamily: MainFont}}>No archived products found.</Text>
@@ -181,13 +137,12 @@ export default function FridgePage({ navigation }) {
                     <ModalCreateProduct
                         isVisible={isModalVisible}
                         onClose={closeModal}
+                        onChange={refreshProducts}
                         product={selectedProduct ? { 
                             ...selectedProduct, 
                             category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" } 
-                        } : null} // Ensure category is always an object
-                        onCreateOrUpdate={createOrUpdateProduct}
-                        onRemove={removeProduct}
-                    /> */}
+                        } : null}
+                    />
               </View>
           </ScrollView>
 {/* 

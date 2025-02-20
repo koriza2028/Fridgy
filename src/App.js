@@ -19,7 +19,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import 'react-native-gesture-handler'; 
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import useAuthStore from './store/authStore';
+
 
 
 const Stack = createStackNavigator();
@@ -72,16 +73,7 @@ const BasketStack = () => (
 
 
 const App = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);  // Update the user state when authentication state changes
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const user = useAuthStore((state) => state.user);
 
   if (user === null) {
     // User is not logged in, show the login page
@@ -95,7 +87,8 @@ const App = () => {
     <NavigationContainer >
       <View style={{backgroundColor: backgroundColor, flex: 1}}>
       <Tab.Navigator 
-        initialRouteName="Cooking"
+        initialRouteName="Fridge"
+        // initialRouteName="Cooking"
         // initialRouteName="ReceiptCreatePage"
 
         screenOptions={({ route }) => ({

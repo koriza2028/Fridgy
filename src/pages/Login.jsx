@@ -16,6 +16,7 @@ const LoginPage = ({ navigation }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
+      console.log(user);
       navigation.navigate('FridgePage');
     } catch (err) {
       setError('Invalid email or password');
