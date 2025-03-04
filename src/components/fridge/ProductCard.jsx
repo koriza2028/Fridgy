@@ -57,12 +57,17 @@ export default function ProductCard(props) {
     
     return (         
         <View style={styles.ProductCard}>
-            <Image style={styles.ProductPicture} source={require('../../../assets/ProductImages/banana_test.png')}></Image>
-            {/* <Image
-                source={getImageSource(props.product.product.image)}
-                alt="Base64 Image"
-                style={styles.ProductPicture}
-            /> */}
+            {props.product.imageUri ? (
+                <Image
+                    style={styles.ProductPicture}
+                    source={props.product.imageUri}
+                />
+                ) : (
+                <Image
+                    style={styles.ProductPicture}
+                    source={require('../../../assets/ProductImages/banana_test.png')}
+                />
+            )}
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            
