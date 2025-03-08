@@ -1,136 +1,172 @@
-// ../store/basketStore.js
 import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Adjust the path based on your Firebase configuration
 
-/**
- * Fetch the user's basket from Firestore. If it doesn't exist, create a new basket.
- * @param {string} userId
- * @returns {Promise<object>} Basket object with an id and a products array.
- */
-export const fetchUserBasket = async (userId) => {
-  const basketDocRef = doc(db, "baskets", userId);
-  const basketSnap = await getDoc(basketDocRef);
-  if (!basketSnap.exists()) {
-    // Create a new basket with an empty products array
-    const newBasket = { products: [] };
-    await setDoc(basketDocRef, newBasket);
-    return { id: userId, ...newBasket };
+// Utility to normalize a product entry.
+// If the product is a string, return an object with that string as the id, name, and default amount of 1.
+const normalizeProduct = (product) => {
+  if (typeof product === 'string') {
+    return { id: product, name: product, amount: 1 };
+  } else {
+    return {
+      id: product.id,
+      name: product.name || product.id,
+      amount: product.amount ? product.amount : 1,
+      ...product
+    };
   }
-  return { id: basketSnap.id, ...basketSnap.data() };
 };
 
 /**
- * Add a product to the user's basket.
- * If the product does not already exist in the basket, it will be added.
+ * Fetch the user's document from Firestore.
+ * If it doesn't exist, create a new document with empty basket and fridge.
  * @param {string} userId
- * @param {object} product - The product object to add.
- * @returns {Promise<object>} The updated basket object.
+ * @returns {Promise<object>} The user data including basket and fridge.
  */
-export const addProductToBasket = async (userId, product) => {
-  const basketDocRef = doc(db, "baskets", userId);
+export const fetchUserData = async (userId) => {
+  const userDocRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userDocRef);
+  if (!userSnap.exists()) {
+    const newUserData = {
+      basket: { products: [] },
+      fridge: { products: [] }
+    };
+    await setDoc(userDocRef, newUserData);
+    return { id: userId, ...newUserData };
+  }
+  return { id: userSnap.id, ...userSnap.data() };
+};
+
+/**
+ * Add (or increase) a product in the user's basket.
+ * If the product already exists (by id or matching originalFridgeId), its amount is incremented; otherwise it’s added.
+ * Uses normalizeProduct to ensure the product is in the correct format.
+ * @param {string} userId
+ * @param {object|string} productInput - Product object or string.
+ * @returns {Promise<object>} The updated user data.
+ */
+export const addProductToBasket = async (userId, productInput) => {
+  const product = normalizeProduct(productInput);
+  const userDocRef = doc(db, "users", userId);
   return await runTransaction(db, async (transaction) => {
-    const basketDoc = await transaction.get(basketDocRef);
-    if (!basketDoc.exists()) {
-      throw new Error("Basket does not exist");
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
     }
-    const basketData = basketDoc.data();
-    const products = basketData.products || [];
-    const productExists = products.some(p => p.id === product.id);
-    if (!productExists) {
-      products.push(product);
-      transaction.update(basketDocRef, { products });
+    const userData = userDoc.data();
+    const basket = userData.basket || { products: [] };
+
+    // Find existing basket item by either matching basket id or originalFridgeId.
+    const index = basket.products.findIndex(
+      p => p.id === product.id || p.originalFridgeId === product.id
+    );
+    if (index !== -1) {
+      basket.products[index].amount += product.amount;
+    } else {
+      // Add the new product entry.
+      basket.products.push(product);
     }
-    return { id: basketDoc.id, ...basketData, products };
+    transaction.update(userDocRef, { "basket.products": basket.products });
+    return { id: userDoc.id, ...userData, basket };
   });
 };
 
 /**
- * Update the quantity (amount) of a product in the user's basket.
+ * Update the amount of a product in the basket.
+ * If newAmount is less than or equal to 0, the product is removed.
  * @param {string} userId
- * @param {string} productId
+ * @param {string} productId - The basket product id.
  * @param {number} newAmount
- * @returns {Promise<object>} The updated basket object.
+ * @returns {Promise<object>} The updated user data.
  */
 export const updateProductAmountInBasket = async (userId, productId, newAmount) => {
-  const basketDocRef = doc(db, "baskets", userId);
+  const userDocRef = doc(db, "users", userId);
   return await runTransaction(db, async (transaction) => {
-    const basketDoc = await transaction.get(basketDocRef);
-    if (!basketDoc.exists()) {
-      throw new Error("Basket does not exist");
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
     }
-    const basketData = basketDoc.data();
-    let products = basketData.products || [];
-    const productIndex = products.findIndex(p => p.id === productId);
-    if (productIndex === -1) {
+    const userData = userDoc.data();
+    const basket = userData.basket || { products: [] };
+    const index = basket.products.findIndex(p => p.id === productId);
+    if (index === -1) {
       throw new Error("Product not found in basket");
     }
-    products[productIndex].amount = newAmount;
-    transaction.update(basketDocRef, { products });
-    return { id: basketDoc.id, ...basketData, products };
+    if (newAmount <= 0) {
+      basket.products.splice(index, 1);
+    } else {
+      basket.products[index].amount = newAmount;
+    }
+    transaction.update(userDocRef, { "basket.products": basket.products });
+    return { id: userDoc.id, ...userData, basket };
   });
 };
 
 /**
- * Remove a product from the user's basket.
+ * Remove a product completely from the basket.
  * @param {string} userId
- * @param {string} productId
- * @returns {Promise<object>} The updated basket object.
+ * @param {string} productId - The basket product id.
+ * @returns {Promise<object>} The updated user data.
  */
 export const removeProductFromBasket = async (userId, productId) => {
-  const basketDocRef = doc(db, "baskets", userId);
-  return await runTransaction(db, async (transaction) => {
-    const basketDoc = await transaction.get(basketDocRef);
-    if (!basketDoc.exists()) {
-      throw new Error("Basket does not exist");
-    }
-    const basketData = basketDoc.data();
-    let products = basketData.products || [];
-    products = products.filter(p => p.id !== productId);
-    transaction.update(basketDocRef, { products });
-    return { id: basketDoc.id, ...basketData, products };
-  });
+  return updateProductAmountInBasket(userId, productId, 0);
 };
 
 /**
- * Move selected products from the user's basket to the fridge.
- * For each selected product, this function updates the corresponding document in the 'products' collection,
- * then removes those products from the basket.
+ * Move selected products from the basket to the fridge.
+ * For each selected basket product, add its amount to the corresponding fridge product.
+ * If a matching fridge product is found (by originalFridgeId or name), its amount is increased.
+ * Otherwise, a new fridge product is created with a new unique id.
+ * After moving, the basket product is removed.
  * @param {string} userId
- * @param {Array<string>} selectedProductIds
- * @returns {Promise<object>} The updated basket object.
+ * @param {Array<string>} selectedProductIds - Array of basket product ids.
+ * @returns {Promise<object>} The updated user data.
  */
 export const moveProductsFromBasketToFridge = async (userId, selectedProductIds) => {
-  const basketDocRef = doc(db, "baskets", userId);
-  const basketSnap = await getDoc(basketDocRef);
-  if (!basketSnap.exists()) {
-    throw new Error("Basket not found");
-  }
-  const basketData = basketSnap.data();
-  const basketProducts = basketData.products || [];
-  
-  // Filter the products to move based on the provided IDs
-  const selectedProducts = basketProducts.filter(product => selectedProductIds.includes(product.id));
-
-  // For each selected product, update its document in the 'products' collection
-  await Promise.all(selectedProducts.map(async (basketProduct) => {
-    const productDocRef = doc(db, "products", basketProduct.id);
-    const productSnap = await getDoc(productDocRef);
-    if (productSnap.exists()) {
-      const productData = productSnap.data();
-      const currentAmount = productData.amount || 0;
-      const basketProductAmount = basketProduct.amount || 1;
-      const newAmount = currentAmount + basketProductAmount;
-      const updateData = { amount: newAmount };
-      if (productData.isArchived && newAmount > 0) {
-        updateData.isArchived = false;
-      }
-      await updateDoc(productDocRef, updateData);
+  const userDocRef = doc(db, "users", userId);
+  return await runTransaction(db, async (transaction) => {
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
     }
-  }));
+    const userData = userDoc.data();
+    const basket = userData.basket || { products: [] };
+    const fridge = userData.fridge || { products: [] };
 
-  // Remove the moved products from the basket
-  const updatedProducts = basketProducts.filter(product => !selectedProductIds.includes(product.id));
-  await updateDoc(basketDocRef, { products: updatedProducts });
-  
-  return { id: basketSnap.id, ...basketData, products: updatedProducts };
+    selectedProductIds.forEach(basketProductId => {
+      const basketIndex = basket.products.findIndex(p => p.id === basketProductId);
+      if (basketIndex === -1) return;
+      const basketProduct = basket.products[basketIndex];
+
+      // Find matching fridge product: if basket product came from fridge, match by originalFridgeId;
+      // otherwise match by name.
+      const fridgeIndex = fridge.products.findIndex(p => {
+        if (basketProduct.isFromFridge && basketProduct.originalFridgeId) {
+          return p.id === basketProduct.originalFridgeId;
+        }
+        return p.name === basketProduct.name;
+      });
+      if (fridgeIndex !== -1) {
+        fridge.products[fridgeIndex].amount += basketProduct.amount;
+      } else {
+        // Create a new fridge product with a new unique id.
+        const newFridgeProduct = { ...basketProduct };
+        // Remove basket-specific properties.
+        delete newFridgeProduct.id;
+        delete newFridgeProduct.originalFridgeId;
+        delete newFridgeProduct.isFromFridge;
+        // Assign a new unique id.
+        newFridgeProduct.id = Date.now().toString();
+        fridge.products.push(newFridgeProduct);
+      }
+      // Remove the product from the basket.
+      basket.products.splice(basketIndex, 1);
+    });
+
+    transaction.update(userDocRef, {
+      "basket.products": basket.products,
+      "fridge.products": fridge.products
+    });
+
+    return { id: userDoc.id, ...userData, basket, fridge };
+  });
 };

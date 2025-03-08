@@ -30,7 +30,7 @@ const SearchModal = ({
   // Declare renderItem locally so that it’s defined based on the passed props.
   let renderItem = () => null;
 
-  if (isBasket && !isRecipeCreate) {
+  if (isBasket) {
     renderItem = ({ item, index }) => {
       // If the item is a string, then it represents a new item option.
       if (typeof item === 'string') {
@@ -49,7 +49,7 @@ const SearchModal = ({
         </TouchableOpacity>
       );
     };
-  } else if (!isBasket && isRecipeCreate) {
+  } else if (isRecipeCreate) {
     renderItem = ({ item }) => (
       <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
         <Text style={styles.searchItem_Text}>{item.name}</Text>

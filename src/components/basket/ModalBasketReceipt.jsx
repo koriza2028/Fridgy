@@ -5,10 +5,6 @@ import { MainFont, MainFont_Bold, SecondTitleFontSize, backgroundColor } from '.
 
 import Modal from 'react-native-modal';
 
-// import { Dimensions } from 'react-native';
-// const { width, height } = Dimensions.get('window');
-
-
 export default function ModalBasketReceipt({ visible, onClose, onMove, receiptItems }) {
 
     const [amount, setAmount] = useState('');
@@ -18,8 +14,11 @@ export default function ModalBasketReceipt({ visible, onClose, onMove, receiptIt
         onClose();
     }; 
 
-    return (
+    // Separate receipt items into fridge items and others.
+    const fridgeItems = receiptItems.filter(item => item.isFromFridge);
+    const nonFridgeItems = receiptItems.filter(item => !item.isFromFridge);
 
+    return (
         <Modal visible={visible}
                 animationIn="fadeIn"
                 animationOut="fadeOut"
@@ -38,17 +37,45 @@ export default function ModalBasketReceipt({ visible, onClose, onMove, receiptIt
                 </View>
 
                 <View style={styles.ListOfReceiptItems}>
+                    {fridgeItems.length > 0 && (
+                        <>
+                            <Text style={styles.SectionTitle}>Fridge Items</Text>
+                            {fridgeItems.map((receiptItem, index) => (
+                                <View key={`fridge-${index}`} style={styles.ReceiptItem}>
+                                    <Text style={styles.ReceiptItem_Text}>{receiptItem.name}</Text>
+                                    <TextInput 
+                                        selectTextOnFocus={true} 
+                                        keyboardType="numeric" 
+                                        value={String(receiptItem.amount)} 
+                                        onChangeText={text => setAmount(text)} 
+                                        style={[styles.ReceiptItemAmount, styles.ReceiptItem_Text]}
+                                    />
+                                </View>
+                            ))}
+                        </>
+                    )}
 
-                    {receiptItems.map((receiptItem, index) => (
-                        <View key={index} style={styles.ReceiptItem}>
-                            <Text style={styles.ReceiptItem_Text}>{receiptItem.name}</Text>
-                            <TextInput selectTextOnFocus={true} keyboardType="numeric" value={receiptItem.amount} onChangeText={text => setAmount(text)} 
-                                style={[styles.ReceiptItemAmount, styles.ReceiptItem_Text]}/>
-                            {/* <Text >{checkIsFromFridge(receiptItem.isFromFridge)}</Text> */}
-                        </View>
-                        ))
-                    }
+                    {fridgeItems.length > 0 && nonFridgeItems.length > 0 && (
+                        <View style={styles.Separator} />
+                    )}
 
+                    {nonFridgeItems.length > 0 && (
+                        <>
+                            <Text style={styles.SectionTitle}>Other Items</Text>
+                            {nonFridgeItems.map((receiptItem, index) => (
+                                <View key={`nonfridge-${index}`} style={styles.ReceiptItem}>
+                                    <Text style={styles.ReceiptItem_Text}>{receiptItem.name}</Text>
+                                    <TextInput 
+                                        selectTextOnFocus={true} 
+                                        keyboardType="numeric" 
+                                        value={String(receiptItem.amount)} 
+                                        onChangeText={text => setAmount(text)} 
+                                        style={[styles.ReceiptItemAmount, styles.ReceiptItem_Text]}
+                                    />
+                                </View>
+                            ))}
+                        </>
+                    )}
                 </View>
 
                 <TouchableOpacity style={styles.Button_MoveItems} onPress={moveSelectedProducts}>
@@ -57,92 +84,72 @@ export default function ModalBasketReceipt({ visible, onClose, onMove, receiptIt
 
             </View>
         </Modal>
+    );
+}
 
-)}
-
-
-
-    const styles = StyleSheet.create({
-        
-        ModalBasketReceipt: {
-            backgroundColor: backgroundColor,
-            margin: 0,
-            // alignItems: 'flex-start'
-            justifyContent: 'flex-start'
-        },
-
-        ModalReceipt_Wrapper: {
-            marginTop: 100,
-            // borderColor: '#C0C0C0',
-            // borderTopWidth: 1,
-        },
-
-        ModalReceiptHeader: {
-            
-        },
-
-        ModalReceiptHeader_Text: {
-            fontSize: 28,
-        },
-
-        ListOfReceiptItems: {
-            marginTop: 20,
-            marginBottom: 20,
-        },
-
-        ReceiptItem: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            // width: '100%',
-            borderColor: '#C0C0C0',
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            padding: 8,
-        },
-
-        ReceiptItem_Text: {
-            fontSize: 16,
-        },
-
-        ReceiptItemAmount: {
-            width: 60,
-        },
-
-
-        Button_MoveItems: {
-            marginVertical: 5,
-            // marginHorizontal: 2,
-            paddingLeft: 14,
-            justifyContent: 'center',
-            backgroundColor: '#eee',
-            // borderRadius: 30,
-            borderColor: '#C0C0C0',
-            // borderWidth: 1,
-            height: 50,
-    
-            backgroundColor: 'lightblue',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '80%',
-            position: 'absolute',
-            top: '90%',
-            // borderRadius: 30,
-        },
-        Button_MoveItems_Text: {
-            fontWeight: 'bold',
-        },
-
-
-        closeButton: {
-            position: 'absolute',
-            top: 20,
-            left: 20,
-            zIndex: 10,
-          },
-          closeButtonText: {
-            fontSize: 20,
-            color: 'black',
-            fontWeight: 'bold',
-          },
-    
-    });
+const styles = StyleSheet.create({
+    ModalBasketReceipt: {
+        backgroundColor: backgroundColor,
+        margin: 0,
+        justifyContent: 'flex-start'
+    },
+    ModalReceipt_Wrapper: {
+        marginTop: 100,
+    },
+    ModalReceiptHeader: {},
+    ModalReceiptHeader_Text: {
+        fontSize: 28,
+    },
+    ListOfReceiptItems: {
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    ReceiptItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderColor: '#C0C0C0',
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        padding: 8,
+    },
+    ReceiptItem_Text: {
+        fontSize: 16,
+    },
+    ReceiptItemAmount: {
+        width: 60,
+    },
+    SectionTitle: {
+        fontSize: 20,
+        fontFamily: MainFont_Bold,
+        marginVertical: 8,
+    },
+    Separator: {
+        borderBottomColor: '#C0C0C0',
+        borderBottomWidth: 1,
+        marginVertical: 8,
+    },
+    Button_MoveItems: {
+        marginVertical: 5,
+        paddingLeft: 14,
+        justifyContent: 'center',
+        backgroundColor: 'lightblue',
+        alignItems: 'center',
+        width: '80%',
+        position: 'absolute',
+        top: '90%',
+    },
+    Button_MoveItems_Text: {
+        fontWeight: 'bold',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 10,
+    },
+    closeButtonText: {
+        fontSize: 20,
+        color: 'black',
+        fontWeight: 'bold',
+    },
+});

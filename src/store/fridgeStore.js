@@ -1,27 +1,18 @@
-import { 
-  collection, doc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, query, where, getDoc
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
 /**
- * Get the fridge collection reference for a user.
- * @param {string} userId - The ID of the user.
- */
-const getFridgeCollection = (userId) => collection(db, `users/${userId}/fridge`);
-
-/**
- * Fetch all products from a user's fridge (Local-First).
+ * Fetch all non-archived products from a user's fridge.
  * @param {string} userId - The ID of the user.
  */
 export const fetchUserFridgeProducts = async (userId) => {
   try {
-    const fridgeCollection = getFridgeCollection(userId);
-    const q = query(fridgeCollection, where("isArchived", "==", false));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return [];
+    const data = userSnap.data();
+    const fridgeProducts = data.fridge?.products || [];
+    return fridgeProducts.filter((product) => product.isArchived === false);
   } catch (error) {
     console.error("Error fetching fridge products:", error);
     return [];
@@ -29,19 +20,17 @@ export const fetchUserFridgeProducts = async (userId) => {
 };
 
 /**
- * Fetch archived products.
+ * Fetch archived products from a user's fridge.
  * @param {string} userId - The ID of the user.
  */
 export const fetchArchivedProducts = async (userId) => {
   try {
-    const fridgeCollection = getFridgeCollection(userId);
-    const q = query(fridgeCollection, where("isArchived", "==", true));
-    const querySnapshot = await getDocs(q);
-
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return [];
+    const data = userSnap.data();
+    const fridgeProducts = data.fridge?.products || [];
+    return fridgeProducts.filter((product) => product.isArchived === true);
   } catch (error) {
     console.error("Error fetching archived products:", error);
     return [];
@@ -49,22 +38,16 @@ export const fetchArchivedProducts = async (userId) => {
 };
 
 /**
- * Fetch available products by category.
+ * Fetch available products by category from a user's fridge.
  * @param {string} userId - The ID of the user.
  * @param {string} category - Product category.
  */
 export const fetchAvailableProductsByCategory = async (userId, category) => {
   try {
-    const fridgeCollection = getFridgeCollection(userId);
-    const q = category === "All" 
-      ? query(fridgeCollection, where("isArchived", "==", false))
-      : query(fridgeCollection, where("isArchived", "==", false), where("category", "==", category));
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const products = await fetchUserFridgeProducts(userId);
+    return category === "All"
+      ? products
+      : products.filter((product) => product.category === category);
   } catch (error) {
     console.error("Error fetching products by category:", error);
     return [];
@@ -72,22 +55,16 @@ export const fetchAvailableProductsByCategory = async (userId, category) => {
 };
 
 /**
- * Fetch archived products by category.
+ * Fetch archived products by category from a user's fridge.
  * @param {string} userId - The ID of the user.
  * @param {string} category - Product category.
  */
 export const fetchArchivedProductsByCategory = async (userId, category) => {
   try {
-    const fridgeCollection = getFridgeCollection(userId);
-    const q = category === "All" 
-      ? query(fridgeCollection, where("isArchived", "==", true))
-      : query(fridgeCollection, where("isArchived", "==", true), where("category", "==", category));
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const products = await fetchArchivedProducts(userId);
+    return category === "All"
+      ? products
+      : products.filter((product) => product.category === category);
   } catch (error) {
     console.error("Error fetching archived products by category:", error);
     return [];
@@ -97,18 +74,32 @@ export const fetchArchivedProductsByCategory = async (userId, category) => {
 /**
  * Add or update a product in the fridge.
  * @param {string} userId - The ID of the user.
+ * @param {string|null} productDataId - The product ID if updating; null if adding.
  * @param {object} productData - Product details.
  */
 export const addOrUpdateProduct = async (userId, productDataId, productData) => {
   try {
-    if (productDataId) {
-      const productRef = doc(db, `users/${userId}/fridge`, productDataId);
-      await updateDoc(productRef, productData);
-    } else {
-      const fridgeCollection = getFridgeCollection(userId);
-      await addDoc(fridgeCollection, productData);
+    const userDocRef = doc(db, "users", userId);
+    let userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) {
+      // Create a new document with empty fridge and basket if it doesn't exist.
+      await setDoc(userDocRef, { fridge: { products: [] }, basket: { products: [] } });
+      userSnap = await getDoc(userDocRef);
     }
-
+    const userData = userSnap.data();
+    let fridge = userData.fridge?.products || [];
+    if (productDataId) {
+      const index = fridge.findIndex((p) => p.id === productDataId);
+      if (index !== -1) {
+        fridge[index] = { ...fridge[index], ...productData };
+      } else {
+        fridge.push({ id: productDataId, ...productData });
+      }
+    } else {
+      const newId = Date.now().toString();
+      fridge.push({ id: newId, ...productData });
+    }
+    await updateDoc(userDocRef, { "fridge.products": fridge });
     return fetchUserFridgeProducts(userId);
   } catch (error) {
     console.error("Error adding/updating product:", error);
@@ -123,17 +114,18 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
  */
 export const decrementProductAmount = async (userId, productId) => {
   try {
-    const productRef = doc(db, `users/${userId}/fridge`, productId);
-    const productSnap = await getDoc(productRef);
-
-    if (!productSnap.exists()) return;
-
-    const currentAmount = productSnap.data().amount;
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data();
+    let fridge = userData.fridge?.products || [];
+    const index = fridge.findIndex((p) => p.id === productId);
+    if (index === -1) return;
+    const currentAmount = fridge[index].amount;
     const updatedAmount = Math.max(currentAmount - 1, 0);
     const isArchived = updatedAmount === 0;
-
-    await updateDoc(productRef, { amount: updatedAmount, isArchived });
-
+    fridge[index] = { ...fridge[index], amount: updatedAmount, isArchived };
+    await updateDoc(userDocRef, { "fridge.products": fridge });
     return fetchUserFridgeProducts(userId);
   } catch (error) {
     console.error("Error decrementing product amount:", error);
@@ -148,14 +140,16 @@ export const decrementProductAmount = async (userId, productId) => {
  */
 export const incrementProductAmount = async (userId, productId) => {
   try {
-    const productRef = doc(db, `users/${userId}/fridge`, productId);
-    const productSnap = await getDoc(productRef);
-
-    if (!productSnap.exists()) return;
-
-    const updatedAmount = productSnap.data().amount + 1;
-    await updateDoc(productRef, { amount: updatedAmount, isArchived: false });
-
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data();
+    let fridge = userData.fridge?.products || [];
+    const index = fridge.findIndex((p) => p.id === productId);
+    if (index === -1) return;
+    const updatedAmount = fridge[index].amount + 1;
+    fridge[index] = { ...fridge[index], amount: updatedAmount, isArchived: false };
+    await updateDoc(userDocRef, { "fridge.products": fridge });
     return fetchUserFridgeProducts(userId);
   } catch (error) {
     console.error("Error incrementing product amount:", error);
@@ -164,15 +158,19 @@ export const incrementProductAmount = async (userId, productId) => {
 };
 
 /**
- * Delete a product.
+ * Delete a product from the fridge.
  * @param {string} userId - The ID of the user.
  * @param {string} productId - The ID of the product.
  */
 export const deleteProduct = async (userId, productId) => {
   try {
-    const productRef = doc(db, `users/${userId}/fridge`, productId);
-    await deleteDoc(productRef);
-
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data();
+    let fridge = userData.fridge?.products || [];
+    fridge = fridge.filter((p) => p.id !== productId);
+    await updateDoc(userDocRef, { "fridge.products": fridge });
     return fetchUserFridgeProducts(userId);
   } catch (error) {
     console.error("Error deleting product:", error);
@@ -182,26 +180,33 @@ export const deleteProduct = async (userId, productId) => {
 
 /**
  * Move a product to the basket.
+ * When moving to basket, a new basket item is created with its own unique id, and the original fridge product's id is saved as originalFridgeId.
+ * The product in the fridge remains unchanged.
  * @param {string} userId - The ID of the user.
- * @param {string} productId - The ID of the product.
+ * @param {string} productId - The fridge product ID.
  */
 export const moveProductToBasket = async (userId, productId) => {
   try {
-    const productRef = doc(db, `users/${userId}/fridge`, productId);
-    const productSnap = await getDoc(productRef);
-
-    if (!productSnap.exists()) return;
-
-    const productData = productSnap.data();
-    const basketRef = doc(db, `users/${userId}/basket`, productId);
-
-    await setDoc(basketRef, {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data();
+    let fridge = userData.fridge?.products || [];
+    const productIndex = fridge.findIndex((p) => p.id === productId);
+    if (productIndex === -1) return;
+    const productData = fridge[productIndex];
+    let basket = userData.basket?.products || [];
+    const newBasketId = Date.now().toString();
+    basket.push({
+      id: newBasketId,
+      originalFridgeId: productData.id,
       name: productData.name,
       category: productData.category,
       amount: 1,
       isFromFridge: true,
     });
-
+    // Do not remove from fridge.
+    await updateDoc(userDocRef, { "basket.products": basket });
     return fetchUserFridgeProducts(userId);
   } catch (error) {
     console.error("Error moving product to basket:", error);

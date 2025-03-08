@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
 import { fetchUserFridgeProducts } from '../store/fridgeStore';
 import { 
-  fetchUserBasket, 
+  fetchUserData,  // updated from fetchUserBasket to fetchUserData
   addProductToBasket, 
   updateProductAmountInBasket, 
   removeProductFromBasket, 
@@ -39,18 +39,19 @@ export default function BasketPage({ navigation }) {
   const refreshBasket = async () => {
     try {
       if (userId) {
-        // Fetch basket data for the user.
-        const fetchedBasket = await fetchUserBasket(userId);
-        setBasket(fetchedBasket);
+        // Fetch user data (which includes basket and fridge).
+        const userData = await fetchUserData(userId);
+        // Update basket state with user's basket.
+        setBasket(userData.basket);
         
         // Fetch fridge products for the user.
         const fetchedFridgeProducts = await fetchUserFridgeProducts(userId);
         
         // Filter out products already added in the basket.
         let availableProducts = [];
-        if (fetchedBasket && fetchedBasket.products) {
+        if (userData && userData.basket && userData.basket.products) {
           availableProducts = fetchedFridgeProducts.filter(fridgeProduct =>
-            !fetchedBasket.products.some(basketProduct => basketProduct.id === fridgeProduct.id)
+            !userData.basket.products.some(basketProduct => basketProduct.id === fridgeProduct.id)
           );
         } else {
           availableProducts = fetchedFridgeProducts;
@@ -119,6 +120,16 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  const decrementProductAmount = async (productId, currentAmount) => {
+    try {
+      const newAmount = currentAmount - 1;
+      await updateProductAmountInBasket(userId, productId, newAmount);
+      await refreshBasket();
+    } catch (err) {
+      console.error("Failed to decrement product quantity:", err);
+    }
+  };
+
   const removeProduct = async (productId) => {
     try {
       await removeProductFromBasket(userId, productId);
@@ -179,7 +190,7 @@ export default function BasketPage({ navigation }) {
                   key={index}
                   product={product}
                   isChecked={!!checkedItems[product.id]}
-                  onRemove={removeProduct}
+                  onDecrement={decrementProductAmount}
                   onAdd={incrementProductAmount}
                   onToggleCheckbox={handleToggleCheckbox}
                 />
@@ -206,72 +217,59 @@ export default function BasketPage({ navigation }) {
   );
 }
 
-
 const styles = StyleSheet.create({
-
-    BasketPage: {
-        flex: 1,
-        backgroundColor: backgroundColor,
-        width: width,
-        alignItems: 'center',
-      },
-  
-      BasketPage_ContentWrapper: {
-        // paddingTop: 20,
-        width: width * 0.96,
-        // height: height, 
-        // NEED TO CHECK WHAT"S UP WITH HEIGHT WHEN THERE ARE A LOT OF PRODUCTS
-        // borderColor: '#C0C0C0',
-        // borderWidth: 1,
-      },
-
-      BasketPage_ListOfBasketItems: {
-        // backgroundColor: 'green',
-      },
-
-
-      modal: {
-        margin: 0, // No margin for full-screen modal
-        justifyContent: 'start',
-        backgroundColor: 'white',
-        paddingTop: 20,
-      },
-      modalContent: {
-        padding: 16,
-      },
-
-      flatList: {
-        marginTop: 8,
-      },
-
-
-      Button_ShowReceipt: {
-        marginVertical: 5,
-        marginHorizontal: 2,
-        paddingLeft: 14,
-        justifyContent: 'center',
-        // borderRadius: 30,
-        borderColor: '#C0C0C0',
-        // borderWidth: 1,
-        height: 50,
-
-        backgroundColor: buttonColor,
-        justifyContent: 'center',
-        alignItems: 'center',
-        minWidth: '60%',
-        position: 'absolute',
-        top: '90%',
-        borderRadius: 30,
-
-        shadowColor: buttonColor, 
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
-        elevation: 4, 
-    },
-    Button_ShowReceipt_Text: {
-        fontWeight: 'bold',
-    },
-
-
+  BasketPage: {
+    flex: 1,
+    backgroundColor: backgroundColor,
+    width: width,
+    alignItems: 'center',
+  },
+  BasketPage_ContentWrapper: {
+    // paddingTop: 20,
+    width: width * 0.96,
+    // height: height, 
+    // NEED TO CHECK WHAT"S UP WITH HEIGHT WHEN THERE ARE A LOT OF PRODUCTS
+    // borderColor: '#C0C0C0',
+    // borderWidth: 1,
+  },
+  BasketPage_ListOfBasketItems: {
+    // backgroundColor: 'green',
+  },
+  modal: {
+    margin: 0, // No margin for full-screen modal
+    justifyContent: 'start',
+    backgroundColor: 'white',
+    paddingTop: 20,
+  },
+  modalContent: {
+    padding: 16,
+  },
+  flatList: {
+    marginTop: 8,
+  },
+  Button_ShowReceipt: {
+    marginVertical: 5,
+    marginHorizontal: 2,
+    paddingLeft: 14,
+    justifyContent: 'center',
+    // borderRadius: 30,
+    borderColor: '#C0C0C0',
+    // borderWidth: 1,
+    height: 50,
+    backgroundColor: buttonColor,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: '60%',
+    position: 'absolute',
+    top: '90%',
+    borderRadius: 30,
+    shadowColor: buttonColor, 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4, 
+  },
+  Button_ShowReceipt_Text: {
+    fontWeight: 'bold',
+  },
 });
