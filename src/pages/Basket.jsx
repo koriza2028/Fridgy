@@ -14,12 +14,15 @@ import {
   removeProductFromBasket, 
   moveProductsFromBasketToFridge 
 } from '../store/basketStore';
-
 import { buttonColor, backgroundColor } from '../../assets/Styles/styleVariables';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+
 const { width } = Dimensions.get('window');
 
 export default function BasketPage({ navigation }) {
   const userId = useAuthStore((state) => state.user?.uid);
+  const logout = useAuthStore((state) => state.logout);
 
   const [basket, setBasket] = useState(null);
   const [products, setProducts] = useState([]);
@@ -165,10 +168,25 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  // New logout handler and button
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      logout();
+      navigation.navigate('Login'); // Adjust the route name as needed
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   return (
     <View style={styles.BasketPage}>
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
+          {/* Logout Button */}
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
           <SearchInput 
             placeholder="Find a product"
             query={searchQuery}
@@ -225,18 +243,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   BasketPage_ContentWrapper: {
-    // paddingTop: 20,
     width: width * 0.96,
-    // height: height, 
-    // NEED TO CHECK WHAT"S UP WITH HEIGHT WHEN THERE ARE A LOT OF PRODUCTS
-    // borderColor: '#C0C0C0',
-    // borderWidth: 1,
   },
   BasketPage_ListOfBasketItems: {
-    // backgroundColor: 'green',
+    // styles unchanged
   },
   modal: {
-    margin: 0, // No margin for full-screen modal
+    margin: 0,
     justifyContent: 'start',
     backgroundColor: 'white',
     paddingTop: 20,
@@ -252,9 +265,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     paddingLeft: 14,
     justifyContent: 'center',
-    // borderRadius: 30,
     borderColor: '#C0C0C0',
-    // borderWidth: 1,
     height: 50,
     backgroundColor: buttonColor,
     justifyContent: 'center',
@@ -270,6 +281,17 @@ const styles = StyleSheet.create({
     elevation: 4, 
   },
   Button_ShowReceipt_Text: {
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    alignSelf: 'flex-end',
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: buttonColor,
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });

@@ -1,7 +1,12 @@
 // src/screens/LoginScreen.js
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  setPersistence,
+  inMemoryPersistence
+} from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 
@@ -14,9 +19,12 @@ const LoginPage = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
+      // Sign out any existing user before logging in
+      await auth.signOut();
+      // Set in-memory persistence so the session doesn't persist across app restarts
+      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
-      console.log(user);
       navigation.navigate('FridgePage');
     } catch (err) {
       setError('Invalid email or password');
@@ -25,7 +33,10 @@ const LoginPage = ({ navigation }) => {
 
   const handleSignup = async () => {
     try {
-      console.log(email);
+      // Sign out any existing user before signing up
+      await auth.signOut();
+      // Set in-memory persistence for the new account as well
+      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
