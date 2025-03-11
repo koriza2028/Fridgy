@@ -12,7 +12,7 @@ import { moveProductToBasket, decrementProductAmount, incrementProductAmount } f
 const { width } = Dimensions.get('window');
 // const productCardWidth = width*0.465;
 const productCardWidth = width*0.46;
-const productCardHeight = productCardWidth*1.3;
+const productCardHeight = productCardWidth*1.34;
 
 // Make the view for ipads too
 
@@ -39,21 +39,6 @@ export default function ProductCard(props) {
         props.onChange();
     };
 
-    // const getImageSource = (imageName) => {
-    //     if (typeof imageName === 'string' && imageName.startsWith('file://')) {
-    //         return { uri: imageName }; // Handle image from gallery/camera
-    //     }
-    //     if (imageName.startsWith('data:image')) {
-    //         return { uri: imageName }; // Handle base64 image
-    //     }
-    //     const images = {
-    //         '../../../assets/ProductImages/banana_test.png': require('../../../assets/ProductImages/banana_test.png'),
-    //         '../../../assets/ProductImages/apple_test.png': require('../../../assets/ProductImages/apple_test.png'),
-    //         '../../../assets/ProductImages/milk_test.png': require('../../../assets/ProductImages/milk_test.png'),
-    //     };
-    
-    //     return images[imageName] || require('../../../assets/ProductImages/banana_test.png'); // Default fallback
-    // };
     
     return (         
         <View style={styles.ProductCard}>
@@ -136,14 +121,14 @@ const styles = StyleSheet.create({
         height: productCardHeight - productCardWidth,
         justifyContent: 'space-between',
         paddingLeft: 4,
-        marginTop: -34 
+        marginTop: -20 
     },
     ProductNameLabel: {
         fontWeight: 'bold',
         fontFamily: MainFont_Bold,
     },
     ProductCategoryLabel: {
-        marginBottom: 4,
+        marginBottom: 10,
         fontFamily: MainFont,
         fontSize: 18,
     },

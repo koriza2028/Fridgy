@@ -21,8 +21,6 @@ const LoginPage = ({ navigation }) => {
     try {
       // Sign out any existing user before logging in
       await auth.signOut();
-      // Set in-memory persistence so the session doesn't persist across app restarts
-      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
@@ -35,8 +33,6 @@ const LoginPage = ({ navigation }) => {
     try {
       // Sign out any existing user before signing up
       await auth.signOut();
-      // Set in-memory persistence for the new account as well
-      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');

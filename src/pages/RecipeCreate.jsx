@@ -217,10 +217,18 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   const removeProduct = (productId) => {
     try {
-      setMandatoryIngredients(prevIngredients => {
-        const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
-        return updatedIngredients;
-      });
+      if (isMandatoryFlag) {
+        setMandatoryIngredients(prevIngredients => {
+          const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
+          return updatedIngredients;
+        });
+      } else {
+        setOptionalIngredients(prevIngredients => {
+          const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
+          return updatedIngredients;
+        });
+      }
+      
     } catch (error) {
       console.error("Failed to remove ingredient:", error);
       setError("Failed to remove ingredient. Please try again.");
