@@ -9,8 +9,8 @@ const normalizeProduct = (product) => {
   } else {
     return {
       id: product.id,
-      name: product.name || product.id,
-      amount: product.amount ? product.amount : 1,
+      name: product.name,
+      amount: 1,
       ...product
     };
   }

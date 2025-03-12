@@ -20,6 +20,24 @@ export const fetchUserFridgeProducts = async (userId) => {
 };
 
 /**
+ * Fetch all non-archived products from a user's fridge.
+ * @param {string} userId - The ID of the user.
+ */
+export const fetchAllFridgeProducts = async (userId) => {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return [];
+    const data = userSnap.data();
+    const fridgeProducts = data.fridge?.products || [];
+    return fridgeProducts;
+  } catch (error) {
+    console.error("Error fetching fridge products:", error);
+    return [];
+  }
+};
+
+/**
  * Fetch archived products from a user's fridge.
  * @param {string} userId - The ID of the user.
  */
@@ -197,14 +215,22 @@ export const moveProductToBasket = async (userId, productId) => {
     const productData = fridge[productIndex];
     let basket = userData.basket?.products || [];
     const newBasketId = Date.now().toString();
-    basket.push({
-      id: newBasketId,
-      originalFridgeId: productData.id,
-      name: productData.name,
-      category: productData.category,
-      amount: 1,
-      isFromFridge: true,
-    });
+
+    const index = basket.findIndex(
+      p => p.originalFridgeId === productId
+    );
+    if (index !== -1) {
+      basket[index].amount += product.amount;
+    } else {
+      basket.push({
+        id: newBasketId,
+        originalFridgeId: productData.id,
+        name: productData.name,
+        category: productData.category,
+        amount: 1,
+        isFromFridge: true,
+      });
+    }
     // Do not remove from fridge.
     await updateDoc(userDocRef, { "basket.products": basket });
     return fetchUserFridgeProducts(userId);

@@ -4,7 +4,7 @@ import { View, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'reac
 export default function IngredientItem({ ingredient, onRemove, isMandatory, isEditing }) {
 
   const removeProduct = () => {
-    onRemove(ingredient._id);
+    onRemove(ingredient._id, isMandatory);
   };
 
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';

@@ -45,7 +45,7 @@ const SearchModal = ({
       return (
         <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, index)}>
           <Text style={styles.searchItem_Text}>{item.name}</Text>
-          <Text style={styles.ItemCategoryHint}>{item.category.tagName}</Text>
+          <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
         </TouchableOpacity>
       );
     };
@@ -53,7 +53,7 @@ const SearchModal = ({
     renderItem = ({ item }) => (
       <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
         <Text style={styles.searchItem_Text}>{item.name}</Text>
-        <Text style={styles.ItemCategoryHint}>{item.category.tagName}</Text>
+        <Text style={styles.ItemCategoryHint}>{item.category? item.category.tagName : ""}</Text>
       </TouchableOpacity>
     );
   }

@@ -20,7 +20,7 @@ import { tags } from "../../assets/Variables/categories";
 import { useFonts } from 'expo-font';
 
 import { addOrUpdateRecipe, removeRecipe } from "../store/cookingStore";
-import { fetchUserFridgeProducts } from "../store/fridgeStore";
+import { fetchAllFridgeProducts } from "../store/fridgeStore";
 import useAuthStore from "../store/authStore";
 
 // NEW IMPORTS FOR IMAGE UPLOAD
@@ -124,14 +124,13 @@ export default function RecipeCreatePage({ navigation, route }) {
   };
 
   const handleMultipleCategoriesSelect = (selectedCategories) => {
-    console.log('Selected Categories:', selectedCategories);
     setCategories(selectedCategories);
   };
 
   // Fetch available products from the fridge when component is focused.
   useEffect(() => {
     if (userId) {
-      fetchUserFridgeProducts(userId)
+      fetchAllFridgeProducts(userId)
         .then(fetchedProducts => {
           const availableProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
           setProducts(availableProducts);
@@ -218,9 +217,9 @@ export default function RecipeCreatePage({ navigation, route }) {
     }
   };
 
-  const removeProduct = (productId) => {
+  const removeProduct = (productId, isMandatory) => {
     try {
-      if (isMandatoryFlag) {
+      if (isMandatory) {
         setMandatoryIngredients(prevIngredients => {
           const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
           return updatedIngredients;

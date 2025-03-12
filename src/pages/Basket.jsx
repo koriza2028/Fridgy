@@ -196,9 +196,6 @@ export default function BasketPage({ navigation }) {
       console.error("Failed to move selected products:", err);
     }
   };
-  
-
-
 
   // New logout handler and button
   const handleLogout = async () => {

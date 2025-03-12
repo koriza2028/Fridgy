@@ -55,7 +55,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
                     <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.BasketItem_Text}>1</Text>
+                <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
                 <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
                     <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
