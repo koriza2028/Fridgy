@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 
-export default function IngredientItem({ ingredient, onRemove, isMandatory, isEditing }) {
+export default function IngredientItem({ ingredient, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
     onRemove(ingredient._id, isMandatory);
@@ -25,7 +25,7 @@ export default function IngredientItem({ ingredient, onRemove, isMandatory, isEd
                 {/* Will be expandable or ...? */}
             </View>
             
-          {isEditing && (<TouchableOpacity style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
+          {(isCreatingNew || isEditing) && (<TouchableOpacity style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
             <Text style={styles.IngredientItem_RemoveButton_Text}>X</Text>
             {/* Will be replaced with Swipe */}
           </TouchableOpacity>)} 

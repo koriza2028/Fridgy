@@ -329,18 +329,18 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
 
-                {isEditing && (
+                {(isCreatingNew || isEditing) && (
                 <TouchableOpacity onPress={() => openSearchModal(true)} style={styles.addIngredient_Button}>
                   <Text style={styles.addIngredient_ButtonText}>Add</Text>
                 </TouchableOpacity>
                 )}
-                
+
               </View>
             </View>
 
             {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
               mandatoryIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={true} onRemove={removeProduct} isEditing={isEditing}/>
+                <IngredientItem key={index} ingredient={ingredient} isMandatory={true} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
               ))
             ) : (
               <View>
@@ -354,7 +354,7 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
 
-                {isEditing && (
+                {(isCreatingNew || isEditing) && (
                   <TouchableOpacity onPress={() => openSearchModal(false)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
                 </TouchableOpacity>)}
@@ -364,7 +364,7 @@ export default function RecipeCreatePage({ navigation, route }) {
 
             {optionalIngredients && optionalIngredients.length > 0 ? (
               optionalIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={false} onRemove={removeProduct} isEditing={isEditing}/>
+                <IngredientItem key={index} ingredient={ingredient} isMandatory={false} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
               ))
             ) : (<View></View>)}
 
