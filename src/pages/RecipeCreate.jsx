@@ -174,10 +174,13 @@ export default function RecipeCreatePage({ navigation, route }) {
     // Include imageUri in the recipe data.
     addOrUpdateRecipe(userId, { id: id ? id : null, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri })
       .then(() => {
-        setTitle('');
-        setDescription('');
-        setId('');
-        navigation.navigate('CookingPage');
+        setIsEditing(!isEditing)
+        if (isCreatingNew) {
+          setTitle('');
+          setDescription('');
+          setId('');
+          navigation.navigate('CookingPage');
+        }
       })
       .catch(error => {
         console.error("Failed to save recipe:", error);
@@ -252,17 +255,23 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   const isSaveDisabled = title.trim() === '' || mandatoryIngredients.length === 0;
 
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <View style={styles.RecipeCreatePage}>
       <ScrollView style={{ height: '100vh' }}>
         <View style={styles.RecipeCreatePage_ContentWrapper}>
-          <TouchableOpacity onPress={handleImageUpload}>
+
+          <View>
             <Image 
               style={styles.ProductCreatePicture} 
               source={imageUri ? { uri: imageUri } : require('../../assets/ProductImages/banana_test.png')}
             />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={handleImageUpload} style={styles.ProductPicture_Button}></TouchableOpacity>
+          </View>
+
           <View style={styles.productDataEntry_Wrapper}> 
+
             <View style={styles.productDataEntry}>
               <TextInput 
                 style={[styles.productDataEntryInput, styles.productName]} 
@@ -273,6 +282,21 @@ export default function RecipeCreatePage({ navigation, route }) {
                 placeholderTextColor={'#9e9e9e'}
               />
             </View>    
+
+
+            <View style={styles.productDataEntry}>
+              <TextInput 
+                style={[styles.productDataEntryInput, styles.productNotes]} 
+                autoCapitalize="sentences" 
+                value={description} 
+                onChangeText={text => setDescription(text)}
+                placeholder='Do you need instructions how to cook it?' 
+                placeholderTextColor={'#9e9e9e'}
+                multiline={true} 
+                textAlignVertical="top"
+              />
+            </View>
+
             <View style={styles.productDataEntry}>
               <TouchableOpacity 
                 style={[styles.productDataEntryInput, styles.productTags]} 
@@ -287,6 +311,7 @@ export default function RecipeCreatePage({ navigation, route }) {
                 )}
               </TouchableOpacity>
             </View>
+
             <ModalProductCategoryPicker 
               isCategoryModalVisible={isCategoryModalVisible} 
               setIsCategoryModalVisible={setIsCategoryModalVisible} 
@@ -296,31 +321,27 @@ export default function RecipeCreatePage({ navigation, route }) {
               categories={tags} 
               alreadySelectedCategories={categories || []}
             />
-            <View style={styles.productDataEntry}>
-              <TextInput 
-                style={[styles.productDataEntryInput, styles.productNotes]} 
-                autoCapitalize="sentences" 
-                value={description} 
-                onChangeText={text => setDescription(text)}
-                placeholder='Do you need instructions how to cook it?' 
-                placeholderTextColor={'#9e9e9e'}
-                multiline={true} 
-                textAlignVertical="top"
-              />
-            </View>
+
           </View>   
+
           <View style={styles.ListOfIngredients}>
+
             <View style={styles.SubListOfIngredients}>
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
+
+                {isEditing && (
                 <TouchableOpacity onPress={() => openSearchModal(true)} style={styles.addIngredient_Button}>
                   <Text style={styles.addIngredient_ButtonText}>Add</Text>
                 </TouchableOpacity>
+                )}
+                
               </View>
             </View>
+
             {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
               mandatoryIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={true} onRemove={removeProduct} />
+                <IngredientItem key={index} ingredient={ingredient} isMandatory={true} onRemove={removeProduct} isEditing={isEditing}/>
               ))
             ) : (
               <View>
@@ -329,20 +350,27 @@ export default function RecipeCreatePage({ navigation, route }) {
                 </Text>
               </View>
             )}
+
             <View style={styles.SubListOfIngredients}>
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
-                <TouchableOpacity onPress={() => openSearchModal(false)} style={styles.addIngredient_Button}>
-                  <Text style={styles.addIngredient_ButtonText}>Add</Text>
-                </TouchableOpacity>
+
+                {isEditing && (
+                  <TouchableOpacity onPress={() => openSearchModal(false)} style={styles.addIngredient_Button}>
+                    <Text style={styles.addIngredient_ButtonText}>Add</Text>
+                </TouchableOpacity>)}
+                
               </View>
             </View>
+
             {optionalIngredients && optionalIngredients.length > 0 ? (
               optionalIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={false} onRemove={removeProduct} />
+                <IngredientItem key={index} ingredient={ingredient} isMandatory={false} onRemove={removeProduct} isEditing={isEditing}/>
               ))
             ) : (<View></View>)}
+
           </View>
+
           <SearchModal 
             isSearchModalVisible={isSearchModalVisible} 
             closeSearchModal={closeSearchModal} 
@@ -355,28 +383,37 @@ export default function RecipeCreatePage({ navigation, route }) {
             modalSearchRef={modalSearchRef}
           />
         </View>
+
       </ScrollView>
+
+      
+    
       <View style={styles.buttonPanel}>
-        {!isCreatingNew && (
+
+        {!isCreatingNew && isEditing && (
           <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
-            <Text style={styles.Button_SaveRecipe_Text}>
-              <Entypo name="trash" size={28} />
-            </Text>
+            <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
           </TouchableOpacity>
         )}
+
+        {(isCreatingNew || isEditing) && (
         <TouchableOpacity 
           style={[
             styles.Button_SaveRecipe, 
             isSaveDisabled && styles.Button_SaveRecipeDisabled, 
             isCreatingNew && styles.Button_SaveRecipeAlone
           ]}
-          onPress={SaveOrUpdateRecipe} 
-          disabled={isSaveDisabled}
-        >
+          onPress={SaveOrUpdateRecipe} disabled={isSaveDisabled} >
           <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
         </TouchableOpacity>
+        )}
+
+        {!isEditing && !isCreatingNew && (<TouchableOpacity style={styles.Button_Editing} onPress={() => setIsEditing(!isEditing)}></TouchableOpacity>)}
+
       </View>
+
       <ButtonGoBack navigation={navigation} />
+
     </View>
   );
 }
@@ -402,6 +439,18 @@ const styles = StyleSheet.create({
     width: width,
     height: width,
   }, 
+
+  ProductPicture_Button: {
+    zIndex: 3,
+    height: 40,
+    width: 40,
+    borderRadius: 30,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: width - 140,
+    left: width - 50,
+  },
+
   productDataEntry_Wrapper: {
     width: '100%',
     backgroundColor: '#fff',
@@ -411,11 +460,12 @@ const styles = StyleSheet.create({
   productDataEntry: {        
     paddingHorizontal: 10,
     justifyContent: 'center',
-    borderColor: '#D3D3D3',
-    borderBottomWidth: 0.1,
+    borderColor: '#ddd',
+    borderBottomWidth: 1,
   },
   productDataEntryInput: {
     marginVertical: 6,
+    paddingHorizontal: 6,
   },
   productName: {
     fontSize: SecondTitleFontSize + 4,
@@ -437,7 +487,7 @@ const styles = StyleSheet.create({
   productNotes: {
     fontFamily: MainFont,
     fontSize: TextFontSize,
-    height: 80,
+    height: 160,
     paddingVertical: 10,
     lineHeight: Platform.OS === 'android' ? 24 : '140%',
   },
@@ -530,9 +580,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4, 
   },
-  Button_EditRecipe: {
-    width: '100%',
+
+  Button_Editing: {
+    position: 'relative',
+    left: '40%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 50,
+    height: 50,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    marginHorizontal: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 60,
+    borderColor: addButtonColor,
+    borderWidth: 2,
+    
+    shadowColor: '#007bff', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 2,        
   },
+
   closeButton: {
     position: 'absolute',
     top: 10,

@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     justifyContent: 'center',
     backgroundColor: 'white',
-    borderColor: '#D3D3D3',
+    borderColor: '#ddd',
     borderBottomWidth: 0.1,
     minHeight: 50,       
   },
