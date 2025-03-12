@@ -2,6 +2,27 @@ import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firesto
 import { db } from "../firebaseConfig"; // Adjust path as needed
 
 /**
+ * Helper function to merge duplicate ingredient entries.
+ * Ingredients are keyed by originalFridgeId (if available) or their id.
+ * Duplicate entries will have their amount summed.
+ * @param {Array<object>} ingredients
+ * @returns {Array<object>} Merged ingredients array.
+ */
+const mergeIngredients = (ingredients = []) => {
+  const merged = {};
+  ingredients.forEach(ingredient => {
+    // Use originalFridgeId if available, otherwise the ingredient's id.
+    const key = ingredient.originalFridgeId ? ingredient.originalFridgeId : ingredient.id;
+    if (merged[key]) {
+      merged[key].amount += ingredient.amount || 1;
+    } else {
+      merged[key] = { ...ingredient, amount: ingredient.amount || 1 };
+    }
+  });
+  return Object.values(merged);
+};
+
+/**
  * Fetch the user's recipes from Firestore.
  * If the user document or the cooking field doesn't exist, create one with an empty recipes array.
  * @param {string} userId - The ID of the user.
@@ -31,6 +52,7 @@ export const fetchUserRecipes = async (userId) => {
  * Add a new recipe or update an existing one.
  * If the recipe already has an id and is found in the recipes array, it is updated.
  * Otherwise, a new recipe is added with a generated unique id.
+ * Ingredient arrays (e.g. mandatoryIngredients, optionalIngredients) are merged to avoid duplicates.
  * @param {string} userId - The ID of the user.
  * @param {object} recipe - The recipe object. Should include an id if updating.
  * @returns {Promise<object>} An object with the updated recipes array.
@@ -50,6 +72,14 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
     }
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
+
+    // Merge duplicate ingredients if provided.
+    if (recipe.mandatoryIngredients) {
+      recipe.mandatoryIngredients = mergeIngredients(recipe.mandatoryIngredients);
+    }
+    if (recipe.optionalIngredients) {
+      recipe.optionalIngredients = mergeIngredients(recipe.optionalIngredients);
+    }
 
     if (recipe.id) {
       // Check if the recipe exists (by id)
@@ -71,6 +101,7 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
 
 /**
  * Update an existing recipe.
+ * Ingredient arrays in the updated recipe are merged to avoid duplicates.
  * @param {string} userId - The ID of the user.
  * @param {string} recipeId - The id of the recipe to update.
  * @param {object} updatedRecipe - The updated recipe fields.
@@ -83,6 +114,15 @@ export const updateRecipe = async (userId, recipeId, updatedRecipe) => {
     if (!userDoc.exists()) throw new Error("User document does not exist");
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
+
+    // Merge ingredients if provided.
+    if (updatedRecipe.mandatoryIngredients) {
+      updatedRecipe.mandatoryIngredients = mergeIngredients(updatedRecipe.mandatoryIngredients);
+    }
+    if (updatedRecipe.optionalIngredients) {
+      updatedRecipe.optionalIngredients = mergeIngredients(updatedRecipe.optionalIngredients);
+    }
+
     const index = cooking.recipes.findIndex(r => r.id === recipeId);
     if (index === -1) throw new Error("Recipe not found");
     cooking.recipes[index] = { ...cooking.recipes[index], ...updatedRecipe };

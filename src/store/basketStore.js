@@ -38,14 +38,36 @@ export const fetchUserData = async (userId) => {
 
 /**
  * Add (or increase) a product in the user's basket.
- * If the product already exists (by id or matching originalFridgeId), its amount is incremented; otherwise it’s added.
+ * If the product already exists (by matching id or originalFridgeId), its amount is incremented by one;
+ * otherwise, it’s added with amount = 1.
  * Uses normalizeProduct to ensure the product is in the correct format.
+ * If the product comes from the fridge, we ignore its current amount and always start at 1.
+ *
  * @param {string} userId
  * @param {object|string} productInput - Product object or string.
+ *        If productInput has an `isFromFridge` property set to true, it is assumed to come from the fridge.
  * @returns {Promise<object>} The updated user data.
  */
 export const addProductToBasket = async (userId, productInput) => {
-  const product = normalizeProduct(productInput);
+  let product;
+  // If the product comes from the fridge, build the basket entry using a reference to the fridge product.
+  if (productInput.isFromFridge) {
+    product = {
+      // We'll store a new unique basket id when adding.
+      // The originalFridgeId keeps the reference to the fridge product.
+      originalFridgeId: productInput.id,
+      name: productInput.name,
+      category: productInput.category,
+      imageUri: productInput.imageUri || null,
+      amount: 1,
+      isFromFridge: true,
+    };
+  } else {
+    // For other products, use the normalized version and always set the amount to 1.
+    product = normalizeProduct(productInput);
+    product.amount = 1;
+  }
+
   const userDocRef = doc(db, "users", userId);
   return await runTransaction(db, async (transaction) => {
     const userDoc = await transaction.get(userDocRef);
@@ -55,16 +77,27 @@ export const addProductToBasket = async (userId, productInput) => {
     const userData = userDoc.data();
     const basket = userData.basket || { products: [] };
 
-    // Find existing basket item by either matching basket id or originalFridgeId.
-    const index = basket.products.findIndex(
-      p => p.id === product.id || p.originalFridgeId === product.id
-    );
+    // Find an existing basket entry.
+    // For fridge products, match based on originalFridgeId; otherwise, match on the product id.
+    const index = basket.products.findIndex((p) => {
+      if (product.originalFridgeId) {
+        return p.originalFridgeId === product.originalFridgeId;
+      } else {
+        return p.id === product.id;
+      }
+    });
+    
     if (index !== -1) {
-      basket.products[index].amount += product.amount;
+      // Increase the amount by one if already present.
+      basket.products[index].amount += 1;
     } else {
-      // Add the new product entry.
+      // If adding for the first time, assign a new unique basket id if coming from fridge.
+      if (product.originalFridgeId) {
+        product.id = Date.now().toString();
+      }
       basket.products.push(product);
     }
+    
     transaction.update(userDocRef, { "basket.products": basket.products });
     return { id: userDoc.id, ...userData, basket };
   });
@@ -117,6 +150,7 @@ export const removeProductFromBasket = async (userId, productId) => {
  * If a matching fridge product is found (by originalFridgeId or name), its amount is increased.
  * Otherwise, a new fridge product is created with a new unique id.
  * After moving, the basket product is removed.
+ *
  * @param {string} userId
  * @param {Array<string>} selectedProductIds - Array of basket product ids.
  * @returns {Promise<object>} The updated user data.
@@ -137,8 +171,8 @@ export const moveProductsFromBasketToFridge = async (userId, selectedProductIds)
       if (basketIndex === -1) return;
       const basketProduct = basket.products[basketIndex];
 
-      // Find matching fridge product: if basket product came from fridge, match by originalFridgeId;
-      // otherwise match by name.
+      // Find matching fridge product: if the basket product came from the fridge, match by originalFridgeId;
+      // otherwise, match by name.
       const fridgeIndex = fridge.products.findIndex(p => {
         if (basketProduct.isFromFridge && basketProduct.originalFridgeId) {
           return p.id === basketProduct.originalFridgeId;

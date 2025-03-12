@@ -24,18 +24,18 @@ export default function ProductCard(props) {
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
 
-    const handleDecrement = (id) => {
-        decrementProductAmount(userId, id);
+    const handleDecrement = async (id) => {
+        await decrementProductAmount(userId, id);
         props.onChange();
     };
 
-    const handleIncrement = (id) => {
-        incrementProductAmount(userId, id);
+    const handleIncrement = async (id) => {
+        await incrementProductAmount(userId, id);
         props.onChange();
     };
 
-    const handleMoveToBasket = (id) => {
-        moveProductToBasket(userId, id);
+    const handleMoveToBasket = async (id) => {
+        await moveProductToBasket(userId, id);
         props.onChange();
     };
 

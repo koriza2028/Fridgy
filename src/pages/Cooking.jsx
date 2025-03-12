@@ -15,6 +15,7 @@ import AddNewButton from '../components/Button_AddNew';
 
 import useAuthStore from '../store/authStore';
 import { fetchUserRecipes, removeRecipe } from '../store/cookingStore';
+import { fetchAvailableProducts } from '../store/fridgeStore';
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +32,7 @@ export default function CookingPage({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]);
+  const [fridgeProducts, setFridgeProducts] = useState([]);
   // New state to hold selected filter categories
   const [selectedFilters, setSelectedFilters] = useState([]);
 
@@ -45,6 +47,10 @@ export default function CookingPage({ navigation }) {
           .catch(error => {
             console.error("Failed to fetch recipes", error);
           });
+        fetchAvailableProducts(userId)
+        .then(products => {
+          setFridgeProducts(products);
+        })
       }
     }, [userId])
   );
@@ -128,6 +134,23 @@ export default function CookingPage({ navigation }) {
     }
   }, [userId]);
 
+  checkIngredientIsAvailable = (originalFridgeId) => {
+    // Check if the ingredients are available in the fridge
+    console.log(fridgeProducts);
+    console.log(originalFridgeId);
+    return fridgeProducts.some(product => product.id === originalFridgeId);
+  };
+
+  checkMandatoryIngredientsAreAvailable = (recipeId) => {
+    // Check if the mandatory ingredients are available in the fridge
+    const recipe = recipeBook.recipes.find(recipe => recipe.id === recipeId);
+    if (!recipe || !recipe.mandatoryIngredients) return false;
+    for (const ingredient of recipe.mandatoryIngredients) {
+      if (!checkIngredientIsAvailable(ingredient.originalFridgeId)) return false;
+    }
+    return true;
+  };
+
   return (
     <View style={styles.CookingPage}>
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
@@ -146,6 +169,7 @@ export default function CookingPage({ navigation }) {
           <View style={styles.MealList_Wrapper}>
             {filteredData.length > 0 || searchQuery !== "" ? (
               filteredData.map((recipe) => (
+                console.log(checkMandatoryIngredientsAreAvailable(recipe.id)),
                 <MealCard
                   navigation={navigation}
                   recipe={recipe}

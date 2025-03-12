@@ -6,7 +6,7 @@ import BasketItem from '../components/basket/BasketItem';
 import ModalBasketReceipt from '../components/basket/ModalBasketReceipt';
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
-import { fetchUserFridgeProducts } from '../store/fridgeStore';
+import { fetchAvailableProducts } from '../store/fridgeStore';
 import { 
   fetchUserData,  // updated from fetchUserBasket to fetchUserData
   addProductToBasket, 
@@ -48,7 +48,7 @@ export default function BasketPage({ navigation }) {
         setBasket(userData.basket);
         
         // Fetch fridge products for the user.
-        const fetchedFridgeProducts = await fetchUserFridgeProducts(userId);
+        const fetchedFridgeProducts = await fetchAvailableProducts(userId);
         
         // Filter out products already added in the basket.
         let availableProducts = [];

@@ -16,7 +16,7 @@ import { useFonts } from 'expo-font';
 import { categoryNames } from "../../assets/Variables/categories";
 
 import useAuthStore from '../store/authStore';
-import {fetchUserFridgeProducts, fetchArchivedProducts} from '../store/fridgeStore'; 
+import {fetchAvailableProducts, fetchArchivedProducts} from '../store/fridgeStore'; 
 
 
 const { width } = Dimensions.get('window');
@@ -50,8 +50,8 @@ export default function FridgePage({ navigation }) {
 
   const refreshProducts = async () => {
       try {
-          const fetchedAvailable = await fetchUserFridgeProducts(userId);
           const fetchedArchived = await fetchArchivedProducts(userId);
+          const fetchedAvailable = await fetchAvailableProducts(userId);
 
           setAvailableProducts(fetchedAvailable);
           setArchivedProducts(fetchedArchived);
@@ -66,7 +66,7 @@ export default function FridgePage({ navigation }) {
     React.useCallback(async () => {
         if (userId) {
             refreshProducts();
-          }
+        }
     }, [userId])
   );
 
@@ -85,7 +85,7 @@ export default function FridgePage({ navigation }) {
         );
     }, [searchQuery, availableProducts, archivedProducts, selectedCategory]);
 
-  const filterByCategory = (category) => {
+    const filterByCategory = (category) => {
         setSelectedCategory(category);
     };
 
