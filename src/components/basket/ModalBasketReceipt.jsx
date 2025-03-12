@@ -1,7 +1,7 @@
 import { View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import React, { useState } from "react";
 
-import { MainFont, MainFont_Bold, SecondTitleFontSize, backgroundColor } from '../../../assets/Styles/styleVariables';
+import { MainFont, MainFont_Bold, SecondTitleFontSize, TextFontSize, backgroundColor, buttonColor } from '../../../assets/Styles/styleVariables';
 
 import Modal from 'react-native-modal';
 
@@ -90,7 +90,7 @@ export default function ModalBasketReceipt({ visible, onClose, onMove, receiptIt
 const styles = StyleSheet.create({
     ModalBasketReceipt: {
         backgroundColor: backgroundColor,
-        margin: 0,
+        marginHorizontal: 10,
         justifyContent: 'flex-start'
     },
     ModalReceipt_Wrapper: {
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     },
     ModalReceiptHeader: {},
     ModalReceiptHeader_Text: {
-        fontSize: 28,
+        fontSize: SecondTitleFontSize + 8,
     },
     ListOfReceiptItems: {
         marginTop: 20,
@@ -108,31 +108,33 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         borderColor: '#C0C0C0',
-        borderTopWidth: 1,
+        // borderTopWidth: 1,
         borderBottomWidth: 1,
         padding: 8,
     },
     ReceiptItem_Text: {
-        fontSize: 16,
+        fontSize: TextFontSize,
     },
     ReceiptItemAmount: {
         width: 60,
     },
     SectionTitle: {
-        fontSize: 20,
+        fontSize: SecondTitleFontSize,
         fontFamily: MainFont_Bold,
         marginVertical: 8,
     },
-    Separator: {
-        borderBottomColor: '#C0C0C0',
-        borderBottomWidth: 1,
-        marginVertical: 8,
-    },
+    // Separator: {
+    //     borderBottomColor: '#C0C0C0',
+    //     borderBottomWidth: 1,
+    //     marginVertical: 8,
+    // },
     Button_MoveItems: {
         marginVertical: 5,
+        marginTop: 20,
         paddingLeft: 14,
+        height: 50,
         justifyContent: 'center',
-        backgroundColor: 'lightblue',
+        backgroundColor: buttonColor,
         alignItems: 'center',
         width: '80%',
         position: 'absolute',

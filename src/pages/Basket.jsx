@@ -150,23 +150,55 @@ export default function BasketPage({ navigation }) {
     }));
   };
 
-  const handleDisplayCheckedItems = () => {
+  // const handleDisplayCheckedItems = () => {
+  //   if (basket && basket.products) {
+  //     const checkedProducts = basket.products.filter(product => checkedItems[product.id]);
+  //     // setReceiptProducts(checkedProducts);
+  //     // setModalReceiptVisible(true);
+  //     // moveSelectedProducts(checkedItems)
+  //   }
+  // };
+
+    // const moveSelectedProducts = async () => {
+  //   try {
+  //     const selectedProductIds = receiptProducts.map(product => product.id);
+  //     await moveProductsFromBasketToFridge(userId, selectedProductIds);
+  //     await refreshBasket();
+  //   } catch (err) {
+  //     console.error("Failed to move selected products:", err);
+  //   }
+  // };
+
+  const handleDisplayCheckedItems = async () => {
     if (basket && basket.products) {
       const checkedProducts = basket.products.filter(product => checkedItems[product.id]);
-      setReceiptProducts(checkedProducts);
-      setModalReceiptVisible(true);
+      
+      if (checkedProducts.length > 0) {
+        await moveSelectedProducts(checkedProducts);
+        
+        // Uncheck moved items
+        setCheckedItems(prev => {
+          const updatedCheckedItems = { ...prev };
+          checkedProducts.forEach(product => delete updatedCheckedItems[product.id]);
+          return updatedCheckedItems;
+        });
+      }
     }
   };
+  
 
-  const moveSelectedProducts = async () => {
+  const moveSelectedProducts = async (selectedProducts) => {
     try {
-      const selectedProductIds = receiptProducts.map(product => product.id);
+      const selectedProductIds = selectedProducts.map(product => product.id);
       await moveProductsFromBasketToFridge(userId, selectedProductIds);
       await refreshBasket();
     } catch (err) {
       console.error("Failed to move selected products:", err);
     }
   };
+  
+
+
 
   // New logout handler and button
   const handleLogout = async () => {
@@ -183,15 +215,14 @@ export default function BasketPage({ navigation }) {
     <View style={styles.BasketPage}>
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
+
           {/* Logout Button */}
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
-          <SearchInput 
-            placeholder="Find a product"
-            query={searchQuery}
-            onChangeText={openSearchModal}
-          />
+
+          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+          
           <SearchModal 
             isSearchModalVisible={isSearchModalVisible}
             closeSearchModal={closeSearchModal}
@@ -201,36 +232,30 @@ export default function BasketPage({ navigation }) {
             filteredData={filteredData}
             isBasket={true}
           />
+          
           <View style={styles.BasketPage_ListOfBasketItems}>
             {basket && basket.products && basket.products.length > 0 ? (
               basket.products.map((product, index) => (
                 <BasketItem 
-                  key={index}
-                  product={product}
-                  isChecked={!!checkedItems[product.id]}
-                  onDecrement={decrementProductAmount}
-                  onAdd={incrementProductAmount}
-                  onToggleCheckbox={handleToggleCheckbox}
-                />
+                  key={index} product={product} isChecked={!!checkedItems[product.id]}
+                  onDecrement={decrementProductAmount} onAdd={incrementProductAmount} onToggleCheckbox={handleToggleCheckbox} />
               ))
-            ) : (
-              <View />
-            )}
+            ) : (<View /> )}
           </View>
+
         </View>
       </ScrollView>
+
       <TouchableOpacity 
         style={[styles.Button_ShowReceipt]} 
-        onPress={handleDisplayCheckedItems}
-      >
-        <Text style={styles.Button_ShowReceipt_Text}>Move items to Fridge</Text>
+        onPress={handleDisplayCheckedItems} 
+        // onPress={moveSelectedProducts}
+        >
+        <Text style={styles.Button_ShowReceipt_Text}>Move to Fridge - Check</Text>
       </TouchableOpacity>
-      <ModalBasketReceipt
-        visible={modalReceiptVisible}
-        receiptItems={receiptProducts}
-        onClose={() => setModalReceiptVisible(false)}
-        onMove={moveSelectedProducts}
-      />
+
+      {/* <ModalBasketReceipt visible={modalReceiptVisible} receiptItems={receiptProducts} onClose={() => setModalReceiptVisible(false)} onMove={moveSelectedProducts} /> */}
+
     </View>
   );
 }
@@ -246,7 +271,7 @@ const styles = StyleSheet.create({
     width: width * 0.96,
   },
   BasketPage_ListOfBasketItems: {
-    // styles unchanged
+    marginTop: 10,
   },
   modal: {
     margin: 0,
