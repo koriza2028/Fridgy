@@ -197,7 +197,10 @@ export default function BasketPage({ navigation }) {
     }
   };
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
 >>>>>>> Stashed changes
 
