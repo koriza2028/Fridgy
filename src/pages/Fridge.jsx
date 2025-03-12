@@ -11,7 +11,7 @@ import ProductCard from "../components/fridge/ProductCard";
 import SearchInput from '../components/Search';
 import AddNewButton from "../components/Button_AddNew";
 
-import { backgroundColor, MainFont, TextFontSize } from '../../assets/Styles/styleVariables';
+import { backgroundColor, buttonColor, MainFont, TextFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import { categoryNames } from "../../assets/Variables/categories";
 
@@ -98,8 +98,11 @@ export default function FridgePage({ navigation }) {
 
                   <View style={styles.ProductFilter}>
                       {['All', ...categoryNames].map((category, index) => (
-                          <TouchableOpacity key={index} style={styles.ProductFilterCategory} onPress={() => filterByCategory(category)}>
-                              <Text style={styles.ProductFilterCategory_Text}>{category}</Text>
+                          <TouchableOpacity key={index} 
+                          style={[styles.ProductFilterCategory, selectedCategory === category && styles.SelectedCategory,
+                          ]}
+                           onPress={() => filterByCategory(category)}>
+                              <Text style={[styles.ProductFilterCategory_Text]}>{category}</Text>
                           </TouchableOpacity>
                       ))}
                   </View>   
@@ -202,6 +205,10 @@ const styles = StyleSheet.create({
     ProductFilterCategory_Text: {
         fontFamily: MainFont,
         fontSize: TextFontSize - 2,
+    },
+
+    SelectedCategory: {
+        backgroundColor: buttonColor,
     },
   
   });
