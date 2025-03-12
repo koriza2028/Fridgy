@@ -20,7 +20,7 @@ import { tags } from "../../assets/Variables/categories";
 import { useFonts } from 'expo-font';
 
 import { addOrUpdateRecipe, removeRecipe } from "../store/cookingStore";
-import { fetchAllFridgeProducts } from "../store/fridgeStore";
+import { fetchAllFridgeProducts, fetchAvailableProducts } from "../store/fridgeStore";
 import useAuthStore from "../store/authStore";
 
 // NEW IMPORTS FOR IMAGE UPLOAD
@@ -108,6 +108,8 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   // For product search and ingredient selection (using fridge products)
   const [products, setProducts] = useState([]);
+  const [availableProducts, setAvailableProducts] = useState([]);
+
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState(products);
@@ -132,9 +134,10 @@ export default function RecipeCreatePage({ navigation, route }) {
     if (userId) {
       fetchAllFridgeProducts(userId)
         .then(fetchedProducts => {
-          const availableProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
-          setProducts(availableProducts);
-          setFilteredData(availableProducts);
+          const allProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
+          setProducts(allProducts);
+          setAvailableProducts(allProducts.filter(product => !product.isArchived));
+          setFilteredData(allProducts);
         })
         .catch(error => {
           console.error('Failed to fetch fridge products:', error);
@@ -235,6 +238,11 @@ export default function RecipeCreatePage({ navigation, route }) {
       console.error("Failed to remove ingredient:", error);
       setError("Failed to remove ingredient. Please try again.");
     }
+  };
+
+  checkIngredientIsAvailable = (originalFridgeId) => {
+    // Check if the ingredients are available in the fridge
+    return availableProducts.some(product => product.id === originalFridgeId);
   };
 
   const openSearchModal = (mandatoryFlag) => {
@@ -340,7 +348,7 @@ export default function RecipeCreatePage({ navigation, route }) {
 
             {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
               mandatoryIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={true} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
+                <IngredientItem key={index} ingredient={ingredient} isAvailable={checkIngredientIsAvailable(ingredient.id)} isMandatory={true} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
               ))
             ) : (
               <View>

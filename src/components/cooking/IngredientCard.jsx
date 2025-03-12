@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 
-export default function IngredientItem({ ingredient, onRemove, isMandatory, isEditing, isCreatingNew }) {
+export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
     onRemove(ingredient._id, isMandatory);
@@ -10,7 +10,7 @@ export default function IngredientItem({ ingredient, onRemove, isMandatory, isEd
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
-        <View style={[styles.IngredientItem, { borderColor: borderColor }, (ingredient.amount === 0 && !isEditing) && { borderWidth: 1 }]}>
+        <View style={[styles.IngredientItem, { borderColor: borderColor }, (!isAvailable && !isEditing) && { borderWidth: 1 }]}>
                      
             <Image style={styles.IngredientItem_Picture} 
               source={ingredient.imageUri ? { uri: ingredient.imageUri } : require('../../../assets/ProductImages/banana_test.png')}>
@@ -18,7 +18,7 @@ export default function IngredientItem({ ingredient, onRemove, isMandatory, isEd
 
             <View style={[styles.IngredientItem_NameAndInstructions, !isMandatory && styles.IngredientItem_OnlyName]}>
                 <View style={styles.IngredientItem_Name}>
-                  <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} {ingredient.amount}</Text>
+                  <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} </Text>
                 </View>
                 {isMandatory && (<TextInput style={styles.IngredientItem_Instructions} placeholder='How much?'></TextInput>)}
                 

@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image } from 'react-native';
 
-import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, SecondTitleFontSize, SecondTitleFontWeight } from '../../../assets/Styles/styleVariables';
+import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, SecondTitleFontSize, SecondTitleFontWeight, deleteButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
 import Tag from './Tag';
 
 const { width } = Dimensions.get('window');
 
-export default function MealCard({ onRemove, navigation, recipe }) {
+export default function MealCard({ navigation, recipe, isAvailable }) {
 
     const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
@@ -48,9 +48,8 @@ export default function MealCard({ onRemove, navigation, recipe }) {
 
             </View>
 
-            <View style={styles.ProductAvailabilityLabel}>
-                <Text style={styles.ProductAvailabilityLabel_Text}>3 / 3</Text>
-            </View>
+            <View style={isAvailable ? styles.ProductAvailabilityLabel : 
+                [styles.ProductAvailabilityLabel, styles.ProductNonAvailabilityLabel]}/>
 
         </TouchableOpacity>
 )}
@@ -129,7 +128,7 @@ const styles = StyleSheet.create({
     },
 
     ProductAvailabilityLabel: {
-        width: width / 6,
+        width: width / 8,
         height: width / 12,
         backgroundColor: '#14db71',
         borderTopRightRadius: 10,
@@ -140,6 +139,10 @@ const styles = StyleSheet.create({
         right: 0,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    ProductNonAvailabilityLabel: {
+        backgroundColor: deleteButtonColor,
     },
 
     ProductAvailabilityLabel_Text: {

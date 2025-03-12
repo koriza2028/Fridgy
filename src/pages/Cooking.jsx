@@ -136,8 +136,6 @@ export default function CookingPage({ navigation }) {
 
   checkIngredientIsAvailable = (originalFridgeId) => {
     // Check if the ingredients are available in the fridge
-    console.log(fridgeProducts);
-    console.log(originalFridgeId);
     return fridgeProducts.some(product => product.id === originalFridgeId);
   };
 
@@ -146,7 +144,7 @@ export default function CookingPage({ navigation }) {
     const recipe = recipeBook.recipes.find(recipe => recipe.id === recipeId);
     if (!recipe || !recipe.mandatoryIngredients) return false;
     for (const ingredient of recipe.mandatoryIngredients) {
-      if (!checkIngredientIsAvailable(ingredient.originalFridgeId)) return false;
+      if (!checkIngredientIsAvailable(ingredient.id)) return false;
     }
     return true;
   };
@@ -169,12 +167,11 @@ export default function CookingPage({ navigation }) {
           <View style={styles.MealList_Wrapper}>
             {filteredData.length > 0 || searchQuery !== "" ? (
               filteredData.map((recipe) => (
-                console.log(checkMandatoryIngredientsAreAvailable(recipe.id)),
                 <MealCard
                   navigation={navigation}
                   recipe={recipe}
                   key={recipe.id}
-                  onRemove={handleRemoveRecipe}
+                  isAvailable={checkMandatoryIngredientsAreAvailable(recipe.id)}
                 />
               ))
             ) : (
