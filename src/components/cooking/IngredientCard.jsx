@@ -10,14 +10,16 @@ export default function IngredientItem({ ingredient, onRemove, isMandatory, isEd
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
-        <View style={[styles.IngredientItem, { borderColor: borderColor }]}>
+        <View style={[styles.IngredientItem, { borderColor: borderColor }, (ingredient.amount === 0 && !isEditing) && { borderWidth: 1 }]}>
                      
             <Image style={styles.IngredientItem_Picture} 
               source={ingredient.imageUri ? { uri: ingredient.imageUri } : require('../../../assets/ProductImages/banana_test.png')}
             ></Image>
 
             <View style={[styles.IngredientItem_NameAndInstructions, !isMandatory && styles.IngredientItem_OnlyName]}>
-                <View style={styles.IngredientItem_Name}><Text style={styles.IngredientItem_Name_Text}>{ingredient.name}</Text></View>
+                <View style={styles.IngredientItem_Name}>
+                  <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} {ingredient.amount}</Text>
+                </View>
                 {isMandatory && (<TextInput style={styles.IngredientItem_Instructions} placeholder='How much?'></TextInput>)}
                 
                 {/* Will be expandable or ...? */}
