@@ -163,8 +163,9 @@ export default function CookingPage({ navigation }) {
             filterRules={tags} 
             onFilterChange={setSelectedFilters} 
           />
-          <Text style={styles.SuggestedMeals_Text}>Suggested meals:</Text>
-          <View style={styles.MealList_Wrapper}>
+          
+
+          {/* <View style={styles.MealList_Wrapper}>
             {filteredData.length > 0 || searchQuery !== "" ? (
               filteredData.map((recipe) => (
                 <MealCard
@@ -177,7 +178,44 @@ export default function CookingPage({ navigation }) {
             ) : (
               <View/>
             )}
+          </View> */}
+
+          <View style={styles.MealList_Wrapper}>
+            <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
+            {filteredData.length > 0 || searchQuery !== "" ? (
+              <>
+                {/* Available Meals */}
+                <View style={styles.AvailableMeals_Section}>
+                  {filteredData
+                    .filter((recipe) => checkMandatoryIngredientsAreAvailable(recipe.id))
+                    .map((recipe) => (
+                      <MealCard
+                        navigation={navigation}
+                        recipe={recipe}
+                        key={recipe.id}
+                        isAvailable={true}
+                      />
+                    ))}
+                </View>
+
+                {/* Unavailable Meals */}
+                <View style={styles.UnavailableMeals_Section}>
+                  <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
+                  {filteredData
+                    .filter((recipe) => !checkMandatoryIngredientsAreAvailable(recipe.id))
+                    .map((recipe) => (
+                      <MealCard
+                        navigation={navigation}
+                        recipe={recipe}
+                        key={recipe.id}
+                        isAvailable={false}
+                      />
+                    ))}
+                </View>
+              </>
+            ) : ( <View /> )}
           </View>
+
         </View>
       </ScrollView>
       <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} />
@@ -194,15 +232,17 @@ const styles = StyleSheet.create({
   },
   CookingPage_ContentWrapper: {
     width: width * 0.96,
-    paddingBottom: 10,
+    paddingBottom: 20,
   },
   SuggestedMeals_Text: {
     fontSize: SecondTitleFontSize + 2,
     fontWeight: SecondTitleFontWeight,
-    fontFamily: MainFont_Bold
+    fontFamily: MainFont_Bold,
+    marginTop: 20,
   },
   MealList_Wrapper: {
     width: '100%',
-    paddingTop: 10,
+    // paddingTop: 10,
+    marginTop: -20,
   },
 });

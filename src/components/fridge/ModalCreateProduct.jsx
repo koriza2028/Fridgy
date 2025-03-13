@@ -76,7 +76,7 @@ export default function ModalCreateProduct({
       setName(product.name || "");
       setCategory(product.category || defaultCategory);
       setNotes(product.notes || "");
-      setAmount(product.amount || 1);
+      setAmount(product.amount || 0);
       setImageUri(product.imageUri || null);
       setId(product.id || "");
       setIsCreatingNew(false);
@@ -245,7 +245,7 @@ export default function ModalCreateProduct({
                     style={styles.productAmount}
                     selectTextOnFocus={true}
                     keyboardType="numeric"
-                    value={amount || ''}
+                    value={amount || 0}
                     onChangeText={text => setAmount(text)}
                     placeholder='Amount...'
                     placeholderTextColor={'#9e9e9e'}

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, Dimensions, StyleSheet } from 'react-native';
+
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
+import ModalItemInfo from '../components/basket/ModalItemInfo';
 import ModalBasketReceipt from '../components/basket/ModalBasketReceipt';
+
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
@@ -14,6 +17,7 @@ import {
   removeProductFromBasket, 
   moveProductsFromBasketToFridge 
 } from '../store/basketStore';
+
 import { buttonColor, backgroundColor } from '../../assets/Styles/styleVariables';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -150,25 +154,6 @@ export default function BasketPage({ navigation }) {
     }));
   };
 
-  // const handleDisplayCheckedItems = () => {
-  //   if (basket && basket.products) {
-  //     const checkedProducts = basket.products.filter(product => checkedItems[product.id]);
-  //     // setReceiptProducts(checkedProducts);
-  //     // setModalReceiptVisible(true);
-  //     // moveSelectedProducts(checkedItems)
-  //   }
-  // };
-
-    // const moveSelectedProducts = async () => {
-  //   try {
-  //     const selectedProductIds = receiptProducts.map(product => product.id);
-  //     await moveProductsFromBasketToFridge(userId, selectedProductIds);
-  //     await refreshBasket();
-  //   } catch (err) {
-  //     console.error("Failed to move selected products:", err);
-  //   }
-  // };
-
   const handleDisplayCheckedItems = async () => {
     if (basket && basket.products) {
       const checkedProducts = basket.products.filter(product => checkedItems[product.id]);
@@ -208,6 +193,14 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+
+  const handleItemPress = (id) => {
+    setSelectedItemId(id);
+    setIsInfoModalVisible(true);
+  };
+
   return (
     <View style={styles.BasketPage}>
       <ScrollView>
@@ -235,10 +228,16 @@ export default function BasketPage({ navigation }) {
               basket.products.map((product, index) => (
                 <BasketItem 
                   key={index} product={product} isChecked={!!checkedItems[product.id]}
-                  onDecrement={decrementProductAmount} onAdd={incrementProductAmount} onToggleCheckbox={handleToggleCheckbox} />
+                  onDecrement={decrementProductAmount} onAdd={incrementProductAmount} onToggleCheckbox={handleToggleCheckbox} openInfoModal={handleItemPress}/>
               ))
             ) : (<View /> )}
           </View>
+
+          <ModalItemInfo 
+            isVisible={isInfoModalVisible} 
+            onClose={() => setIsInfoModalVisible(false)} 
+            itemId={selectedItemId} 
+          />
 
         </View>
       </ScrollView>
