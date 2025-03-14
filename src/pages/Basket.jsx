@@ -239,7 +239,7 @@ export default function BasketPage({ navigation }) {
             isVisible={isInfoModalVisible} 
             onClose={() => setIsInfoModalVisible(false)} 
             itemId={selectedItemId} 
-            itemType={selectedItemFromFridge}
+            isFridge={selectedItemFromFridge}
           />
 
         </View>

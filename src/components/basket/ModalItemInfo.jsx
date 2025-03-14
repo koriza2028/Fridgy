@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Modal from "react-native-modal";
 
-const ModalItemInfo = ({ isVisible, onClose, itemId }) => {
+const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
   return (
     <Modal 
       isVisible={isVisible} 
