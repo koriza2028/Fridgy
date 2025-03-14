@@ -193,10 +193,12 @@ export default function BasketPage({ navigation }) {
   };
 
   const [selectedItemId, setSelectedItemId] = useState(null);
+  const [selectedItemFromFridge, setSelectedItemFromFridge] = useState(null);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 
-  const handleItemPress = (id) => {
+  const handleItemPress = (id, isFromFridge) => {
     setSelectedItemId(id);
+    setSelectedItemFromFridge(isFromFridge);
     setIsInfoModalVisible(true);
   };
 
@@ -236,6 +238,7 @@ export default function BasketPage({ navigation }) {
             isVisible={isInfoModalVisible} 
             onClose={() => setIsInfoModalVisible(false)} 
             itemId={selectedItemId} 
+            itemType={selectedItemFromFridge}
           />
 
         </View>
