@@ -35,7 +35,7 @@ const SearchModal = ({
       // If the item is a string, then it represents a new item option.
       if (typeof item === 'string') {
         return (
-          <TouchableOpacity style={styles.newItem} onPress={() => addProduct(item, index)}>
+          <TouchableOpacity style={styles.newItem} onPress={() => addProduct(item, false, index)}>
             <Text style={styles.searchItem_Text}>{item}</Text>
             <Text style={styles.ItemCategoryHint}>New item</Text>
           </TouchableOpacity>
@@ -43,7 +43,7 @@ const SearchModal = ({
       }
       // Otherwise, it's an object from the fridge products.
       return (
-        <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, index)}>
+        <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, true, index)}>
           <Text style={styles.searchItem_Text}>{item.name}</Text>
           <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
         </TouchableOpacity>

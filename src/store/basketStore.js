@@ -48,10 +48,10 @@ export const fetchUserData = async (userId) => {
  *        If productInput has an `isFromFridge` property set to true, it is assumed to come from the fridge.
  * @returns {Promise<object>} The updated user data.
  */
-export const addProductToBasket = async (userId, productInput) => {
+export const addProductToBasket = async (userId, productInput, isFromFridge) => {
   let product;
   // If the product comes from the fridge, build the basket entry using a reference to the fridge product.
-  if (productInput.isFromFridge) {
+  if (isFromFridge) {
     product = {
       // We'll store a new unique basket id when adding.
       // The originalFridgeId keeps the reference to the fridge product.
