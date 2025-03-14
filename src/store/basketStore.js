@@ -5,13 +5,13 @@ import { db } from "../firebaseConfig"; // Adjust the path based on your Firebas
 // If the product is a string, return an object with that string as the id, name, and default amount of 1.
 const normalizeProduct = (product) => {
   if (typeof product === 'string') {
-    return { id: product, name: product, amount: 1 };
+    return { id: product, name: product, amount: 1, isFromFridge: false };
   } else {
     return {
       id: product.id,
       name: product.name,
       amount: 1,
-      isFromFridge: false,
+      isFromFridge: true,
       ...product
     };
   }
