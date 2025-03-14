@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   Button_ShowReceipt: {
     position: 'absolute',
     bottom: 20,
-    right: 10,
+    left: 10,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

@@ -190,7 +190,7 @@ export default function ModalCreateProduct({
             <View style={styles.ProductInfo}>
               <View style={{ width: '90%' }}>
                 <Text style={styles.IntroText}>
-                  {isCreatingNew ? "Create a new product" : "Edit the product"}
+                  {/* {isCreatingNew ? "Create a new product" : "Edit the product"} */}
                 </Text>
               </View>
 
