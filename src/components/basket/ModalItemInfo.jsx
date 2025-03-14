@@ -8,7 +8,7 @@ const ModalItemInfo = ({ isVisible, onClose, itemId }) => {
       isVisible={isVisible} 
       onSwipeComplete={onClose} 
       swipeDirection="down"
-      backdropColor="black" backdropOpacity={0.5}
+      backdropColor="black" backdropOpacity={0.5} onBackdropPress={onClose}
       style={styles.modal}
     >
       <View style={styles.container}>
