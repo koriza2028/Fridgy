@@ -106,7 +106,7 @@ export default function BasketPage({ navigation }) {
     setFilteredData([]);
   };
 
-  const addProduct = async (item) => {
+  const addProduct = async (item, isFromFridge) => {
     try {
       await addProductToBasket(userId, item, isFromFridge);
       closeSearchModal();
