@@ -11,6 +11,7 @@ const normalizeProduct = (product) => {
       id: product.id,
       name: product.name,
       amount: 1,
+      isFromFridge: false,
       ...product
     };
   }

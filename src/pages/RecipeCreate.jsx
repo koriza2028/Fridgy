@@ -37,7 +37,7 @@ export default function RecipeCreatePage({ navigation, route }) {
   const confirmDelete = (id) => {
     if (Platform.OS === 'web') {
       if (window.confirm('Are you sure you want to delete this recipe?')) {
-        removeRecipe(id)
+        removeRecipe(userId, id)
           .then(() => navigation.navigate('CookingPage'))
           .catch(error => console.error("Error deleting recipe:", error));
       }
@@ -54,7 +54,7 @@ export default function RecipeCreatePage({ navigation, route }) {
           {
             text: 'Delete',
             onPress: () =>
-              removeRecipe(id)
+              removeRecipe(userId, id)
                 .then(() => navigation.navigate('CookingPage'))
                 .catch(error => console.error("Error deleting recipe:", error)),
             style: 'destructive',

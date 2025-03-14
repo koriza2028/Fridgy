@@ -106,16 +106,6 @@ export default function CookingPage({ navigation }) {
     setSearchQuery(text);
   };
 
-  const handleRemoveRecipe = async (recipeId) => {
-    if (!userId) return;
-    const updatedCooking = await removeRecipe(userId, recipeId);
-    setRecipeBook(updatedCooking);
-    const results = updatedCooking.recipes.filter(recipe =>
-      recipe.title.toLowerCase().includes(debouncedQuery.toLowerCase())
-    );
-    setFilteredData(results);
-  };
-
   // Pull-to-refresh handling
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
