@@ -13,7 +13,8 @@ const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
     >
       <View style={styles.container}>
         <Text style={styles.mainTitle}>Item Info</Text>
-            <Text>Item ID: {itemId}</Text>
+        {isFridge ? <Text>Item ID: {itemId}</Text> : <Text>Jopa</Text>}
+            
 
             {/* {itemId ? <Text>Item ID: {itemId}</Text> : <Text>No ID provided</Text>} */}
       </View>

@@ -35,7 +35,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
     };
 
     return (
-        <TouchableOpacity onPress={() => openInfoModal(product.id)}>
+        <TouchableOpacity onPress={() => openInfoModal(product.id, product.isFromFridge)}>
         <View style={styles.BasketItem}>
             <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
                 <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
