@@ -108,7 +108,7 @@ export default function BasketPage({ navigation }) {
 
   const addProduct = async (item) => {
     try {
-      await addProductToBasket(userId, item);
+      await addProductToBasket(userId, item, isFromFridge);
       closeSearchModal();
       await refreshBasket();
     } catch (err) {
@@ -170,7 +170,6 @@ export default function BasketPage({ navigation }) {
       }
     }
   };
-  
 
   const moveSelectedProducts = async (selectedProducts) => {
     try {

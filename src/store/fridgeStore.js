@@ -172,7 +172,7 @@ export const deleteProduct = async (userId, productId) => {
  * @param {object} productInput - The product details (either from the fridge or another source).
  * @param {boolean} [fromFridge=false] - Flag indicating whether the product comes from the fridge.
  */
-export const addOrMoveProductToBasket = async (userId, productInput, fromFridge = false) => {
+export const addOrMoveProductToBasket = async (userId, productInput) => {
   const userDocRef = doc(db, "users", userId);
   return await runTransaction(db, async (transaction) => {
     const userDoc = await transaction.get(userDocRef);
@@ -238,7 +238,7 @@ export const moveProductToBasket = async (userId, productId) => {
     if (productIndex === -1) return;
     const productData = fridge[productIndex];
     // Use the unified function to add/move the product from the fridge.
-    await addOrMoveProductToBasket(userId, productData, true);
+    await addOrMoveProductToBasket(userId, productData);
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error moving product to basket:", error);
