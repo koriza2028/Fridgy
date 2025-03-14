@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-import { MainFont, ReceiptFont, MainFont_Bold, MainFont_Title } from '../../assets/Styles/styleVariables';
+import { MainFont, ReceiptFont, MainFont_Bold, MainFont_Title, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
 // const CollapsibleSection = ({ children, title}) => {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     },
 
     FridgeProductListHeader: {
-      fontSize: 22,
+      fontSize: SecondTitleFontSize,
       fontWeight: 800,
       fontFamily: MainFont_Title,
       marginBottom: 10,
