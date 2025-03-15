@@ -1,22 +1,42 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, {useState, useEffect} from "react";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import Modal from "react-native-modal";
 
+import { useFonts } from 'expo-font';
+import { MainFont, SecondTitleFontSize, TextFontSize } from "../../../assets/Styles/styleVariables";
+
 const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
+
+  const [fontsLoaded] = useFonts({
+      'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    });
+
+  const [title, setTitle] = useState(itemId);
+
+  useEffect(() => {
+    setTitle(itemId);
+  }, [itemId]);
+
+  onModalClose = () => { 
+    setTitle(itemId);
+    onClose();
+  }
+
   return (
     <Modal 
       isVisible={isVisible} 
-      onSwipeComplete={onClose} 
+      onSwipeComplete={onModalClose} 
       swipeDirection="down"
-      backdropColor="black" backdropOpacity={0.5} onBackdropPress={onClose}
+      backdropColor="black" backdropOpacity={0.5} onBackdropPress={onModalClose}
       style={styles.modal}
     >
       <View style={styles.container}>
-        <Text style={styles.mainTitle}>Item Info</Text>
-        {isFridge ? <Text>Item ID: {itemId}</Text> : <Text>Jopa</Text>}
+        {isFridge ? <Text>Item ID: {itemId}</Text> 
+        
+        
+        : <TextInput style={styles.textEdit} value={title} onChangeText={text => setTitle(text)}></TextInput>}
             
-
-            {/* {itemId ? <Text>Item ID: {itemId}</Text> : <Text>No ID provided</Text>} */}
       </View>
     </Modal>
   );
@@ -36,9 +56,11 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 16, 
         borderTopRightRadius: 16,
     },
-    mainTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
+    textEdit: {
+        minHeight: 40,
+        padding: 10,
+        fontSize: TextFontSize,
+        fontFamily: MainFont,
     },
 
 });

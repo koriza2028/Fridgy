@@ -5,7 +5,6 @@ import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
-import ModalBasketReceipt from '../components/basket/ModalBasketReceipt';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
@@ -18,13 +17,20 @@ import {
   moveProductsFromBasketToFridge 
 } from '../store/basketStore';
 
-import { buttonColor, backgroundColor } from '../../assets/Styles/styleVariables';
+import { useFonts } from 'expo-font';
+import { buttonColor, backgroundColor, addButtonColor } from '../../assets/Styles/styleVariables';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
 const { width } = Dimensions.get('window');
 
 export default function BasketPage({ navigation }) {
+
+  const [fontsLoaded] = useFonts({
+      'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    });
+
   const userId = useAuthStore((state) => state.user?.uid);
   const logout = useAuthStore((state) => state.logout);
 
@@ -207,7 +213,12 @@ export default function BasketPage({ navigation }) {
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
 
+        <TouchableOpacity onPress={() => navigation.navigate('AutobasketPage')} style={styles.tempButton}>
+            <Text style={styles.tempButtonText}>Autobasket</Text>
+        </TouchableOpacity>
+
           {/* Logout Button */}
+          
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
@@ -249,7 +260,7 @@ export default function BasketPage({ navigation }) {
         onPress={handleDisplayCheckedItems} 
         // onPress={moveSelectedProducts}
         >
-        <Text style={styles.Button_ShowReceipt_Text}>Move to Fridge - Check</Text>
+        <Text style={styles.Button_ShowReceipt_Text}>Go</Text>
       </TouchableOpacity>
 
       {/* <ModalBasketReceipt visible={modalReceiptVisible} receiptItems={receiptProducts} onClose={() => setModalReceiptVisible(false)} onMove={moveSelectedProducts} /> */}
@@ -284,24 +295,27 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   Button_ShowReceipt: {
-    marginVertical: 5,
-    marginHorizontal: 2,
-    paddingLeft: 14,
-    justifyContent: 'center',
-    borderColor: '#C0C0C0',
-    height: 50,
-    backgroundColor: buttonColor,
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: '60%',
-    position: 'absolute',
-    top: '90%',
-    borderRadius: 30,
-    shadowColor: buttonColor, 
-    shadowOffset: { width: 0, height: 4 },
+    width: 50,
+    height: 50,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    marginHorizontal: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 60,
+    borderColor: addButtonColor,
+    borderWidth: 2,
+    
+    shadowColor: '#007bff', 
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4, 
+    shadowRadius: 2,
+    elevation: 2,        
   },
   Button_ShowReceipt_Text: {
     fontWeight: 'bold',
@@ -317,4 +331,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+
+  tempButton: {
+    alignSelf: 'flex-start',
+    padding: 10,
+    backgroundColor: buttonColor,
+    borderRadius: 5,
+  }
 });

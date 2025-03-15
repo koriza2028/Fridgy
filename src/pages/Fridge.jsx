@@ -224,11 +224,11 @@ const styles = StyleSheet.create({
       marginRight: 10,
       marginBottom: 6,
       paddingHorizontal: 8,
-        paddingVertical: 6,
+      paddingVertical: 6,
       paddingHorizontal: 10,
       borderRadius: 10,
       borderWidth: 1,
-    borderColor: '#ccc',
+      borderColor: '#ccc',
 
       shadowColor: "darkgrey", 
     shadowOffset: { width: 0, height: 1 },

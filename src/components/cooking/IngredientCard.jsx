@@ -10,7 +10,7 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
-        <View style={[styles.IngredientItem, { borderColor: borderColor }, (!isAvailable && !isEditing) && { borderWidth: 1 }]}>
+        <View style={[styles.IngredientItem, { borderColor: borderColor }, !isAvailable && { borderWidth: 1 }]}>
                      
             <Image style={styles.IngredientItem_Picture} 
               source={ingredient.imageUri ? { uri: ingredient.imageUri } : require('../../../assets/ProductImages/banana_test.png')}>
@@ -25,10 +25,10 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
                 {/* Will be expandable or ...? */}
             </View>
             
-          {(isCreatingNew || isEditing) && (<TouchableOpacity style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
+          <TouchableOpacity style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
             <Text style={styles.IngredientItem_RemoveButton_Text}>X</Text>
             {/* Will be replaced with Swipe */}
-          </TouchableOpacity>)} 
+          </TouchableOpacity>
 
         </View>
 
