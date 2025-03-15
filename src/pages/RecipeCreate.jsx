@@ -337,7 +337,8 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
 
-                {(isCreatingNew || isEditing) && (
+                {/* {(isCreatingNew || isEditing) && ( */}
+                {isCreatingNew && (
                 <TouchableOpacity onPress={() => openSearchModal(true)} style={styles.addIngredient_Button}>
                   <Text style={styles.addIngredient_ButtonText}>Add</Text>
                 </TouchableOpacity>
@@ -362,7 +363,8 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
 
-                {(isCreatingNew || isEditing) && (
+                {/* {(isCreatingNew || isEditing) && ( */}
+                {isCreatingNew && (
                   <TouchableOpacity onPress={() => openSearchModal(false)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
                 </TouchableOpacity>)}
@@ -397,7 +399,7 @@ export default function RecipeCreatePage({ navigation, route }) {
     
       <View style={styles.buttonPanel}>
 
-        {!isCreatingNew && isEditing && (
+        {/* {!isCreatingNew && isEditing && (
           <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
             <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
           </TouchableOpacity>
@@ -415,7 +417,25 @@ export default function RecipeCreatePage({ navigation, route }) {
         </TouchableOpacity>
         )}
 
-        {!isEditing && !isCreatingNew && (<TouchableOpacity style={styles.Button_Editing} onPress={() => setIsEditing(!isEditing)}></TouchableOpacity>)}
+        {!isEditing && !isCreatingNew && (<TouchableOpacity style={styles.Button_Editing} onPress={() => setIsEditing(!isEditing)}></TouchableOpacity>)} */}
+
+      {!isCreatingNew &&  (
+          <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
+            <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* {isCreatingNew && ( */}
+        <TouchableOpacity 
+          style={[
+            styles.Button_SaveRecipe, 
+            isSaveDisabled && styles.Button_SaveRecipeDisabled, 
+            isCreatingNew && styles.Button_SaveRecipeAlone
+          ]}
+          onPress={SaveOrUpdateRecipe} disabled={isSaveDisabled} >
+          <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
+        </TouchableOpacity>
+        {/* )} */}
 
       </View>
 
@@ -468,7 +488,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'center',
     borderColor: '#ddd',
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
   },
   productDataEntryInput: {
     marginVertical: 6,
@@ -479,6 +499,8 @@ const styles = StyleSheet.create({
     fontFamily: MainFont_Title,
     height: 40,
     color: blackTextColor,
+    borderColor: '#ddd',
+    borderBottomWidth: 1,
   },
   productTags: {
     flexDirection: 'row',
@@ -486,6 +508,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginTop: 0,
     height: 50,
+    // borderColor: '#ddd',
+    // borderBottomWidth: 1,
   },
   productCategory_Text: {
     fontFamily: MainFont,
@@ -494,9 +518,11 @@ const styles = StyleSheet.create({
   productNotes: {
     fontFamily: MainFont,
     fontSize: TextFontSize,
-    height: 160,
+    height: 150,
     paddingVertical: 10,
     lineHeight: Platform.OS === 'android' ? 24 : '140%',
+    borderColor: '#ddd',
+    borderBottomWidth: 1,
   },
   ListOfIngredients: {
     marginTop: 10,
