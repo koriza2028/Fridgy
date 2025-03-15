@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
   StyleSheet, View, Text, TextInput, Image, TouchableOpacity, 
-  Alert, Platform, Dimensions, ScrollView 
+  Alert, Platform, Dimensions, ScrollView, RefreshControl 
 } from "react-native";
 import ButtonGoBack from '../components/Button_GoBack';
 import IngredientItem from "../components/cooking/IngredientCard";
@@ -20,7 +20,7 @@ import { tags } from "../../assets/Variables/categories";
 import { useFonts } from 'expo-font';
 
 import { addOrUpdateRecipe, removeRecipe } from "../store/cookingStore";
-import { fetchAllFridgeProducts, fetchAvailableProducts } from "../store/fridgeStore";
+import { fetchAllProducts } from "../store/fridgeStore";
 import useAuthStore from "../store/authStore";
 
 // NEW IMPORTS FOR IMAGE UPLOAD
@@ -75,8 +75,9 @@ export default function RecipeCreatePage({ navigation, route }) {
   const recipe = route.params?.recipe || null;
   const [title, setTitle] = useState(recipe?.title || '');
   const [description, setDescription] = useState(recipe?.description || '');
-  const [id, setId] = useState(recipe?.id || ''); // using 'id' instead of '_id'
+  const [id, setId] = useState(recipe?.id || '');
   const [categories, setCategories] = useState(recipe?.categories || []);
+  // Here ingredients will be stored as references only.
   const [mandatoryIngredients, setMandatoryIngredients] = useState(recipe?.mandatoryIngredients || []);
   const [optionalIngredients, setOptionalIngredients] = useState(recipe?.optionalIngredients || []);
   const [isCreatingNew, setIsCreatingNew] = useState(true);
@@ -106,16 +107,15 @@ export default function RecipeCreatePage({ navigation, route }) {
     }
   }, [recipe]);
 
-  // For product search and ingredient selection (using fridge products)
+  // For ingredient selection using fridge products (enriched with full data)
   const [products, setProducts] = useState([]);
   const [availableProducts, setAvailableProducts] = useState([]);
-
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState(products);
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
   const modalSearchRef = useRef(null);
-  const [isMandatory, setIsMandatory] = useState(null);
+  const [isMandatoryFlag, setIsMandatoryFlag] = useState(null);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
   const openCategoryModal = () => {
@@ -129,10 +129,10 @@ export default function RecipeCreatePage({ navigation, route }) {
     setCategories(selectedCategories);
   };
 
-  // Fetch available products from the fridge when component is focused.
+  // Fetch available products from the updated fridgeStore.
   useEffect(() => {
     if (userId) {
-      fetchAllFridgeProducts(userId)
+      fetchAllProducts(userId)
         .then(fetchedProducts => {
           const allProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
           setProducts(allProducts);
@@ -145,7 +145,7 @@ export default function RecipeCreatePage({ navigation, route }) {
     }
   }, [userId]);
 
-  // NEW FUNCTION: handle image upload.
+  // NEW: handle image upload.
   const handleImageUpload = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -154,13 +154,11 @@ export default function RecipeCreatePage({ navigation, route }) {
         aspect: [4, 3],
         quality: 0.5,
       });
-      
       if (!result.canceled) {
         const uri = result.assets[0].uri;
         const response = await fetch(uri);
         const blob = await response.blob();
         const storage = getStorage(app);
-        // Use a unique reference path based on current timestamp.
         const storageRef = ref(storage, `recipeImages/${new Date().getTime()}`);
         await uploadBytes(storageRef, blob);
         const downloadUrl = await getDownloadURL(storageRef);
@@ -173,16 +171,10 @@ export default function RecipeCreatePage({ navigation, route }) {
   };
 
   const SaveOrUpdateRecipe = () => {
-    // Include imageUri in the recipe data.
+    console.log(userId, { id: id ? id : null, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri });
     addOrUpdateRecipe(userId, { id: id ? id : null, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri })
       .then(() => {
-        setIsEditing(!isEditing)
-        if (isCreatingNew) {
-          setTitle('');
-          setDescription('');
-          setId('');
-          navigation.navigate('CookingPage');
-        }
+        navigation.navigate('CookingPage');
       })
       .catch(error => {
         console.error("Failed to save recipe:", error);
@@ -190,7 +182,7 @@ export default function RecipeCreatePage({ navigation, route }) {
       });
   };
 
-  const handleSearch = (text) => {
+  const handleSearchInput = (text) => {
     setSearchQuery(text);
     let results = [];
     if (text) {
@@ -204,50 +196,55 @@ export default function RecipeCreatePage({ navigation, route }) {
     setFilteredData(results);
   };
 
-  const addIngredient = async (item, isMandatoryFlag) => {        
+  // Adjusted addIngredient: now store only a reference to the product.
+  const addIngredient = async (item, mandatoryFlag) => {        
     try {
-      const ingredientToAdd = { ...item, _id: item.id };
-      if (isMandatoryFlag) {
+      // Assume 'item' is already enriched (has name, imageUri, etc.)
+      // Create a new ingredient reference that preserves the enriched fields.
+      const ingredientToAdd = { 
+        _id: Date.now().toString(), 
+        productId: item.id, 
+        amount: 1, 
+        isFromFridge: item.isFromFridge || false,
+        name: item.name,
+        imageUri: item.imageUri
+      };
+      if (mandatoryFlag) {
         setMandatoryIngredients(prev => [...prev, ingredientToAdd]);
       } else {
         setOptionalIngredients(prev => [...prev, ingredientToAdd]);
       }
       closeSearchModal();
+      // Optionally, remove the added product from the search list:
       setProducts(prev => prev.filter(product => product.id !== item.id));
     } catch (error) {
       console.error("Failed to add ingredient:", error);
       setError("Failed to add ingredient. Please try again.");
     }
   };
+  
 
-  const removeProduct = (productId, isMandatory) => {
+  const removeIngredient = (productId, mandatoryFlag) => {
     try {
-      if (isMandatory) {
-        setMandatoryIngredients(prevIngredients => {
-          const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
-          return updatedIngredients;
-        });
+      if (mandatoryFlag) {
+        setMandatoryIngredients(prev => prev.filter(ing => ing._id !== productId));
       } else {
-        setOptionalIngredients(prevIngredients => {
-          const updatedIngredients = prevIngredients.filter(ingredient => ingredient._id !== productId);
-          return updatedIngredients;
-        });
+        setOptionalIngredients(prev => prev.filter(ing => ing._id !== productId));
       }
-      
     } catch (error) {
       console.error("Failed to remove ingredient:", error);
       setError("Failed to remove ingredient. Please try again.");
     }
   };
 
-  checkIngredientIsAvailable = (originalFridgeId) => {
-    // Check if the ingredients are available in the fridge
+  const checkIngredientIsAvailable = (originalFridgeId) => {
     return availableProducts.some(product => product.id === originalFridgeId);
   };
 
-  const openSearchModal = (mandatoryFlag) => {
+  // Rename duplicate openSearchModal to openIngredientSearchModal.
+  const openIngredientSearchModal = (mandatoryFlag) => {
     setFilteredData(products);
-    setIsMandatory(mandatoryFlag);
+    setIsMandatoryFlag(mandatoryFlag);
     setSearchModalVisible(true);
     setTimeout(() => {
       modalSearchRef.current?.focus();
@@ -278,32 +275,28 @@ export default function RecipeCreatePage({ navigation, route }) {
           </View>
 
           <View style={styles.productDataEntry_Wrapper}> 
-
             <View style={styles.productDataEntry}>
               <TextInput 
                 style={[styles.productDataEntryInput, styles.productName]} 
                 autoCapitalize="sentences" 
                 value={title} 
-                onChangeText={text => setTitle(text)}
+                onChangeText={setTitle}
                 placeholder='How is it called?' 
                 placeholderTextColor={'#9e9e9e'}
               />
             </View>    
-
-
             <View style={styles.productDataEntry}>
               <TextInput 
                 style={[styles.productDataEntryInput, styles.productNotes]} 
                 autoCapitalize="sentences" 
                 value={description} 
-                onChangeText={text => setDescription(text)}
+                onChangeText={setDescription}
                 placeholder='Do you need instructions how to cook it?' 
                 placeholderTextColor={'#9e9e9e'}
                 multiline={true} 
                 textAlignVertical="top"
               />
             </View>
-
             <View style={styles.productDataEntry}>
               <TouchableOpacity 
                 style={[styles.productDataEntryInput, styles.productTags]} 
@@ -318,7 +311,6 @@ export default function RecipeCreatePage({ navigation, route }) {
                 )}
               </TouchableOpacity>
             </View>
-
             <ModalProductCategoryPicker 
               isCategoryModalVisible={isCategoryModalVisible} 
               setIsCategoryModalVisible={setIsCategoryModalVisible} 
@@ -328,28 +320,30 @@ export default function RecipeCreatePage({ navigation, route }) {
               categories={tags} 
               alreadySelectedCategories={categories || []}
             />
-
           </View>   
 
           <View style={styles.ListOfIngredients}>
-
             <View style={styles.SubListOfIngredients}>
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
-
-                {/* {(isCreatingNew || isEditing) && ( */}
                 {isCreatingNew && (
-                <TouchableOpacity onPress={() => openSearchModal(true)} style={styles.addIngredient_Button}>
-                  <Text style={styles.addIngredient_ButtonText}>Add</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity onPress={() => openIngredientSearchModal(true)} style={styles.addIngredient_Button}>
+                    <Text style={styles.addIngredient_ButtonText}>Add</Text>
+                  </TouchableOpacity>
                 )}
-
               </View>
             </View>
-
             {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
-              mandatoryIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isAvailable={checkIngredientIsAvailable(ingredient.id)} isMandatory={true} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
+              mandatoryIngredients.map((ingredient) => (
+                <IngredientItem 
+                  key={ingredient._id || ingredient.productId} 
+                  ingredient={ingredient} 
+                  isAvailable={checkIngredientIsAvailable(ingredient.productId)}
+                  isMandatory={true} 
+                  onRemove={removeIngredient} 
+                  isEditing={isEditing} 
+                  isCreatingNew={true}
+                />
               ))
             ) : (
               <View>
@@ -358,54 +352,50 @@ export default function RecipeCreatePage({ navigation, route }) {
                 </Text>
               </View>
             )}
-
             <View style={styles.SubListOfIngredients}>
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
-
-                {/* {(isCreatingNew || isEditing) && ( */}
                 {isCreatingNew && (
-                  <TouchableOpacity onPress={() => openSearchModal(false)} style={styles.addIngredient_Button}>
+                  <TouchableOpacity onPress={() => openIngredientSearchModal(false)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
-                </TouchableOpacity>)}
-                
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
-
             {optionalIngredients && optionalIngredients.length > 0 ? (
-              optionalIngredients.map((ingredient, index) => (
-                <IngredientItem key={index} ingredient={ingredient} isMandatory={false} onRemove={removeProduct} isEditing={isEditing} isCreatingNew={isCreatingNew}/>
+              optionalIngredients.map((ingredient) => (
+                <IngredientItem 
+                  key={ingredient._id || ingredient.productId} 
+                  ingredient={ingredient} 
+                  isMandatory={false} 
+                  onRemove={removeIngredient} 
+                  isEditing={isEditing} 
+                  isCreatingNew={true}
+                />
               ))
             ) : (<View></View>)}
-
           </View>
 
           <SearchModal 
             isSearchModalVisible={isSearchModalVisible} 
             closeSearchModal={closeSearchModal} 
             searchQuery={searchQuery} 
-            handleSearch={handleSearch} 
+            handleSearch={handleSearchInput} 
             filteredData={filteredData}
             isRecipeCreate={true} 
             addProduct={addIngredient} 
-            isMandatory={isMandatory}
+            isMandatory={isMandatoryFlag}
             modalSearchRef={modalSearchRef}
           />
         </View>
-
       </ScrollView>
 
-      
-    
       <View style={styles.buttonPanel}>
-
-        {/* {!isCreatingNew && isEditing && (
+        {!isCreatingNew && (
           <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
             <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
           </TouchableOpacity>
         )}
-
-        {(isCreatingNew || isEditing) && (
         <TouchableOpacity 
           style={[
             styles.Button_SaveRecipe, 
@@ -415,32 +405,9 @@ export default function RecipeCreatePage({ navigation, route }) {
           onPress={SaveOrUpdateRecipe} disabled={isSaveDisabled} >
           <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
         </TouchableOpacity>
-        )}
-
-        {!isEditing && !isCreatingNew && (<TouchableOpacity style={styles.Button_Editing} onPress={() => setIsEditing(!isEditing)}></TouchableOpacity>)} */}
-
-      {!isCreatingNew &&  (
-          <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
-            <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
-          </TouchableOpacity>
-        )}
-
-        {/* {isCreatingNew && ( */}
-        <TouchableOpacity 
-          style={[
-            styles.Button_SaveRecipe, 
-            isSaveDisabled && styles.Button_SaveRecipeDisabled, 
-            isCreatingNew && styles.Button_SaveRecipeAlone
-          ]}
-          onPress={SaveOrUpdateRecipe} disabled={isSaveDisabled} >
-          <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-        </TouchableOpacity>
-        {/* )} */}
-
       </View>
 
       <ButtonGoBack navigation={navigation} />
-
     </View>
   );
 }
@@ -454,19 +421,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 90,
   },
-  Text_ProductDataLabel: {
-    marginBottom: 20,
-    marginTop: 62,
-    fontSize: SecondTitleFontSize,
-    fontFamily: ReceiptFont,
-    fontWeight: "700",
-    textAlign: 'center',
-  },
   ProductCreatePicture: {
     width: width,
     height: width,
   }, 
-
   ProductPicture_Button: {
     zIndex: 3,
     height: 40,
@@ -477,7 +435,6 @@ const styles = StyleSheet.create({
     top: width - 140,
     left: width - 50,
   },
-
   productDataEntry_Wrapper: {
     width: '100%',
     backgroundColor: '#fff',
@@ -488,7 +445,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'center',
     borderColor: '#ddd',
-    // borderBottomWidth: 1,
   },
   productDataEntryInput: {
     marginVertical: 6,
@@ -508,8 +464,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginTop: 0,
     height: 50,
-    // borderColor: '#ddd',
-    // borderBottomWidth: 1,
   },
   productCategory_Text: {
     fontFamily: MainFont,
@@ -558,9 +512,6 @@ const styles = StyleSheet.create({
   },
   SubListOfIngredients: {
     marginVertical: 6,
-  },
-  ButtonsContainer: {
-    width: '100%',
   },
   buttonPanel: {
     width: '100%',
@@ -612,40 +563,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 4,
     elevation: 4, 
-  },
-
-  Button_Editing: {
-    position: 'relative',
-    left: '40%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 50,
-    height: 50,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    marginHorizontal: 10,
-    backgroundColor: '#FFF',
-    borderRadius: 60,
-    borderColor: addButtonColor,
-    borderWidth: 2,
-    
-    shadowColor: '#007bff', 
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
-    elevation: 2,        
-  },
-
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 10,
-  },
-  closeButtonText: {
-    fontSize: 20,
-    color: blackTextColor,
-    fontWeight: 'bold',
   },
 });

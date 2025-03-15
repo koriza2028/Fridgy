@@ -2,27 +2,6 @@ import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firesto
 import { db } from "../firebaseConfig"; // Adjust path as needed
 
 /**
- * Helper function to merge duplicate ingredient entries.
- * Ingredients are keyed by originalFridgeId (if available) or their id.
- * Duplicate entries will have their amount summed.
- * @param {Array<object>} ingredients
- * @returns {Array<object>} Merged ingredients array.
- */
-const mergeIngredients = (ingredients = []) => {
-  const merged = {};
-  ingredients.forEach(ingredient => {
-    // Use originalFridgeId if available, otherwise the ingredient's id.
-    const key = ingredient.originalFridgeId ? ingredient.originalFridgeId : ingredient.id;
-    if (merged[key]) {
-      merged[key].amount += ingredient.amount || 1;
-    } else {
-      merged[key] = { ...ingredient, amount: ingredient.amount || 1 };
-    }
-  });
-  return Object.values(merged);
-};
-
-/**
  * Fetch the user's recipes from Firestore.
  * If the user document or the cooking field doesn't exist, create one with an empty recipes array.
  * @param {string} userId - The ID of the user.
@@ -48,13 +27,22 @@ export const fetchUserRecipes = async (userId) => {
   return userData.cooking;
 };
 
+const cleanIngredients = (ingredients = []) =>
+  ingredients.map(({ productId, amount, originalFridgeId }) => ({
+    productId,
+    amount,
+    ...(originalFridgeId && { originalFridgeId }),
+  }));
+
 /**
  * Add a new recipe or update an existing one.
  * If the recipe already has an id and is found in the recipes array, it is updated.
  * Otherwise, a new recipe is added with a generated unique id.
- * Ingredient arrays (e.g. mandatoryIngredients, optionalIngredients) are merged to avoid duplicates.
+ * Ingredients are stored as minimal references: each ingredient should have:
+ *    - productId (or id) : reference to the fridge product,
+ *    - amount : quantity used in the recipe,
  * @param {string} userId - The ID of the user.
- * @param {object} recipe - The recipe object. Should include an id if updating.
+ * @param {object} recipe - The recipe object.
  * @returns {Promise<object>} An object with the updated recipes array.
  */
 export const addOrUpdateRecipe = async (userId, recipe) => {
@@ -73,16 +61,16 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
 
-    // Merge duplicate ingredients if provided.
+    // Clean the ingredients so only the references are saved.
     if (recipe.mandatoryIngredients) {
-      recipe.mandatoryIngredients = mergeIngredients(recipe.mandatoryIngredients);
+      console.log("Cleaning mandatory ingredients:", recipe.mandatoryIngredients);
+      recipe.mandatoryIngredients = cleanIngredients(recipe.mandatoryIngredients);
     }
     if (recipe.optionalIngredients) {
-      recipe.optionalIngredients = mergeIngredients(recipe.optionalIngredients);
+      recipe.optionalIngredients = cleanIngredients(recipe.optionalIngredients);
     }
 
     if (recipe.id) {
-      // Check if the recipe exists (by id)
       const index = cooking.recipes.findIndex(r => r.id === recipe.id);
       if (index !== -1) {
         cooking.recipes[index] = { ...cooking.recipes[index], ...recipe };
@@ -90,10 +78,10 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
         cooking.recipes.push(recipe);
       }
     } else {
-      // Generate a new id for the recipe and add it
       recipe.id = Date.now().toString();
       cooking.recipes.push(recipe);
     }
+    console.log("Updated recipes:", cooking.recipes);
     transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
     return { recipes: cooking.recipes };
   });
@@ -101,7 +89,6 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
 
 /**
  * Update an existing recipe.
- * Ingredient arrays in the updated recipe are merged to avoid duplicates.
  * @param {string} userId - The ID of the user.
  * @param {string} recipeId - The id of the recipe to update.
  * @param {object} updatedRecipe - The updated recipe fields.
@@ -114,15 +101,6 @@ export const updateRecipe = async (userId, recipeId, updatedRecipe) => {
     if (!userDoc.exists()) throw new Error("User document does not exist");
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
-
-    // Merge ingredients if provided.
-    if (updatedRecipe.mandatoryIngredients) {
-      updatedRecipe.mandatoryIngredients = mergeIngredients(updatedRecipe.mandatoryIngredients);
-    }
-    if (updatedRecipe.optionalIngredients) {
-      updatedRecipe.optionalIngredients = mergeIngredients(updatedRecipe.optionalIngredients);
-    }
-
     const index = cooking.recipes.findIndex(r => r.id === recipeId);
     if (index === -1) throw new Error("Recipe not found");
     cooking.recipes[index] = { ...cooking.recipes[index], ...updatedRecipe };
@@ -188,4 +166,59 @@ export const moveRecipes = async (userId, recipeIds) => {
     transaction.update(userDocRef, { "cooking.recipes": updatedRecipes });
     return { recipes: updatedRecipes, movedRecipes };
   });
+};
+
+/**
+ * NEW: Fetch enriched recipes.
+ * For each recipe, this function enriches each ingredient (in mandatoryIngredients and optionalIngredients)
+ * by fetching the corresponding full product details (like name and imageUri) from the "products" container.
+ * In the recipe, ingredients are stored as references (with productId, amount).
+ * @param {string} userId - The ID of the user.
+ * @returns {Promise<Array<object>>} An array of enriched recipes.
+ */
+export const fetchEnrichedRecipes = async (userId) => {
+  const cooking = await fetchUserRecipes(userId);
+  const recipes = cooking.recipes || [];
+  const enrichedRecipes = await Promise.all(
+    recipes.map(async (recipe) => {
+      // Enrich mandatoryIngredients.
+      const enrichedMandatory = recipe.mandatoryIngredients
+        ? await Promise.all(
+            recipe.mandatoryIngredients.map(async (ingredient) => {
+              // Assume ingredient stores a product reference in productId.
+              const productId = ingredient.productId || ingredient.id;
+              const productDocRef = doc(db, "users", userId, "products", productId);
+              const productSnap = await getDoc(productDocRef);
+              if (productSnap.exists()) {
+                const productData = productSnap.data();
+                // Merge data so that ingredient's amount override productData.
+                return { ...productData, productId, amount: ingredient.amount};
+              }
+              return ingredient;
+            })
+          )
+        : [];
+      // Enrich optionalIngredients.
+      const enrichedOptional = recipe.optionalIngredients
+        ? await Promise.all(
+            recipe.optionalIngredients.map(async (ingredient) => {
+              const productId = ingredient.productId || ingredient.id;
+              const productDocRef = doc(db, "users", userId, "products", productId);
+              const productSnap = await getDoc(productDocRef);
+              if (productSnap.exists()) {
+                const productData = productSnap.data();
+                return { ...productData, productId, amount: ingredient.amount};
+              }
+              return ingredient;
+            })
+          )
+        : [];
+      return {
+        ...recipe,
+        mandatoryIngredients: enrichedMandatory,
+        optionalIngredients: enrichedOptional,
+      };
+    })
+  );
+  return enrichedRecipes;
 };

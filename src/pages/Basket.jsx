@@ -8,9 +8,8 @@ import ModalItemInfo from '../components/basket/ModalItemInfo';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
-import { fetchAvailableProducts } from '../store/fridgeStore';
+import { fetchBasketProducts } from '../store/basketStore';
 import { 
-  fetchUserData,  // updated from fetchUserBasket to fetchUserData
   addProductToBasket, 
   updateProductAmountInBasket, 
   removeProductFromBasket, 
@@ -25,7 +24,6 @@ import { auth } from '../firebaseConfig';
 const { width } = Dimensions.get('window');
 
 export default function BasketPage({ navigation }) {
-
   const [fontsLoaded] = useFonts({
       'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -34,8 +32,8 @@ export default function BasketPage({ navigation }) {
   const userId = useAuthStore((state) => state.user?.uid);
   const logout = useAuthStore((state) => state.logout);
 
-  const [basket, setBasket] = useState(null);
-  const [products, setProducts] = useState([]);
+  // Basket now holds an array of enriched basket items with full product details (name, imageUri, etc.)
+  const [basket, setBasket] = useState([]);
   const [error, setError] = useState(null);
 
   // Search state
@@ -52,29 +50,11 @@ export default function BasketPage({ navigation }) {
   const refreshBasket = async () => {
     try {
       if (userId) {
-        // Fetch user data (which includes basket and fridge).
-        const userData = await fetchUserData(userId);
-        // Update basket state with user's basket.
-        setBasket(userData.basket);
-        
-        // Fetch fridge products for the user.
-        const fetchedFridgeProducts = await fetchAvailableProducts(userId);
-        
-        // Filter out products already added in the basket.
-        let availableProducts = [];
-        if (userData && userData.basket && userData.basket.products) {
-          availableProducts = fetchedFridgeProducts.filter(fridgeProduct =>
-            !userData.basket.products.some(basketProduct => basketProduct.id === fridgeProduct.id)
-          );
-        } else {
-          availableProducts = fetchedFridgeProducts;
-        }
-        
-        // Update state with the available fridge products.
-        setProducts(availableProducts);
+        const basketItems = await fetchBasketProducts(userId);
+        setBasket(basketItems);
       }
     } catch (err) {
-      console.error("Failed to fetch basket or fridge products:", err);
+      console.error("Failed to fetch basket products:", err);
       setError("Failed to fetch basket.");
     }
   };
@@ -88,10 +68,9 @@ export default function BasketPage({ navigation }) {
   const handleSearch = (text) => {
     setSearchQuery(text);
     if (text) {
-      const results = products.filter(item =>
-        item.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredData(results);
+      // Here you might search from an external list of products if needed.
+      // For simplicity, we clear filtered data when search text is empty.
+      setFilteredData([]); 
     } else {
       closeSearchModal();
     }
@@ -123,55 +102,41 @@ export default function BasketPage({ navigation }) {
     }
   };
 
-  const incrementProductAmount = async (productId, currentAmount) => {
+  const handleIncrementProductAmount = async (basketItemId, currentAmount) => {
     try {
-      const newAmount = currentAmount + 1;
-      await updateProductAmountInBasket(userId, productId, newAmount);
+      console.log("Incrementing product amount:", basketItemId, currentAmount);
+      await updateProductAmountInBasket(userId, basketItemId, currentAmount + 1);
       await refreshBasket();
     } catch (err) {
       console.error("Failed to increment product quantity:", err);
     }
   };
 
-  const decrementProductAmount = async (productId, currentAmount) => {
+  const handleDecrementProductAmount = async (basketItemId, currentAmount) => {
     try {
-      const newAmount = currentAmount - 1;
-      await updateProductAmountInBasket(userId, productId, newAmount);
+      await updateProductAmountInBasket(userId, basketItemId, currentAmount - 1);
       await refreshBasket();
     } catch (err) {
       console.error("Failed to decrement product quantity:", err);
     }
   };
 
-  const removeProduct = async (productId) => {
-    try {
-      await removeProductFromBasket(userId, productId);
-      await refreshBasket();
-    } catch (err) {
-      console.error("Failed to remove product:", err);
-      setError("Failed to remove product. Please try again.");
-    }
-  };
-
-  const handleToggleCheckbox = (id, isChecked) => {
+  const handleToggleCheckbox = (basketItemId, isChecked) => {
     setCheckedItems(prev => ({
       ...prev,
-      [id]: isChecked,
+      [basketItemId]: isChecked,
     }));
   };
 
   const handleDisplayCheckedItems = async () => {
-    if (basket && basket.products) {
-      const checkedProducts = basket.products.filter(product => checkedItems[product.id]);
-      
+    if (basket && basket.length > 0) {
+      const checkedProducts = basket.filter(product => checkedItems[product.basketId]);
       if (checkedProducts.length > 0) {
         await moveSelectedProducts(checkedProducts);
-        
-        // Uncheck moved items
         setCheckedItems(prev => {
-          const updatedCheckedItems = { ...prev };
-          checkedProducts.forEach(product => delete updatedCheckedItems[product.id]);
-          return updatedCheckedItems;
+          const updated = { ...prev };
+          checkedProducts.forEach(product => delete updated[product.basketId]);
+          return updated;
         });
       }
     }
@@ -179,20 +144,19 @@ export default function BasketPage({ navigation }) {
 
   const moveSelectedProducts = async (selectedProducts) => {
     try {
-      const selectedProductIds = selectedProducts.map(product => product.id);
-      await moveProductsFromBasketToFridge(userId, selectedProductIds);
+      const selectedBasketItemIds = selectedProducts.map(product => product.basketId);
+      await moveProductsFromBasketToFridge(userId, selectedBasketItemIds);
       await refreshBasket();
     } catch (err) {
       console.error("Failed to move selected products:", err);
     }
   };
 
-  // New logout handler and button
   const handleLogout = async () => {
     try {
       await signOut(auth);
       logout();
-      navigation.navigate('Login'); // Adjust the route name as needed
+      navigation.navigate('Login');
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -202,8 +166,8 @@ export default function BasketPage({ navigation }) {
   const [selectedItemFromFridge, setSelectedItemFromFridge] = useState(null);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 
-  const handleItemPress = (id, isFromFridge) => {
-    setSelectedItemId(id);
+  const handleItemPress = (basketItemId, isFromFridge) => {
+    setSelectedItemId(basketItemId);
     setSelectedItemFromFridge(isFromFridge);
     setIsInfoModalVisible(true);
   };
@@ -212,13 +176,10 @@ export default function BasketPage({ navigation }) {
     <View style={styles.BasketPage}>
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
-
-        <TouchableOpacity onPress={() => navigation.navigate('AutobasketPage')} style={styles.tempButton}>
+          <TouchableOpacity onPress={() => navigation.navigate('AutobasketPage')} style={styles.tempButton}>
             <Text style={styles.tempButtonText}>Autobasket</Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-          {/* Logout Button */}
-          
           <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
@@ -236,13 +197,19 @@ export default function BasketPage({ navigation }) {
           />
           
           <View style={styles.BasketPage_ListOfBasketItems}>
-            {basket && basket.products && basket.products.length > 0 ? (
-              basket.products.map((product, index) => (
+            {basket && basket.length > 0 ? (
+              basket.map((product) => (
                 <BasketItem 
-                  key={index} product={product} isChecked={!!checkedItems[product.id]}
-                  onDecrement={decrementProductAmount} onAdd={incrementProductAmount} onToggleCheckbox={handleToggleCheckbox} openInfoModal={handleItemPress}/>
+                  key={product.basketId} 
+                  product={product} 
+                  isChecked={!!checkedItems[product.basketId]}
+                  onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
+                  onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
+                  onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
+                  openInfoModal={() => handleItemPress(product.basketId, product.isFromFridge)}
+                />
               ))
-            ) : (<View /> )}
+            ) : (<View />)}
           </View>
 
           <ModalItemInfo 
@@ -251,20 +218,15 @@ export default function BasketPage({ navigation }) {
             itemId={selectedItemId} 
             isFridge={selectedItemFromFridge}
           />
-
         </View>
       </ScrollView>
 
       <TouchableOpacity 
         style={[styles.Button_ShowReceipt]} 
-        onPress={handleDisplayCheckedItems} 
-        // onPress={moveSelectedProducts}
-        >
+        onPress={handleDisplayCheckedItems}
+      >
         <Text style={styles.Button_ShowReceipt_Text}>Go</Text>
       </TouchableOpacity>
-
-      {/* <ModalBasketReceipt visible={modalReceiptVisible} receiptItems={receiptProducts} onClose={() => setModalReceiptVisible(false)} onMove={moveSelectedProducts} /> */}
-
     </View>
   );
 }
@@ -282,18 +244,6 @@ const styles = StyleSheet.create({
   BasketPage_ListOfBasketItems: {
     marginTop: 10,
   },
-  modal: {
-    margin: 0,
-    justifyContent: 'start',
-    backgroundColor: 'white',
-    paddingTop: 20,
-  },
-  modalContent: {
-    padding: 16,
-  },
-  flatList: {
-    marginTop: 8,
-  },
   Button_ShowReceipt: {
     position: 'absolute',
     bottom: 20,
@@ -310,7 +260,6 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderColor: addButtonColor,
     borderWidth: 2,
-    
     shadowColor: '#007bff', 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
@@ -331,11 +280,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-
   tempButton: {
     alignSelf: 'flex-start',
     padding: 10,
     backgroundColor: buttonColor,
     borderRadius: 5,
+  },
+  tempButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   }
 });

@@ -18,7 +18,6 @@ import { categoryNames } from "../../assets/Variables/categories";
 import useAuthStore from '../store/authStore';
 import {fetchAvailableProducts, fetchArchivedProducts} from '../store/fridgeStore'; 
 
-import { fetchUserRecipes } from "../store/cookingStore";
 import { fetchUserData } from "../store/basketStore";
 
 const { width } = Dimensions.get('window');
@@ -69,19 +68,17 @@ export default function FridgePage({ navigation }) {
   const refreshUsedIngredients = async () => {
     if (userId) {
         Promise.all([
-            fetchUserRecipes(userId),
             fetchUserData(userId)
         ])
-        .then(([cookingData, userData]) => {
-            const recipeIngredientIds = cookingData.recipes
+        .then(([userData]) => {
+            const recipeIngredientIds = userData.cooking?.recipes || []
             .flatMap(recipe => [
                 ...(recipe.mandatoryIngredients || []),
                 ...(recipe.optionalIngredients || [])
             ])
             .map(ingredient => ingredient.id);
             
-            const basketProductIds = (userData.basket?.products || []).map(product => product.originalFridgeId);
-            console.log("Basket product IDs:", basketProductIds);
+            const basketProductIds = (userData.basket?.products || []).map(product => product.productId);
             // Combine both arrays and remove duplicates using a Set
             const combinedIds = [...new Set([...recipeIngredientIds, ...basketProductIds])];
             

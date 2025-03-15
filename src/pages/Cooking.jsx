@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Keyboard, Text, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback,
-        Platform, StyleSheet, Dimensions, RefreshControl } from 'react-native';
+import { Keyboard, Text, View, TouchableOpacity, ScrollView, RefreshControl, StyleSheet, Dimensions } from 'react-native';
 
 import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';
 import FiltersRecipeCategory from '../components/cooking/FiltersRecipeCategory';
+import AddNewButton from '../components/Button_AddNew';
 
 import { buttonColor, backgroundColor, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, addButtonColor } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
 import { tags } from '../../assets/Variables/categories';
-import AddNewButton from '../components/Button_AddNew';
-
 import useAuthStore from '../store/authStore';
-import { fetchUserRecipes, removeRecipe } from '../store/cookingStore';
+import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
 
 const { width } = Dimensions.get('window');
@@ -27,35 +25,42 @@ export default function CookingPage({ navigation }) {
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  // recipeBook stores the full list; filteredData is used to render the list.
+  // recipeBook stores the full list of enriched recipes.
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [fridgeProducts, setFridgeProducts] = useState([]);
-  // New state to hold selected filter categories
+  // Selected filters for recipe categories.
   const [selectedFilters, setSelectedFilters] = useState([]);
 
+  // Pull-to-refresh state.
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch enriched recipes and available fridge products.
   useFocusEffect(
     useCallback(() => {
       if (userId) {
-        fetchUserRecipes(userId)
-          .then(cookingData => {
-            setRecipeBook(cookingData);
-            setFilteredData(cookingData.recipes || []);
+        fetchEnrichedRecipes(userId)
+          .then(enrichedData => {
+            setRecipeBook({ recipes: enrichedData });
+            setFilteredData(enrichedData || []);
           })
           .catch(error => {
             console.error("Failed to fetch recipes", error);
           });
         fetchAvailableProducts(userId)
-        .then(products => {
-          setFridgeProducts(products);
-        })
+          .then(products => {
+            setFridgeProducts(products);
+          })
+          .catch(error => {
+            console.error("Failed to fetch available products", error);
+          });
       }
     }, [userId])
   );
 
-  // Debounce search input for performance
+  // Debounce search input.
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -66,55 +71,46 @@ export default function CookingPage({ navigation }) {
   // Combined filtering: apply search query and then category filters.
   useEffect(() => {
     if (!recipeBook || !recipeBook.recipes) return;
-  
+
     let results = recipeBook.recipes;
-  
-    // Filter by search query if not empty.
+
     if (debouncedQuery.trim()) {
       results = results.filter(recipe =>
         recipe.title.toLowerCase().includes(debouncedQuery.toLowerCase())
       );
     }
-  
-    // If any filters are selected, further filter by recipe categories.
+
     if (selectedFilters.length > 0) {
       results = results.filter(recipe => {
         if (!recipe.categories || !Array.isArray(recipe.categories)) return false;
-        // Map recipe categories to lowercase strings (if they're objects, use tagName)
         const recipeCats = recipe.categories.map(cat => {
           if (typeof cat === 'string') return cat.toLowerCase();
           if (typeof cat === 'object' && cat.tagName) return cat.tagName.toLowerCase();
           return "";
         });
-        // Map selectedFilters similarly (if they're objects, use tagName)
         const filterCats = selectedFilters.map(f => {
           if (typeof f === 'string') return f.toLowerCase();
           if (typeof f === 'object' && f.tagName) return f.tagName.toLowerCase();
           return "";
         });
-        // Return true if at least one filter exists in recipeCats
         return recipeCats.some(cat => filterCats.includes(cat));
       });
     }
-  
+
     setFilteredData(results);
   }, [debouncedQuery, recipeBook, selectedFilters]);
-  
 
-  // Handle search input change
   const handleSearch = (text) => {
     setSearchQuery(text);
   };
 
-  // Pull-to-refresh handling
-  const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     if (userId) {
-      fetchUserRecipes(userId)
-        .then(cookingData => {
-          setRecipeBook(cookingData);
-          setFilteredData(cookingData.recipes || []);
+      fetchEnrichedRecipes(userId)
+        .then(enrichedData => {
+          setRecipeBook({ recipes: enrichedData });
+          setFilteredData(enrichedData || []);
           setRefreshing(false);
         })
         .catch(error => {
@@ -124,17 +120,19 @@ export default function CookingPage({ navigation }) {
     }
   }, [userId]);
 
-  checkIngredientIsAvailable = (originalFridgeId) => {
-    // Check if the ingredients are available in the fridge
-    return fridgeProducts.some(product => product.id === originalFridgeId);
+  // Check if an ingredient (by its reference) is available in the fridge.
+  const checkIngredientIsAvailable = (ingredient) => {
+    const key = ingredient.productId || ingredient.id;
+    return fridgeProducts.some(product => product.id === key);
   };
 
-  checkMandatoryIngredientsAreAvailable = (recipeId) => {
-    // Check if the mandatory ingredients are available in the fridge
+  // Check if all mandatory ingredients for a recipe are available.
+  const checkMandatoryIngredientsAreAvailable = (recipeId) => {
     const recipe = recipeBook.recipes.find(recipe => recipe.id === recipeId);
     if (!recipe || !recipe.mandatoryIngredients) return false;
     for (const ingredient of recipe.mandatoryIngredients) {
-      if (!checkIngredientIsAvailable(ingredient.id)) return false;
+      // Use productId if present.
+      if (!checkIngredientIsAvailable(ingredient)) return false;
     }
     return true;
   };
@@ -148,33 +146,15 @@ export default function CookingPage({ navigation }) {
             query={searchQuery} 
             onChangeText={handleSearch} 
           />
-          {/* Pass onFilterChange callback to update selected filters */}
           <FiltersRecipeCategory 
             filterRules={tags} 
             onFilterChange={setSelectedFilters} 
           />
-          
-
-          {/* <View style={styles.MealList_Wrapper}>
-            {filteredData.length > 0 || searchQuery !== "" ? (
-              filteredData.map((recipe) => (
-                <MealCard
-                  navigation={navigation}
-                  recipe={recipe}
-                  key={recipe.id}
-                  isAvailable={checkMandatoryIngredientsAreAvailable(recipe.id)}
-                />
-              ))
-            ) : (
-              <View/>
-            )}
-          </View> */}
 
           <View style={styles.MealList_Wrapper}>
             <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
             {filteredData.length > 0 || searchQuery !== "" ? (
               <>
-                {/* Available Meals */}
                 <View style={styles.AvailableMeals_Section}>
                   {filteredData
                     .filter((recipe) => checkMandatoryIngredientsAreAvailable(recipe.id))
@@ -187,8 +167,6 @@ export default function CookingPage({ navigation }) {
                       />
                     ))}
                 </View>
-
-                {/* Unavailable Meals */}
                 <View style={styles.UnavailableMeals_Section}>
                   <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
                   {filteredData
@@ -203,9 +181,8 @@ export default function CookingPage({ navigation }) {
                     ))}
                 </View>
               </>
-            ) : ( <View /> )}
+            ) : (<View />)}
           </View>
-
         </View>
       </ScrollView>
       <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} />
@@ -232,7 +209,12 @@ const styles = StyleSheet.create({
   },
   MealList_Wrapper: {
     width: '100%',
-    // paddingTop: 10,
     marginTop: -20,
+  },
+  AvailableMeals_Section: {
+    marginBottom: 20,
+  },
+  UnavailableMeals_Section: {
+    marginTop: 20,
   },
 });

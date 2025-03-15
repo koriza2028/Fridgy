@@ -35,6 +35,7 @@ export default function ProductCard(props) {
     };
 
     const handleMoveToBasket = async (id) => {
+        console.log(id);
         await moveProductToBasket(userId, id);
         props.onChange();
         props.onMoveToBasket();

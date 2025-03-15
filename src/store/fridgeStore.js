@@ -1,54 +1,79 @@
-import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  runTransaction,
+  deleteDoc,
+  getDocs,
+  collection
+} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
 /**
- * Fetch all non-archived products from a user's fridge.
- * @param {string} userId - The ID of the user.
+ * Helper: Given a product reference (an object with at least a `productId`),
+ * fetch the full product data from the centralized "products" subcollection.
+ * Legacy string entries are normalized into an object.
  */
-export const fetchAllFridgeProducts = async (userId) => {
+const getFullProductData = async (userId, productRef) => {
+  let normalizedRef;
+  if (typeof productRef === 'string') {
+    normalizedRef = {
+      productId: productRef,
+      name: productRef,
+      amount: 1,
+      isArchived: false
+    };
+  } else {
+    normalizedRef = { ...productRef };
+    if (!normalizedRef.productId && normalizedRef.id) {
+      normalizedRef.productId = normalizedRef.id;
+    }
+  }
+  const productDocRef = doc(db, "users", userId, "products", normalizedRef.productId);
+  const productSnap = await getDoc(productDocRef);
+  if (!productSnap.exists()) return null;
+  return { ...normalizedRef, ...productSnap.data() };
+};
+
+/**
+ * Fetch all products from the centralized products container.
+ */
+export const fetchAllProducts = async (userId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return [];
-    const data = userSnap.data();
-    const fridgeProducts = data.fridge?.products || [];
-    return fridgeProducts;
+    const productsColRef = collection(db, "users", userId, "products");
+    const querySnapshot = await getDocs(productsColRef);
+    const products = [];
+    querySnapshot.forEach((docSnap) => {
+      products.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    return products;
   } catch (error) {
-    console.error("Error fetching fridge products:", error);
+    console.error("Error fetching products:", error);
     return [];
   }
 };
 
 /**
- * Fetch all available (non-archived) products from a user's fridge.
- * @param {string} userId - The ID of the user.
+ * Fetch all available (non-archived) products.
  */
 export const fetchAvailableProducts = async (userId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return [];
-    const data = userSnap.data();
-    const fridgeProducts = data.fridge?.products || [];
-    return fridgeProducts.filter((product) => product.isArchived === false);
+    const allProducts = await fetchAllProducts(userId);
+    return allProducts.filter(product => product.isArchived === false);
   } catch (error) {
-    console.error("Error fetching fridge products:", error);
+    console.error("Error fetching available products:", error);
     return [];
   }
 };
 
 /**
- * Fetch archived products from a user's fridge.
- * @param {string} userId - The ID of the user.
+ * Fetch archived products.
  */
 export const fetchArchivedProducts = async (userId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return [];
-    const data = userSnap.data();
-    const fridgeProducts = data.fridge?.products || [];
-    return fridgeProducts.filter((product) => product.isArchived === true);
+    const allProducts = await fetchAllProducts(userId);
+    return allProducts.filter(product => product.isArchived === true);
   } catch (error) {
     console.error("Error fetching archived products:", error);
     return [];
@@ -56,34 +81,22 @@ export const fetchArchivedProducts = async (userId) => {
 };
 
 /**
- * Add or update a product in the fridge.
- * @param {string} userId - The ID of the user.
- * @param {string|null} productDataId - The product ID if updating; null if adding.
- * @param {object} productData - Product details.
+ * Add or update a product in the centralized products container.
+ * If productDataId is provided, the product document is updated;
+ * otherwise, a new product document is created.
  */
 export const addOrUpdateProduct = async (userId, productDataId, productData) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    let userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) {
-      // Create a new document with empty fridge and basket if it doesn't exist.
-      await setDoc(userDocRef, { fridge: { products: [] }, basket: { products: [] } });
-      userSnap = await getDoc(userDocRef);
-    }
-    const userData = userSnap.data();
-    let fridge = userData.fridge?.products || [];
+    const productsColRef = collection(db, "users", userId, "products");
+    let productId = productDataId;
     if (productDataId) {
-      const index = fridge.findIndex((p) => p.id === productDataId);
-      if (index !== -1) {
-        fridge[index] = { ...fridge[index], ...productData };
-      } else {
-        fridge.push({ id: productDataId, ...productData });
-      }
+      const productDocRef = doc(db, "users", userId, "products", productDataId);
+      await updateDoc(productDocRef, productData);
     } else {
-      const newId = Date.now().toString();
-      fridge.push({ id: newId, ...productData });
+      productId = Date.now().toString();
+      const productDocRef = doc(db, "users", userId, "products", productId);
+      await setDoc(productDocRef, productData);
     }
-    await updateDoc(userDocRef, { "fridge.products": fridge });
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error adding/updating product:", error);
@@ -92,24 +105,19 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
 };
 
 /**
- * Decrease product quantity and archive if needed.
- * @param {string} userId - The ID of the user.
- * @param {string} productId - The ID of the product.
+ * Decrease product quantity and mark as archived if the amount reaches zero.
+ * This updates the product document in the centralized container.
  */
 export const decrementProductAmount = async (userId, productId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return;
-    const userData = userSnap.data();
-    let fridge = userData.fridge?.products || [];
-    const index = fridge.findIndex((p) => p.id === productId);
-    if (index === -1) return;
-    const currentAmount = fridge[index].amount;
+    const productDocRef = doc(db, "users", userId, "products", productId);
+    const productSnap = await getDoc(productDocRef);
+    if (!productSnap.exists()) return;
+    const productData = productSnap.data();
+    const currentAmount = productData.amount || 0;
     const updatedAmount = Math.max(currentAmount - 1, 0);
     const isArchived = updatedAmount === 0;
-    fridge[index] = { ...fridge[index], amount: updatedAmount, isArchived };
-    await updateDoc(userDocRef, { "fridge.products": fridge });
+    await updateDoc(productDocRef, { amount: updatedAmount, isArchived });
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error decrementing product amount:", error);
@@ -118,22 +126,16 @@ export const decrementProductAmount = async (userId, productId) => {
 };
 
 /**
- * Increment product amount.
- * @param {string} userId - The ID of the user.
- * @param {string} productId - The ID of the product.
+ * Increment product amount in the centralized container.
  */
 export const incrementProductAmount = async (userId, productId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return;
-    const userData = userSnap.data();
-    let fridge = userData.fridge?.products || [];
-    const index = fridge.findIndex((p) => p.id === productId);
-    if (index === -1) return;
-    const updatedAmount = fridge[index].amount + 1;
-    fridge[index] = { ...fridge[index], amount: updatedAmount, isArchived: false };
-    await updateDoc(userDocRef, { "fridge.products": fridge });
+    const productDocRef = doc(db, "users", userId, "products", productId);
+    const productSnap = await getDoc(productDocRef);
+    if (!productSnap.exists()) return;
+    const productData = productSnap.data();
+    const updatedAmount = (productData.amount || 0) + 1;
+    await updateDoc(productDocRef, { amount: updatedAmount, isArchived: false });
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error incrementing product amount:", error);
@@ -142,9 +144,8 @@ export const incrementProductAmount = async (userId, productId) => {
 };
 
 /**
- * Delete a product from the fridge.
- * @param {string} userId - The ID of the user.
- * @param {string} productId - The ID of the product.
+ * Delete a product from the centralized container.
+ * Before deletion, check that the product is not referenced in recipes or basket.
  */
 export const deleteProduct = async (userId, productId) => {
   try {
@@ -154,26 +155,21 @@ export const deleteProduct = async (userId, productId) => {
     
     const userData = userSnap.data();
     const recipes = userData.recipes || [];
-    const basketProducts = userData.basket?.products || [];
+    const basketRefs = userData.basket?.products || [];
     
-    // Check if the product is used in any recipe
     const isUsedInRecipes = recipes.some(recipe => {
       const mandatory = recipe.mandatoryIngredients || [];
       const optional = recipe.optionalIngredients || [];
       return [...mandatory, ...optional].some(ingredient => ingredient.id === productId);
     });
-    
-    // Check if the product is in the basket products
-    const isUsedInBasket = basketProducts.some(product => product.id === productId);
+    const isUsedInBasket = basketRefs.some(product => product.productId === productId);
     
     if (isUsedInRecipes || isUsedInBasket) {
       throw new Error("This product is used in a recipe or basket and cannot be deleted.");
     }
     
-    // Proceed with deleting the product from the fridge
-    let fridge = userData.fridge?.products || [];
-    fridge = fridge.filter(product => product.id !== productId);
-    await updateDoc(userDocRef, { "fridge.products": fridge });
+    const productDocRef = doc(db, "users", userId, "products", productId);
+    await deleteDoc(productDocRef);
     
     return fetchAvailableProducts(userId);
   } catch (error) {
@@ -184,13 +180,7 @@ export const deleteProduct = async (userId, productId) => {
 
 /**
  * Unified function to add or move a product to the basket.
- * This function uses a transaction to ensure atomic updates. It accepts a flag `fromFridge` to determine
- * if the product comes from the fridge. For products from the fridge, the reference is stored (using originalFridgeId)
- * and the amount is always set/increased by 1 regardless of the fridge product's amount.
- *
- * @param {string} userId - The ID of the user.
- * @param {object} productInput - The product details (either from the fridge or another source).
- * @param {boolean} [fromFridge=false] - Flag indicating whether the product comes from the fridge.
+ * In the normalized model, the basket array (inside the user document) stores only references to products.
  */
 export const addOrMoveProductToBasket = async (userId, productInput) => {
   const userDocRef = doc(db, "users", userId);
@@ -200,68 +190,46 @@ export const addOrMoveProductToBasket = async (userId, productInput) => {
       throw new Error("User document does not exist");
     }
     const userData = userDoc.data();
-    let basket = userData.basket?.products || [];
+    let basketRefs = userData.basket?.products || [];
     
-    let productData = {
-        originalFridgeId: productInput.id,
-        name: productInput.name,
-        category: productInput.category,
-        imageUri: productInput.imageUri || null,
-        amount: 1,
-        isFromFridge: true,
+    // Expecting productInput to have a productId (or id).
+    const productId = productInput.productId || productInput.id;
+    
+    // Build basket reference metadata.
+    let basketItem = {
+      basketId: Date.now().toString(), // new unique id for basket entry if new
+      productId,
+      amount: 1,
+      isFromFridge: true,
     };
     
-    // Find if this product is already in the basket.
-    // If the product comes from the fridge, we match using originalFridgeId.
-    const index = basket.findIndex((p) => {
-      if (productData.originalFridgeId) {
-         return p.originalFridgeId === productData.originalFridgeId;
-      } else {
-         return p.id === productData.id;
-      }
-    });
-    
+    const index = basketRefs.findIndex((p) => p.productId === productId);
     if (index !== -1) {
-      // If found, always increase the amount by one.
-      basket[index].amount += 1;
+      basketRefs[index].amount += 1;
     } else {
-      // Otherwise, add a new basket entry with a new unique id.
-      const newBasketId = Date.now().toString();
-      basket.push({
-        id: newBasketId,
-        ...productData,
-      });
+      basketRefs.push(basketItem);
     }
     
-    transaction.update(userDocRef, { "basket.products": basket });
-    return { id: userDoc.id, ...userData, basket: { products: basket } };
+    transaction.update(userDocRef, { "basket.products": basketRefs });
+    return { id: userDoc.id, ...userData, basket: { products: basketRefs } };
   });
 };
 
 /**
- * Move a product from the fridge to the basket.
- * This function looks up the product in the fridge by its ID and then uses the unified function
- * to add it to the basket (increasing the amount by one if it already exists in the basket).
- * The fridge product itself is not removed or modified.
+ * Move a product (from the centralized products container) to the basket.
+ * This function fetches the product details from the subcollection "products"
+ * and then calls addOrMoveProductToBasket to add it (or increase its quantity)
+ * in the user's basket.
  *
- * @param {string} userId - The ID of the user.
- * @param {string} productId - The ID of the fridge product.
+ * @param {string} userId - The user's id.
+ * @param {string} productId - The id of the product in the centralized store.
  */
 export const moveProductToBasket = async (userId, productId) => {
-  try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return;
-    const userData = userSnap.data();
-    let fridge = userData.fridge?.products || [];
-    const productIndex = fridge.findIndex((p) => p.id === productId);
-    if (productIndex === -1) return;
-    const productData = fridge[productIndex];
-    // Use the unified function to add/move the product from the fridge.
-    await addOrMoveProductToBasket(userId, productData);
-    return fetchAvailableProducts(userId);
-  } catch (error) {
-    console.error("Error moving product to basket:", error);
-    return [];
+  const productDocRef = doc(db, "users", userId, "products", productId);
+  const productSnap = await getDoc(productDocRef);
+  if (!productSnap.exists()) {
+    throw new Error("Product not found in the centralized store");
   }
+  const productData = productSnap.data();
+  return await addOrMoveProductToBasket(userId, { ...productData, id: productId });
 };
