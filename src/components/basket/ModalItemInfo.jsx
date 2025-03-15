@@ -8,14 +8,14 @@ import { MainFont, SecondTitleFontSize, TextFontSize } from "../../../assets/Sty
 const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
 
   const [fontsLoaded] = useFonts({
-      'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'), 
       'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
 
-  const [title, setTitle] = useState(itemId);
+  const [title, setTitle] = useState(itemId || "");
 
   useEffect(() => {
-    setTitle(itemId);
+    setTitle(itemId || "");
   }, [itemId]);
 
   onModalClose = () => { 

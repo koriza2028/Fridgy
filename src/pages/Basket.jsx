@@ -18,6 +18,8 @@ import {
 
 import { useFonts } from 'expo-font';
 import { buttonColor, backgroundColor, addButtonColor } from '../../assets/Styles/styleVariables';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
@@ -44,8 +46,7 @@ export default function BasketPage({ navigation }) {
 
   // Checkbox and receipt states
   const [checkedItems, setCheckedItems] = useState({});
-  const [modalReceiptVisible, setModalReceiptVisible] = useState(false);
-  const [receiptProducts, setReceiptProducts] = useState([]);
+  const isAnyChecked = Object.values(checkedItems).some(isChecked => isChecked);
 
   const refreshBasket = async () => {
     try {
@@ -164,6 +165,8 @@ export default function BasketPage({ navigation }) {
 
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [selectedItemFromFridge, setSelectedItemFromFridge] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 
   const handleItemPress = (basketItemId, isFromFridge) => {
@@ -215,18 +218,24 @@ export default function BasketPage({ navigation }) {
           <ModalItemInfo 
             isVisible={isInfoModalVisible} 
             onClose={() => setIsInfoModalVisible(false)} 
-            itemId={selectedItemId} 
-            isFridge={selectedItemFromFridge}
+            // itemId={selectedItemId} 
+            // isFridge={selectedItemFromFridge}
+            itemId={selectedProduct?.id}
+            isFridge={selectedProduct?.isFromFridge}
+            selectedProduct={selectedProduct}
           />
         </View>
       </ScrollView>
 
+      <TouchableOpacity style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
+        <Text style={styles.Button_ShowReceipt_Text}><MaterialCommunityIcons name={"basket-check"} size={32} color={isAnyChecked ? addButtonColor : 'black'} /></Text>
       <TouchableOpacity 
         style={[styles.Button_ShowReceipt]} 
         onPress={handleDisplayCheckedItems}
       >
         <Text style={styles.Button_ShowReceipt_Text}>Go</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
@@ -246,7 +255,7 @@ const styles = StyleSheet.create({
   },
   Button_ShowReceipt: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     left: 10,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -265,9 +274,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 2,        
-  },
-  Button_ShowReceipt_Text: {
-    fontWeight: 'bold',
   },
   logoutButton: {
     alignSelf: 'flex-end',
