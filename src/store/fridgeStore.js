@@ -151,10 +151,30 @@ export const deleteProduct = async (userId, productId) => {
     const userDocRef = doc(db, "users", userId);
     const userSnap = await getDoc(userDocRef);
     if (!userSnap.exists()) return;
+    
     const userData = userSnap.data();
+    const recipes = userData.recipes || [];
+    const basketProducts = userData.basket?.products || [];
+    
+    // Check if the product is used in any recipe
+    const isUsedInRecipes = recipes.some(recipe => {
+      const mandatory = recipe.mandatoryIngredients || [];
+      const optional = recipe.optionalIngredients || [];
+      return [...mandatory, ...optional].some(ingredient => ingredient.id === productId);
+    });
+    
+    // Check if the product is in the basket products
+    const isUsedInBasket = basketProducts.some(product => product.id === productId);
+    
+    if (isUsedInRecipes || isUsedInBasket) {
+      throw new Error("This product is used in a recipe or basket and cannot be deleted.");
+    }
+    
+    // Proceed with deleting the product from the fridge
     let fridge = userData.fridge?.products || [];
-    fridge = fridge.filter((p) => p.id !== productId);
+    fridge = fridge.filter(product => product.id !== productId);
     await updateDoc(userDocRef, { "fridge.products": fridge });
+    
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error deleting product:", error);

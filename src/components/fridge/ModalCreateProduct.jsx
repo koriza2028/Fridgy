@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -10,6 +10,7 @@ import {
   Platform,
   Dimensions,
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
@@ -48,7 +49,8 @@ export default function ModalCreateProduct({
   isVisible,
   onClose,
   product,
-  onChange
+  onChange,
+  usedIngredients,
 }) {
   const userId = useAuthStore((state) => state.user?.uid);
   const [fontsLoaded] = useFonts({
@@ -100,20 +102,35 @@ export default function ModalCreateProduct({
   };
 
   const confirmDelete = (id) => {
-    if (Platform.OS === "web") {
-      if (window.confirm("Are you sure you want to delete this item?")) {
-        removeProduct(id);
+    if (usedIngredients.includes(id)) {
+      if (Platform.OS === "web") {
+        window.alert("This product is used in a recipe or in the basket and cannot be deleted.");
+      } else {
+        Alert.alert(
+          "This product is used in a recipe or in the basket and cannot be deleted.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "OK", style: "destructive" },
+          ],
+          { cancelable: true }
+        );
       }
     } else {
-      Alert.alert(
-        "Confirm Deletion",
-        "Are you sure you want to delete this item?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", onPress: () => removeProduct(id), style: "destructive" },
-        ],
-        { cancelable: true }
-      );
+      if (Platform.OS === "web") {
+        if (window.confirm("Are you sure you want to delete this item?")) {
+          removeProduct(id);
+        }
+      } else {
+        Alert.alert(
+          "Confirm Deletion",
+          "Are you sure you want to delete this item?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Delete", onPress: () => removeProduct(id), style: "destructive" },
+          ],
+          { cancelable: true }
+        );
+      }
     }
   };
 
