@@ -229,11 +229,6 @@ export default function BasketPage({ navigation }) {
 
       <TouchableOpacity style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
         <Text style={styles.Button_ShowReceipt_Text}><MaterialCommunityIcons name={"basket-check"} size={32} color={isAnyChecked ? addButtonColor : 'black'} /></Text>
-      <TouchableOpacity 
-        style={[styles.Button_ShowReceipt]} 
-        onPress={handleDisplayCheckedItems}
-      >
-        <Text style={styles.Button_ShowReceipt_Text}>Go</Text>
       </TouchableOpacity>
 
     </View>
