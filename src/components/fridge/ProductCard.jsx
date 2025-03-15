@@ -37,9 +37,9 @@ export default function ProductCard(props) {
     const handleMoveToBasket = async (id) => {
         await moveProductToBasket(userId, id);
         props.onChange();
+        props.onMoveToBasket();
     };
 
-    
     return (         
         <View style={styles.ProductCard}>
             {props.product.imageUri ? (

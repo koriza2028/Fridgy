@@ -18,6 +18,8 @@ import { categoryNames } from "../../assets/Variables/categories";
 import useAuthStore from '../store/authStore';
 import {fetchAvailableProducts, fetchArchivedProducts} from '../store/fridgeStore'; 
 
+import { fetchUserRecipes } from "../store/cookingStore";
+import { fetchUserData } from "../store/basketStore";
 
 const { width } = Dimensions.get('window');
 
@@ -33,6 +35,8 @@ export default function FridgePage({ navigation }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const [usedIngredients, setUsedIngredients] = useState([]);
 
   const [fontsLoaded] = useFonts({
     'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
@@ -62,10 +66,38 @@ export default function FridgePage({ navigation }) {
       }
   };
 
+  const refreshUsedIngredients = async () => {
+    if (userId) {
+        Promise.all([
+            fetchUserRecipes(userId),
+            fetchUserData(userId)
+        ])
+        .then(([cookingData, userData]) => {
+            const recipeIngredientIds = cookingData.recipes
+            .flatMap(recipe => [
+                ...(recipe.mandatoryIngredients || []),
+                ...(recipe.optionalIngredients || [])
+            ])
+            .map(ingredient => ingredient.id);
+            
+            const basketProductIds = (userData.basket?.products || []).map(product => product.originalFridgeId);
+            console.log("Basket product IDs:", basketProductIds);
+            // Combine both arrays and remove duplicates using a Set
+            const combinedIds = [...new Set([...recipeIngredientIds, ...basketProductIds])];
+            
+            setUsedIngredients(combinedIds);
+        })
+        .catch(error => {
+            console.error("Failed to fetch recipes", error);
+        });
+    }
+};
+
   useFocusEffect(
     React.useCallback(async () => {
         if (userId) {
             refreshProducts();
+            refreshUsedIngredients();
         }
     }, [userId])
   );
@@ -115,6 +147,7 @@ export default function FridgePage({ navigation }) {
                                     onOpenModal={openModal}
                                     product={product} navigation={navigation}
                                     onChange={refreshProducts}
+                                    onMoveToBasket={refreshUsedIngredients}
                                 />
                             ))
                         ) : (
@@ -130,6 +163,7 @@ export default function FridgePage({ navigation }) {
                                     onOpenModal={openModal}
                                     product={product} navigation={navigation}
                                     onChange={refreshProducts}
+                                    onMoveToBasket={refreshUsedIngredients}
                                 />
                             ))
                         ) : (
@@ -145,6 +179,7 @@ export default function FridgePage({ navigation }) {
                             ...selectedProduct, 
                             category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" } 
                         } : null}
+                        usedIngredients={usedIngredients}
                     />
               </View>
           </ScrollView>
