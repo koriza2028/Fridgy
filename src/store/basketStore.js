@@ -131,9 +131,7 @@ export const updateProductAmountInBasket = async (userId, basketItemId, newAmoun
     }
     const userData = userDoc.data();
     const basket = userData.basket || { products: [] };
-    console.log("Updating product amount:", basket);
     const index = basket.products.findIndex(p => p.basketId === basketItemId);
-    console.log(index);
     if (index === -1) {
       throw new Error("Product not found in basket");
     }

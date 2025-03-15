@@ -63,7 +63,6 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
 
     // Clean the ingredients so only the references are saved.
     if (recipe.mandatoryIngredients) {
-      console.log("Cleaning mandatory ingredients:", recipe.mandatoryIngredients);
       recipe.mandatoryIngredients = cleanIngredients(recipe.mandatoryIngredients);
     }
     if (recipe.optionalIngredients) {
@@ -81,7 +80,6 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
       recipe.id = Date.now().toString();
       cooking.recipes.push(recipe);
     }
-    console.log("Updated recipes:", cooking.recipes);
     transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
     return { recipes: cooking.recipes };
   });

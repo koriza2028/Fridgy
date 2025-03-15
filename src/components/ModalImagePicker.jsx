@@ -52,7 +52,6 @@ const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) =>
     if (typeof imageName === 'string' && imageName.startsWith('file://')) {
       return { uri: imageName }; // Handle dynamic images
     }
-    console.log(imageName);
     const images = {
       '../../../assets/ProductImages/banana_test.png': require('../../assets/ProductImages/banana_test.png'),
       '../../../assets/ProductImages/apple_test.png': require('../../assets/ProductImages/apple_test.png'),

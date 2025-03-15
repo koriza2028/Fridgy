@@ -105,7 +105,6 @@ export default function BasketPage({ navigation }) {
 
   const handleIncrementProductAmount = async (basketItemId, currentAmount) => {
     try {
-      console.log("Incrementing product amount:", basketItemId, currentAmount);
       await updateProductAmountInBasket(userId, basketItemId, currentAmount + 1);
       await refreshBasket();
     } catch (err) {

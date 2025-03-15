@@ -170,8 +170,7 @@ export default function RecipeCreatePage({ navigation, route }) {
     }
   };
 
-  const SaveOrUpdateRecipe = () => {
-    console.log(userId, { id: id ? id : null, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri });
+  const saveOrUpdateRecipe = () => {
     addOrUpdateRecipe(userId, { id: id ? id : null, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri })
       .then(() => {
         navigation.navigate('CookingPage');
@@ -402,7 +401,7 @@ export default function RecipeCreatePage({ navigation, route }) {
             isSaveDisabled && styles.Button_SaveRecipeDisabled, 
             isCreatingNew && styles.Button_SaveRecipeAlone
           ]}
-          onPress={SaveOrUpdateRecipe} disabled={isSaveDisabled} >
+          onPress={saveOrUpdateRecipe} disabled={isSaveDisabled} >
           <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
         </TouchableOpacity>
       </View>
