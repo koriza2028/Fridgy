@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet, Platform } from "react-native";
 import Modal from "react-native-modal";
 
 import { useFonts } from 'expo-font';
@@ -34,15 +34,7 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct, onChangeName}) => 
       style={styles.modal}
     >
       <View style={styles.container}>
-        {selectedProduct?.isFromFridge ? <Text>Item ID: {selectedProduct?.basketId}</Text> 
-        
-        
-        : <TextInput style={styles.textEdit} value={title} 
-                    onChangeText={text => {
-                      setTitle(text); 
-                      onChangeName(selectedProduct.basketId, text)
-                      }}>
-          </TextInput>}
+         <Text>Item ID: {selectedProduct?.basketId}</Text>
             
       </View>
     </Modal>
@@ -62,12 +54,17 @@ const styles = StyleSheet.create({
         padding: 20, 
         borderTopLeftRadius: 16, 
         borderTopRightRadius: 16,
+        minHeight: 200,
     },
     textEdit: {
-        minHeight: 40,
+        // height: 100,
         padding: 10,
         fontSize: TextFontSize,
         fontFamily: MainFont,
+        paddingVertical: 10,
+        // lineHeight: Platform.OS === 'android' ? 24 : '140%',
+        // borderColor: '#ddd',
+        // borderWidth: 1,
     },
 
 });

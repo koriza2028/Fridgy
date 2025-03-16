@@ -218,6 +218,7 @@ export default function BasketPage({ navigation }) {
                   onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
                   onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
                   openInfoModal={() => handleItemPress(product)}
+                  onChangeName={handleUpdateName}
                 />
               ))
             ) : (<View />)}
