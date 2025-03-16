@@ -21,11 +21,11 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
   };
 
   const handleToggle = () => {
-    onToggleCheckbox(product.basketId, !isChecked);
+    onToggleCheckbox(!isChecked);
   };
 
   return (
-    <TouchableOpacity onPress={() => openInfoModal(product.basketId, product.isFromFridge)}>
+    <TouchableOpacity onPress={() => openInfoModal(product)}>
       <View style={styles.BasketItem}>
         <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
           <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />

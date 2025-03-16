@@ -113,6 +113,39 @@ export const addProductToBasket = async (userId, productInput, isFromFridge) => 
   });
 };
 
+export const updateBasketItemName = async (userId, basketId, newName) => {
+  const userDocRef = doc(db, "users", userId);
+
+  return await runTransaction(db, async (transaction) => {
+    const userDoc = await transaction.get(userDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
+    }
+
+    const userData = userDoc.data();
+    const basket = userData.basket || { products: [] };
+
+    // Find the basket item by basketId and ensure it's not from the fridge.
+    const itemIndex = basket.products.findIndex(
+      (item) => item.basketId === basketId && !item.isFromFridge
+    );
+
+    if (itemIndex === -1) {
+      throw new Error("Basket item not found or item is from fridge");
+    }
+
+    // Update the item's name.
+    basket.products[itemIndex].name = newName;
+
+    // Save the updated basket back to Firestore.
+    transaction.update(userDocRef, { "basket.products": basket.products });
+
+    return { id: userDoc.id, ...userData, basket };
+  });
+};
+
+
 /**
  * Update the amount of a product in the basket.
  * If newAmount is less than or equal to 0, the product is removed.

@@ -5,23 +5,25 @@ import Modal from "react-native-modal";
 import { useFonts } from 'expo-font';
 import { MainFont, SecondTitleFontSize, TextFontSize } from "../../../assets/Styles/styleVariables";
 
-const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
+const ModalItemInfo = ({ isVisible, onClose, selectedProduct, onChangeName}) => {
 
   const [fontsLoaded] = useFonts({
       'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'), 
       'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
 
-  const [title, setTitle] = useState(itemId || "");
+  const [title, setTitle] = useState(selectedProduct?.name || "");
 
   useEffect(() => {
-    setTitle(itemId || "");
-  }, [itemId]);
+    setTitle(selectedProduct?.name || "");
+  }, [selectedProduct?.name]);
 
   onModalClose = () => { 
-    setTitle(itemId);
+    setTitle(selectedProduct?.name);
     onClose();
   }
+
+  // if (!product) return null;
 
   return (
     <Modal 
@@ -32,10 +34,15 @@ const ModalItemInfo = ({ isVisible, onClose, itemId, isFridge }) => {
       style={styles.modal}
     >
       <View style={styles.container}>
-        {isFridge ? <Text>Item ID: {itemId}</Text> 
+        {selectedProduct?.isFromFridge ? <Text>Item ID: {selectedProduct?.basketId}</Text> 
         
         
-        : <TextInput style={styles.textEdit} value={title} onChangeText={text => setTitle(text)}></TextInput>}
+        : <TextInput style={styles.textEdit} value={title} 
+                    onChangeText={text => {
+                      setTitle(text); 
+                      onChangeName(selectedProduct.basketId, text)
+                      }}>
+          </TextInput>}
             
       </View>
     </Modal>
