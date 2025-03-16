@@ -228,7 +228,6 @@ export default function BasketPage({ navigation }) {
             isVisible={isInfoModalVisible} 
             onClose={() => setIsInfoModalVisible(false)} 
             selectedProduct={selectedProduct}
-            onChangeName={handleUpdateName}
           />
         </View>
       </ScrollView>

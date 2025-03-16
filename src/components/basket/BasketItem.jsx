@@ -130,14 +130,15 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
                   }
           />
           <TextInput 
+            multiline={true}
+            numberOfLines={2}
+            maxLength={20}
             value={title} 
             style={[styles.BasketItem_Text, styles.textEdit]}
             editable={true} // Ensure it's editable
-            onChangeText={(text) => { 
-              onChangeName(product.basketId, text);
-              setTitle(text);
-            }} 
-            onPressIn={(e) => e.stopPropagation()} 
+            onChangeText={(text) => setTitle(text)} 
+            onPressIn={(e) => e.stopPropagation()}
+            onBlur={() => onChangeName(product.basketId, title)}
           />
         </View>
 
@@ -196,6 +197,7 @@ const styles = StyleSheet.create({
   },
   textEdit: {
     outlineStyle: 'none',
+    overflow: 'hidden',
   },
   BasketItem_AmountAndButtons: {
     flexDirection: 'row',
