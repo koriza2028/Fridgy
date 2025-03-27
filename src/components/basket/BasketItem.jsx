@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, StyleSheet, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 
 import { MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
-export default function BasketItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, openInfoModal }) {
+export default function BasketItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, openInfoModal, onChangeName }) {
   const [fontsLoaded] = useFonts({
     'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -21,11 +21,101 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
   };
 
   const handleToggle = () => {
-    onToggleCheckbox(product.basketId, !isChecked);
+    onToggleCheckbox(!isChecked);
   };
 
+  const [title, setTitle] = useState(product.name || "");
+  
+    useEffect(() => {
+      setTitle(product.name || "");
+    }, [product.name]);
+  
+    onModalClose = () => { 
+      setTitle(product.name);
+      onClose();
+    }
+
   return (
-    <TouchableOpacity onPress={() => openInfoModal(product.basketId, product.isFromFridge)}>
+    // <TouchableOpacity onPress={() => openInfoModal(product)}>
+    //   <View style={styles.BasketItem}>
+    //     <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+    //       <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
+    //     </TouchableOpacity>
+
+    //     <View style={styles.BasketItem_Name}>
+    //       <Image 
+    //         style={styles.ProductPicture}
+    //         source={ product.imageUri 
+    //                   ? { uri: product.imageUri } 
+    //                   : require('../../../assets/ProductImages/banana_test.png')
+    //                }
+    //       />
+    //       {product.isFromFridge ? 
+
+    //         <Text 
+    //         style={styles.BasketItem_Text}
+    //         numberOfLines={2}
+    //         ellipsizeMode="tail"
+    //       >
+    //         {product.name}
+    //       </Text>  
+    //               : <TextInput value={product.name}></TextInput> }
+          
+    //     </View>
+
+    //     <View style={styles.BasketItem_AmountAndButtons}>
+    //       <TouchableOpacity style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+    //         <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
+    //       </TouchableOpacity>
+
+    //       <Text style={styles.BasketItem_Text}>{product.amount}</Text>
+
+    //       <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
+    //         <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
+    //       </TouchableOpacity>
+    //     </View>
+    //   </View>
+    // </TouchableOpacity>
+
+    product.isFromFridge ? (
+      <TouchableOpacity onPress={() => openInfoModal(product)}>
+        <View style={styles.BasketItem}>
+          <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
+          </TouchableOpacity>
+
+          <View style={styles.BasketItem_Name}>
+            <Image 
+              style={styles.ProductPicture}
+              source={ product.imageUri 
+                        ? { uri: product.imageUri } 
+                        : require('../../../assets/ProductImages/banana_test.png')
+                    }
+            />
+            <Text 
+              style={styles.BasketItem_Text}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {product.name}
+            </Text>  
+          </View>
+
+          <View style={styles.BasketItem_AmountAndButtons}>
+          <TouchableOpacity style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+            <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.BasketItem_Text}>{product.amount}</Text>
+
+          <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
+             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
+           </TouchableOpacity>
+         </View>
+
+        </View>
+      </TouchableOpacity>
+    ) : (
       <View style={styles.BasketItem}>
         <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
           <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
@@ -37,15 +127,19 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
             source={ product.imageUri 
                       ? { uri: product.imageUri } 
                       : require('../../../assets/ProductImages/banana_test.png')
-                   }
+                  }
           />
-          <Text 
-            style={styles.BasketItem_Text}
+          <TextInput 
+            multiline={true}
             numberOfLines={2}
-            ellipsizeMode="tail"
-          >
-            {product.name}
-          </Text>
+            maxLength={20}
+            value={title} 
+            style={[styles.BasketItem_Text, styles.textEdit]}
+            editable={true} // Ensure it's editable
+            onChangeText={(text) => setTitle(text)} 
+            onPressIn={(e) => e.stopPropagation()}
+            onBlur={() => onChangeName(product.basketId, title)}
+          />
         </View>
 
         <View style={styles.BasketItem_AmountAndButtons}>
@@ -56,11 +150,12 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
           <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
-            <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-          </TouchableOpacity>
-        </View>
+             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
+           </TouchableOpacity>
+         </View>
+
       </View>
-    </TouchableOpacity>
+    )
   );
 }
 
@@ -99,6 +194,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     alignSelf: 'center',
     marginLeft: 10,
+  },
+  textEdit: {
+    outlineStyle: 'none',
+    overflow: 'hidden',
   },
   BasketItem_AmountAndButtons: {
     flexDirection: 'row',

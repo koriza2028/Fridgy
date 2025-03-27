@@ -6,6 +6,7 @@ import Modal from 'react-native-modal';
 import { MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 
 import ButtonGoBack from '../components/Button_GoBack';
+import SearchInput from '../components/Search';
 
 const AutobasketPage = ({
   searchQuery,

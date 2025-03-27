@@ -8,13 +8,15 @@ import ModalItemInfo from '../components/basket/ModalItemInfo';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
-import { fetchBasketProducts } from '../store/basketStore';
 import { 
   addProductToBasket, 
-  updateProductAmountInBasket, 
-  removeProductFromBasket, 
-  moveProductsFromBasketToFridge 
+  updateProductAmountInBasket,
+  fetchBasketProducts,
+  moveProductsFromBasketToFridge,
+  updateBasketItemName
 } from '../store/basketStore';
+
+import { fetchAllProducts } from '../store/fridgeStore';
 
 import { useFonts } from 'expo-font';
 import { buttonColor, backgroundColor, addButtonColor } from '../../assets/Styles/styleVariables';
@@ -36,6 +38,7 @@ export default function BasketPage({ navigation }) {
 
   // Basket now holds an array of enriched basket items with full product details (name, imageUri, etc.)
   const [basket, setBasket] = useState([]);
+  const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
 
   // Search state
@@ -52,7 +55,9 @@ export default function BasketPage({ navigation }) {
     try {
       if (userId) {
         const basketItems = await fetchBasketProducts(userId);
+        const fridgeProducts = await fetchAllProducts(userId);
         setBasket(basketItems);
+        setProducts(fridgeProducts);
       }
     } catch (err) {
       console.error("Failed to fetch basket products:", err);
@@ -69,9 +74,11 @@ export default function BasketPage({ navigation }) {
   const handleSearch = (text) => {
     setSearchQuery(text);
     if (text) {
-      // Here you might search from an external list of products if needed.
-      // For simplicity, we clear filtered data when search text is empty.
-      setFilteredData([]); 
+      console.log(products);
+      const results = products.filter(fridgeProduct =>
+        !basket.some(basketProduct => basketProduct.productId === fridgeProduct.id)
+      );
+      setFilteredData(results);
     } else {
       closeSearchModal();
     }
@@ -121,6 +128,11 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  const handleUpdateName = async (basketItemId, newName) => {
+    await updateBasketItemName(userId, basketItemId, newName);
+    await refreshBasket();
+  }
+
   const handleToggleCheckbox = (basketItemId, isChecked) => {
     setCheckedItems(prev => ({
       ...prev,
@@ -162,15 +174,12 @@ export default function BasketPage({ navigation }) {
     }
   };
 
-  const [selectedItemId, setSelectedItemId] = useState(null);
-  const [selectedItemFromFridge, setSelectedItemFromFridge] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
 
-  const handleItemPress = (basketItemId, isFromFridge) => {
-    setSelectedItemId(basketItemId);
-    setSelectedItemFromFridge(isFromFridge);
+  const handleItemPress = (product) => {
+    setSelectedProduct(product);
     setIsInfoModalVisible(true);
   };
 
@@ -208,7 +217,8 @@ export default function BasketPage({ navigation }) {
                   onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
                   onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
                   onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
-                  openInfoModal={() => handleItemPress(product.basketId, product.isFromFridge)}
+                  openInfoModal={() => handleItemPress(product)}
+                  onChangeName={handleUpdateName}
                 />
               ))
             ) : (<View />)}
@@ -217,10 +227,6 @@ export default function BasketPage({ navigation }) {
           <ModalItemInfo 
             isVisible={isInfoModalVisible} 
             onClose={() => setIsInfoModalVisible(false)} 
-            // itemId={selectedItemId} 
-            // isFridge={selectedItemFromFridge}
-            itemId={selectedProduct?.id}
-            isFridge={selectedProduct?.isFromFridge}
             selectedProduct={selectedProduct}
           />
         </View>
