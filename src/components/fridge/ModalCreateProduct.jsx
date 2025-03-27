@@ -183,7 +183,11 @@ export default function ModalCreateProduct({
         const blob = await response.blob();
         const storage = getStorage(app);
         const storageRef = ref(storage, `productImages/${new Date().getTime()}`);
-        await uploadBytes(storageRef, blob);
+        const metadata = {
+          contentType: 'image/jpeg',
+          cacheControl: 'public,max-age=86400',
+        };
+        await uploadBytes(storageRef, blob, metadata);
         const downloadUrl = await getDownloadURL(storageRef);
         setImageUri(downloadUrl);
       }
