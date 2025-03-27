@@ -187,6 +187,7 @@ export default function BasketPage({ navigation }) {
     <View style={styles.BasketPage}>
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
+
           <TouchableOpacity onPress={() => navigation.navigate('AutobasketPage')} style={styles.tempButton}>
             <Text style={styles.tempButtonText}>Autobasket</Text>
           </TouchableOpacity>

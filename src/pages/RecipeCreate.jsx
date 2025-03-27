@@ -3,7 +3,8 @@ import {
   StyleSheet, View, Text, TextInput, Image, TouchableOpacity, 
   Alert, Platform, Dimensions, ScrollView, RefreshControl 
 } from "react-native";
-import ButtonGoBack from '../components/Button_GoBack';
+
+import ButtonGoBack from '../components/ButtonGoBack';
 import IngredientItem from "../components/cooking/IngredientCard";
 import Tag from "../components/cooking/Tag";
 import ModalProductCategoryPicker from "../components/fridge/ModalProductCategoryPicker";

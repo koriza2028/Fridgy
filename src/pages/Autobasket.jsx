@@ -1,84 +1,100 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { StyleSheet } from 'react-native';
-import Modal from 'react-native-modal';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, ScrollView, Dimensions } from 'react-native';
 
-import { MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
-
-import ButtonGoBack from '../components/Button_GoBack';
+import ButtonGoBack from '../components/ButtonGoBack';
 import SearchInput from '../components/Search';
+import SearchModal from '../components/SearchModal';
 
-const AutobasketPage = ({
-  searchQuery,
-  handleSearch,
-  filteredData,
-  addProduct,
-  isMandatory,
-  isRecipeCreate,
-  isBasket,
-}) => {
+const { width } = Dimensions.get('window');
+
+export default function AutobasketPage({ navigation }) {
+  // State for search and modal visibility
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+  const [isSearchModalVisible, setSearchModalVisible] = useState(false);
+  
+  // State for products loaded from your DB
+  const [products, setProducts] = useState([]);
   const modalSearchRef = useRef(null);
-  const [error, setError] = useState(null);
 
+  // This flag disables the ability to create new products if not found in the DB
+  const allowNewProduct = false;
 
-  // Declare renderItem locally so that it’s defined based on the passed props.
-  let renderItem = () => null;
-
-  if (isBasket) {
-    renderItem = ({ item, index }) => {
-      // If the item is a string, then it represents a new item option.
-      if (typeof item === 'string') {
-        return (
-          <TouchableOpacity style={styles.newItem} onPress={() => addProduct(item, false)}>
-            <Text style={styles.searchItem_Text}>{item}</Text>
-            <Text style={styles.ItemCategoryHint}>New item</Text>
-          </TouchableOpacity>
-        );
-      }
-      // Otherwise, it's an object from the fridge products.
-      return (
-        <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
-          <Text style={styles.searchItem_Text}>{item.name}</Text>
-          <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
-        </TouchableOpacity>
-      );
+  // Example: Fetch products from DB when the component mounts
+  useEffect(() => {
+    const fetchProducts = async () => {
+      // Replace this with your actual fetch call
+      const allProducts = [
+        { id: 1, name: 'Apple' },
+        { id: 2, name: 'Orange' },
+        { id: 3, name: 'Banana' }
+      ];
+      setProducts(allProducts);
     };
-  } else if (isRecipeCreate) {
-    renderItem = ({ item }) => (
-      <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
-        <Text style={styles.searchItem_Text}>{item.name}</Text>
-        <Text style={styles.ItemCategoryHint}>{item.category? item.category.tagName : ""}</Text>
-      </TouchableOpacity>
-    );
-  }
+    fetchProducts();
+  }, []);
 
-  // For basket modals, always add a new string item at the end (if search query is non-empty)
-  const modifiedData =
-    isBasket && !isRecipeCreate && searchQuery.trim() !== ''
-      ? [...filteredData, searchQuery]
-      : filteredData;
+  // Handle search input changes
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    if (text) {
+      const results = products.filter(product =>
+        product.name.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredData(results);
+    } else {
+      closeSearchModal();
+    }
+  };
+
+  // Open modal and focus input
+  const openSearchModal = (text) => {
+    setSearchQuery(text);
+    setSearchModalVisible(true);
+    handleSearch(text);
+    setTimeout(() => {
+      modalSearchRef.current?.focus();
+    }, 100);
+  };
+
+  // Close the search modal and reset states
+  const closeSearchModal = () => {
+    setSearchModalVisible(false);
+    setSearchQuery('');
+    setFilteredData([]);
+  };
+
+  // Add product only from the DB
+  const addProduct = (item) => {
+    // Add your logic to add the selected product from DB to the basket
+    console.log('Adding product:', item);
+    closeSearchModal();
+  };
 
   return (
-    <View>
-        <ButtonGoBack navigation={navigation} />
+    <View style={{ flex: 1 }}>
+      <ButtonGoBack navigation={navigation} />
+      <ScrollView>
+        {/* Search Input that opens the modal on text change */}
+        <SearchInput 
+          placeholder="Search product" 
+          query={searchQuery} 
+          onChangeText={openSearchModal} 
+        />
 
-      {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Find a product"
-        value={searchQuery}
-      />
+        {/* SearchModal receives the extra prop to disable creation of new products */}
+        <SearchModal 
+          isSearchModalVisible={isSearchModalVisible}
+          closeSearchModal={closeSearchModal}
+          addProduct={addProduct}
+          searchQuery={searchQuery}
+          handleSearch={handleSearch}
+          filteredData={filteredData}
+          isBasket={false}
+          allowNewProduct={allowNewProduct}
+          ref={modalSearchRef}
+        />
+      </ScrollView>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  fridgeItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-
-});
-
-export default AutobasketPage;
+}
