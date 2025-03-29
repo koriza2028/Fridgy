@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, Text, Dimensions, StyleSheet } from 'react-native';
 
 import SearchInput from '../components/Search';
@@ -83,10 +83,9 @@ export default function BasketPage({ navigation }) {
   const handleSearch = (text) => {
     setSearchQuery(text);
     if (text) {
-      console.log(products);
       const results = products.filter(fridgeProduct =>
         !basket.some(basketProduct => basketProduct.productId === fridgeProduct.id)
-      );
+      ).filter(product => product.name.toLowerCase().includes(text.toLowerCase()));
       setFilteredData(results);
     } else {
       closeSearchModal();
