@@ -72,7 +72,10 @@ const BasketStack = () => (
     <Stack.Screen
         name="AutobasketPage"
         component={AutobasketPage}
-        options={{ title: '', headerShown: false }}
+        options={{ 
+          headerShown: true,
+          headerTitle: 'Fast basket'
+         }}
       />
   </Stack.Navigator>
 );

@@ -8,6 +8,7 @@ import { fetchAllProducts } from '../store/fridgeStore';
 import ButtonGoBack from '../components/ButtonGoBack';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
+import { backgroundColor } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
@@ -79,11 +80,10 @@ export default function AutobasketPage({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ButtonGoBack navigation={navigation} />
+    <View style={styles.WholePage}>
       <ScrollView>
-        {/* Search Input that opens the modal on text change */}
-        <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+        <View style={styles.WholePage_ContentWrapper}>
+          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
           
           <SearchModal 
             isSearchModalVisible={isSearchModalVisible}
@@ -95,11 +95,20 @@ export default function AutobasketPage({ navigation }) {
             // isBasket={true}
             isRecipeCreate={true} 
           />
+          </View>
       </ScrollView>
     </View>
   );
 }
 
-StyleSheet.create({
-
+const styles = StyleSheet.create({
+  WholePage: {
+    flex: 1,
+    backgroundColor: backgroundColor,
+    width: width,
+    alignItems: 'center',
+  },
+  WholePage_ContentWrapper: {
+    width: width * 0.96,
+  },
 });
