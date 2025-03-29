@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   Dimensions,
+  Button,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
@@ -44,6 +45,12 @@ import app from "../../firebaseConfig";
 
 const { width, height } = Dimensions.get("window");
 const isSmallScreen = height < 700;
+const defaultCategory = { tagName: "Other", tagIcon: "❓", tagType: 1 };
+const staticImages = [
+  require("../../../assets/ProductImages/apple_test.png"),
+  require("../../../assets/ProductImages/banana_test.png"),
+  require("../../../assets/ProductImages/milk_test.png")
+];
 
 export default function ModalCreateProduct({
   isVisible,
@@ -53,25 +60,17 @@ export default function ModalCreateProduct({
   usedIngredients,
 }) {
   const userId = useAuthStore((state) => state.user?.uid);
-  const [fontsLoaded] = useFonts({
-    Inter: require("../../../assets/fonts/Inter/Inter_18pt-Regular.ttf"),
-    "Inter-Bold": require("../../../assets/fonts/Inter/Inter_18pt-Bold.ttf"),
-    "Inter-Title": require("../../../assets/fonts/Inter/Inter_24pt-Bold.ttf"),
-  });
 
   const [name, setName] = useState("");
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState(defaultCategory);
   const [amount, setAmount] = useState(1);
   const [notes, setNotes] = useState("");
   const [id, setId] = useState("");
-
   const [isCreatingNew, setIsCreatingNew] = useState(true);
-  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
-
-  // NEW STATE: holds the uploaded image URL
   const [imageUri, setImageUri] = useState(null);
-
-  const defaultCategory = { tagName: "Other", tagIcon: "❓", tagType: 1 };
+  const [staticImagePath, setStaticImagePath] = useState(null);
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   useEffect(() => {
     if (product && product.id !== undefined) {
@@ -80,6 +79,7 @@ export default function ModalCreateProduct({
       setNotes(product.notes || "");
       setAmount(product.amount || 0);
       setImageUri(product.imageUri || null);
+      setStaticImagePath(product.staticImagePath || null);
       setId(product.id || "");
       setIsCreatingNew(false);
     } else {
@@ -93,8 +93,46 @@ export default function ModalCreateProduct({
     setAmount(1);
     setNotes("");
     setId("");
+    setImageUri(null);
+    setStaticImagePath(null);
     setIsCreatingNew(true);
-    setImageUri(null); // Reset image when form resets
+  };
+
+  const pickImageFromDevice = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'Images',
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const storage = getStorage(app);
+        const storageRef = ref(storage, `productImages/${new Date().getTime()}`);
+        const metadata = {
+          contentType: 'image/jpeg',
+          cacheControl: 'public,max-age=86400',
+        };
+        await uploadBytes(storageRef, blob, metadata);
+        const downloadUrl = await getDownloadURL(storageRef);
+        setImageUri(downloadUrl);
+        setStaticImagePath(null);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Alert.alert("Error", "Failed to upload image. Please try again.");
+    }
+    setIsImageModalVisible(false);
+  };
+
+  const handleStaticImageSelect = (path) => {
+    setStaticImagePath(path);
+    setImageUri(null);
+    setIsImageModalVisible(false);
   };
 
   const handleCategorySelect = (selectedTag) => {
@@ -167,37 +205,17 @@ export default function ModalCreateProduct({
     setIsCategoryModalVisible(false);
   };
 
-  // NEW FUNCTION: handle image picking and uploading to Firebase Storage
-  const handleImageUpload = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images',
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5,
-      });
-      
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const storage = getStorage(app);
-        const storageRef = ref(storage, `productImages/${new Date().getTime()}`);
-        const metadata = {
-          contentType: 'image/jpeg',
-          cacheControl: 'public,max-age=86400',
-        };
-        await uploadBytes(storageRef, blob, metadata);
-        const downloadUrl = await getDownloadURL(storageRef);
-        setImageUri(downloadUrl);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      Alert.alert("Error", "Failed to upload image. Please try again.");
+  const isSaveDisabled = name.trim() === "" || amount === "" || isNaN(parseInt(amount, 10));
+
+  const renderProductImage = () => {
+    if (imageUri) {
+      return <Image style={styles.ProductCreatePicture_Image} source={{ uri: imageUri }} />;
+    } else if (staticImagePath) {
+      return <Image style={styles.ProductCreatePicture_Image} source={staticImagePath} />;
+    } else {
+      return <Image style={styles.ProductCreatePicture_Image} source={require('../../../assets/ProductImages/banana_test.png')} />;
     }
   };
-
-  const isSaveDisabled = name.trim() === "" || amount === "" || isNaN(parseInt(amount, 10));
 
   return (
     <Modal isVisible={isVisible} style={styles.modal} animationIn="slideInUp" animationOut="slideOutDown" backdropColor="black" backdropOpacity={0.5}>
@@ -216,19 +234,26 @@ export default function ModalCreateProduct({
               </View>
 
               <View style={styles.ProductCreatePicture}>
-                <TouchableOpacity onPress={handleImageUpload}>
-                  {imageUri ? (
-                    <Image
-                      style={styles.ProductCreatePicture_Image}
-                      source={imageUri}
-                    />
-                  ) : (
-                    <Image
-                      style={styles.ProductCreatePicture_Image}
-                      source={require('../../../assets/ProductImages/banana_test.png')}
-                    />
-                  )}
+                <TouchableOpacity onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
+                  {renderProductImage()}
                 </TouchableOpacity>
+
+                <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
+                  <View style={styles.imageModalContent}>
+                    <Button title="Pick from device" onPress={pickImageFromDevice} />
+                    <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
+                    <View style={styles.StaticImageRow}>
+                      {staticImages.map((img, index) => (
+                        <TouchableOpacity key={index} onPress={() => handleStaticImageSelect(img)}>
+                          <Image
+                            source={img}
+                            style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
+                          />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                </Modal>
               </View>
 
               <View style={styles.productDataEntry_Wrapper}>
@@ -473,4 +498,9 @@ const styles = StyleSheet.create({
     color: blackTextColor,
     fontWeight: 'bold',
   },
+  StaticImageLabel: { fontSize: 14, marginBottom: 6, color: greyTextColor, textAlign: 'center' },
+  StaticImageRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
+  StaticThumbnail: { width: 60, height: 60, borderRadius: 8, marginHorizontal: 5, borderWidth: 1, borderColor: '#ccc' },
+  SelectedStaticImage: { borderColor: buttonColor, borderWidth: 2 },
+  imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' }
 });

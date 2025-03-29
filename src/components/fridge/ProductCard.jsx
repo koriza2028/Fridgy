@@ -41,19 +41,18 @@ export default function ProductCard(props) {
         props.onMoveToBasket();
     };
 
+    const getImageSource = (product) => {
+        if (product.imageUri) return product.imageUri;
+        if (product.staticImagePath) return product.staticImagePath;
+        return require('../../../assets/ProductImages/banana_test.png');
+    };
+
     return (         
         <View style={styles.ProductCard}>
-            {props.product.imageUri ? (
-                <Image
-                    style={styles.ProductPicture}
-                    source={props.product.imageUri}
-                />
-                ) : (
-                <Image
-                    style={styles.ProductPicture}
-                    source={require('../../../assets/ProductImages/banana_test.png')}
-                />
-            )}
+            <Image
+                style={styles.ProductPicture}
+                source={getImageSource(props.product)}
+            />
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            

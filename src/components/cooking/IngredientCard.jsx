@@ -7,14 +7,25 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
     onRemove(ingredient._id, isMandatory);
   };
 
+  const getImageSource = (ingredient) => {
+    if (ingredient.imageUri) {
+        return { uri: ingredient.imageUri };
+    }
+    if (ingredient.staticImagePath) {
+        return ingredient.staticImagePath;
+    }
+    return require('../../../assets/ProductImages/banana_test.png');
+  };
+
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
         <View style={[styles.IngredientItem, { borderColor: borderColor }, !isAvailable && { borderWidth: 1 }]}>
                      
-            <Image style={styles.IngredientItem_Picture} 
-              source={ingredient.imageUri ? { uri: ingredient.imageUri } : require('../../../assets/ProductImages/banana_test.png')}>
-            </Image>
+            <Image 
+              style={styles.IngredientItem_Picture} 
+              source={getImageSource(ingredient)}
+            />
 
             <View style={[styles.IngredientItem_NameAndInstructions, !isMandatory && styles.IngredientItem_OnlyName]}>
                 <View style={styles.IngredientItem_Name}>

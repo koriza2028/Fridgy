@@ -1,43 +1,40 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Dimensions, StyleSheet } from 'react-native';
+// AutoBasketPage.js
+import React, { useState, useRef, useCallback } from 'react';
+import { View, ScrollView, Dimensions, StyleSheet, Button, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import useAuthStore from '../store/authStore';
 import { fetchAllProducts } from '../store/fridgeStore';
-import { 
-  addProductToAutoBasket, 
-  updateProductAmountInAutoBasket,
+import {
   fetchAutoBasketProducts,
-  updateAutoBasketItemName
+  saveAutoBasketDraft,
+  updateProductAmountInAutoBasket,
+  updateAutoBasketItemName,
 } from '../store/autoBasketStore';
 
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
+import BasketItem from '../components/basket/BasketItem';
 import { backgroundColor } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
-export default function AutobasketPage({ navigation }) {
-
+export default function AutoBasketPage() {
   const userId = useAuthStore((state) => state.user?.uid);
-
-  // State for search and modal visibility
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
-  
-  // State for products loaded from your DB
-    const [autoBasket, setAutoBasket] = useState([]);
+  const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
-  const modalSearchRef = React.useRef(null);
-
-  // This flag disables the ability to create new products if not found in the DB
-  const allowNewProduct = false;
-
+  const [autoBasketDraft, setAutoBasketDraft] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+  const modalSearchRef = useRef(null);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       loadProducts();
     }, [userId])
   );
@@ -48,20 +45,21 @@ export default function AutobasketPage({ navigation }) {
       const fridgeProducts = await fetchAllProducts(userId);
       setAutoBasket(autoBasketItems);
       setProducts(fridgeProducts);
+      setAutoBasketDraft([]);
+      setEditMode(false);
     }
   };
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-    console.log('Search text:', text);
     if (text) {
-      const results = products.filter(fridgeProduct =>
-          !autoBasket.some(autoBasketProduct => autoBasketProduct.productId === fridgeProduct.id)
-        ).filter(product => 
-          product.name.toLowerCase().includes(text.toLowerCase())
-        );
-        console.log(results);
-        setFilteredData(results);
+      const results = products.filter(
+        (p) =>
+          !autoBasket.some((a) => a.productId === p.id) &&
+          !autoBasketDraft.some((d) => d.productId === p.id) &&
+          p.name.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredData(results);
     } else {
       closeSearchModal();
     }
@@ -76,93 +74,102 @@ export default function AutobasketPage({ navigation }) {
     }, 100);
   };
 
-  // Close the search modal and reset states
   const closeSearchModal = () => {
     setSearchModalVisible(false);
     setSearchQuery('');
     setFilteredData([]);
   };
 
-  // Add product only from the DB
-  const addProduct = async (item, isFromFridge) => {
-      try {
-        await addProductToAutoBasket(userId, item, isFromFridge);
-        closeSearchModal();
-        await loadProducts();
-      } catch (err) {
-        console.error("Failed to add product:", err);
-        setError("Failed to add product. Please try again.");
+  const addProductToDraft = (item) => {
+    setAutoBasketDraft((prev) => {
+      const exists = prev.find((p) => p.productId === item.id);
+      if (exists) {
+        return prev.map((p) =>
+          p.productId === item.id ? { ...p, amount: p.amount + 1 } : p
+        );
+      } else {
+        return [...prev, { productId: item.id, amount: 1, basketId: Date.now().toString() }];
       }
+    });
+    setEditMode(true);
+    closeSearchModal();
   };
 
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
-  
-  const handleItemPress = (product) => {
-    setSelectedProduct(product);
-    setIsInfoModalVisible(true);
-  };
-  
-  const handleIncrementProductAmount = async (basketItemId, currentAmount) => {
-    try {
-      await updateProductAmountInAutoBasket(userId, basketItemId, currentAmount + 1);
-      await loadProducts();
-    } catch (err) {
-      console.error("Failed to increment product quantity:", err);
-    }
-  };
-
-  const handleDecrementProductAmount = async (basketItemId, currentAmount) => {
-    try {
-      await updateProductAmountInAutoBasket(userId, basketItemId, currentAmount - 1);
-      await loadProducts();
-    } catch (err) {
-      console.error("Failed to decrement product quantity:", err);
-    }
-  };
-
-  const handleUpdateName = async (basketItemId, newName) => {
-    await updateAutoBasketItemName(userId, basketItemId, newName);
+  const handleSaveDraft = async () => {
+    await saveAutoBasketDraft(userId, autoBasketDraft);
     await loadProducts();
-  }
+    setEditMode(false); // Add this line
+  };
+  
+
+  const handleIncrementProductAmount = async (id, current) => {
+    await updateProductAmountInAutoBasket(userId, id, current + 1);
+    await loadProducts();
+  };
+
+  const handleDecrementProductAmount = async (id, current) => {
+    await updateProductAmountInAutoBasket(userId, id, current - 1);
+    await loadProducts();
+  };
+
+  const handleUpdateName = async (id, name) => {
+    await updateAutoBasketItemName(userId, id, name);
+    await loadProducts();
+  };
+
+  const combinedItems = editMode
+    ? [...autoBasket, ...autoBasketDraft.map((d) => ({ ...d, isDraft: true }))]
+    : autoBasket;
 
   return (
     <View style={styles.WholePage}>
       <ScrollView>
         <View style={styles.WholePage_ContentWrapper}>
-          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+          <SearchInput
+            placeholder="Find a product"
+            query={searchQuery}
+            onChangeText={openSearchModal}
+          />
 
-          {/* <View style={styles.BasketPage_ListOfBasketItems}>
-              {basket && basket.length > 0 ? (
-                basket.map((product) => (
-                  <BasketItem 
-                    key={product.basketId} 
-                    product={product} 
-                    isChecked={!!checkedItems[product.basketId]}
-                    onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
-                    onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
-                    onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
-                    openInfoModal={() => handleItemPress(product)}
-                    onChangeName={handleUpdateName}
-                  />
-                ))
-              ) : (<View />)}
-            </View> */}
-          
-          <SearchModal 
+          {editMode && (
+            <View style={styles.controlButtons}>
+              <Button title="Save" onPress={handleSaveDraft} />
+              <Button title="Cancel" color="red" onPress={() => {
+                setAutoBasketDraft([]);
+                setEditMode(false); // Add this line
+              }}
+              />
+            </View>
+          )}
+
+          <View style={styles.BasketPage_ListOfBasketItems}>
+            {combinedItems.map((product) => (
+              <BasketItem
+                key={product.basketId}
+                product={product}
+                isChecked={false}
+                onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
+                onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
+                onToggleCheckbox={() => {}}
+                openInfoModal={() => setSelectedProduct(product)}
+                onChangeName={handleUpdateName}
+              />
+            ))}
+          </View>
+
+          <SearchModal
             isSearchModalVisible={isSearchModalVisible}
             closeSearchModal={closeSearchModal}
-            addProduct={addProduct}
+            addProduct={addProductToDraft}
             searchQuery={searchQuery}
             handleSearch={handleSearch}
             filteredData={filteredData}
-            // isBasket={true}
-            isRecipeCreate={true} 
+            isRecipeCreate={true}
           />
 
-          <ModalItemInfo 
-            isVisible={isInfoModalVisible} 
-            onClose={() => setIsInfoModalVisible(false)} 
+          <ModalItemInfo
+            isVisible={isInfoModalVisible}
+            onClose={() => setIsInfoModalVisible(false)}
             selectedProduct={selectedProduct}
           />
         </View>
@@ -180,5 +187,15 @@ const styles = StyleSheet.create({
   },
   WholePage_ContentWrapper: {
     width: width * 0.96,
+  },
+  BasketPage_ListOfBasketItems: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  controlButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+    gap: 10,
   },
 });

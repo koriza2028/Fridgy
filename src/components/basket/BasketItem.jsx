@@ -35,6 +35,13 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
       onClose();
     }
 
+  const getImageSource = (product) => {
+    if (product.imageUri) return product.imageUri;
+    console.log(product);
+    if (product.staticImagePath) return product.staticImagePath;
+    return require('../../../assets/ProductImages/banana_test.png');
+  };
+
   return (
     product.isFromFridge ? (
       <TouchableOpacity onPress={() => openInfoModal(product)}>
@@ -46,10 +53,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           <View style={styles.BasketItem_Name}>
             <Image 
               style={styles.ProductPicture}
-              source={ product.imageUri 
-                        ? { uri: product.imageUri } 
-                        : require('../../../assets/ProductImages/banana_test.png')
-                    }
+              source={getImageSource(product)}
             />
             <Text 
               style={styles.BasketItem_Text}

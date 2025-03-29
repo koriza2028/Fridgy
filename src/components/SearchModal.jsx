@@ -40,6 +40,17 @@ const SearchModal = ({
   // Declare renderItem locally so that it’s defined based on the passed props.
   let renderItem = () => null;
 
+  const getImageSource = (item) => {
+    console.log(item);
+    if (item.imageUri) {
+        return { uri: item.imageUri };
+    }
+    if (item.staticImagePath) {
+        return item.staticImagePath;
+    }
+    return require('../../assets/ProductImages/banana_test.png');
+  };
+
   if (isBasket) {
     renderItem = ({ item, index }) => {
       // If the item is a string, then it represents a new item option.
@@ -55,9 +66,7 @@ const SearchModal = ({
       return (
         <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
           <Image
-            source={item.imageUri 
-              ? { uri: item.imageUri } 
-              : require('../../assets/ProductImages/banana_test.png')}
+            source={getImageSource(item)}
             style={styles.searchItem_Image}
           />
           <View style={styles.NameAndHint}>
@@ -71,11 +80,9 @@ const SearchModal = ({
     renderItem = ({ item }) => (
       <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
         <Image
-            source={item.imageUri 
-              ? { uri: item.imageUri } 
-              : require('../../assets/ProductImages/banana_test.png')}
-            style={styles.searchItem_Image}
-          />
+          source={getImageSource(item)}
+          style={styles.searchItem_Image}
+        />
         <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.name}</Text>
             <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>

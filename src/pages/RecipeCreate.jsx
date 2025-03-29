@@ -135,6 +135,7 @@ export default function RecipeCreatePage({ navigation, route }) {
     if (userId) {
       fetchAllProducts(userId)
         .then(fetchedProducts => {
+          console.log('Fetched products:', fetchedProducts);
           const allProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
           setProducts(allProducts);
           setAvailableProducts(allProducts.filter(product => !product.isArchived));
@@ -207,7 +208,8 @@ export default function RecipeCreatePage({ navigation, route }) {
         amount: 1, 
         isFromFridge: item.isFromFridge || false,
         name: item.name,
-        imageUri: item.imageUri
+        imageUri: item.imageUri,
+        staticImagePath: item.staticImagePath,
       };
       if (mandatoryFlag) {
         setMandatoryIngredients(prev => [...prev, ingredientToAdd]);

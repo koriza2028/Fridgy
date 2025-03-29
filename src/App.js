@@ -13,7 +13,7 @@ import CookingPage from './pages/Cooking';
 import BasketPage from './pages/Basket';
 import RecipeCreatePage from './pages/RecipeCreate';
 import LoginPage from './pages/Login';
-import AutobasketPage from './pages/Autobasket';
+import AutoBasketPage from './pages/AutoBasket';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -70,8 +70,8 @@ const BasketStack = () => (
        }}
     />
     <Stack.Screen
-        name="AutobasketPage"
-        component={AutobasketPage}
+        name="AutoBasketPage"
+        component={AutoBasketPage}
         options={{ 
           headerShown: true,
           headerTitle: 'Fast basket'
