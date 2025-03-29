@@ -76,8 +76,10 @@ const SearchModal = ({
               : require('../../assets/ProductImages/banana_test.png')}
             style={styles.searchItem_Image}
           />
-        <Text style={styles.searchItem_Text}>{item.name}</Text>
-        <Text style={styles.ItemCategoryHint}>{item.category? item.category.tagName : ""}</Text>
+        <View style={styles.NameAndHint}>
+            <Text style={styles.searchItem_Text}>{item.name}</Text>
+            <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
+          </View>
       </TouchableOpacity>
     );
   }
