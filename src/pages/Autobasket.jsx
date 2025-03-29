@@ -12,6 +12,7 @@ import SearchModal from '../components/SearchModal';
 const { width } = Dimensions.get('window');
 
 export default function AutobasketPage({ navigation }) {
+
   const userId = useAuthStore((state) => state.user?.uid);
 
   // State for search and modal visibility
@@ -25,6 +26,7 @@ export default function AutobasketPage({ navigation }) {
 
   // This flag disables the ability to create new products if not found in the DB
   const allowNewProduct = false;
+
 
   useFocusEffect(
     React.useCallback(() => {
