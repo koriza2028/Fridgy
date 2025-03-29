@@ -4,6 +4,12 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import useAuthStore from '../store/authStore';
 import { fetchAllProducts } from '../store/fridgeStore';
+import { 
+  addProductToAutoBasket, 
+  updateProductAmountInAutoBasket,
+  fetchAutoBasketProducts,
+  updateAutoBasketItemName
+} from '../store/autoBasketStore';
 
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
@@ -22,6 +28,7 @@ export default function AutobasketPage({ navigation }) {
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
   
   // State for products loaded from your DB
+    const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
   const modalSearchRef = React.useRef(null);
 
@@ -37,7 +44,9 @@ export default function AutobasketPage({ navigation }) {
 
   const loadProducts = async () => {
     if (userId) {
+      const autoBasketItems = await fetchAutoBasketProducts(userId);
       const fridgeProducts = await fetchAllProducts(userId);
+      setAutoBasket(autoBasketItems);
       setProducts(fridgeProducts);
     }
   };
@@ -46,8 +55,10 @@ export default function AutobasketPage({ navigation }) {
     setSearchQuery(text);
     console.log('Search text:', text);
     if (text) {
-      const results = products.filter(product => 
-            product.name.toLowerCase().includes(text.toLowerCase())
+      const results = products.filter(fridgeProduct =>
+          !autoBasket.some(autoBasketProduct => autoBasketProduct.productId === fridgeProduct.id)
+        ).filter(product => 
+          product.name.toLowerCase().includes(text.toLowerCase())
         );
         console.log(results);
         setFilteredData(results);
@@ -73,10 +84,15 @@ export default function AutobasketPage({ navigation }) {
   };
 
   // Add product only from the DB
-  const addProduct = (item) => {
-    // Add your logic to add the selected product from DB to the basket
-    console.log('Adding product:', item);
-    closeSearchModal();
+  const addProduct = async (item, isFromFridge) => {
+      try {
+        await addProductToAutoBasket(userId, item, isFromFridge);
+        closeSearchModal();
+        await loadProducts();
+      } catch (err) {
+        console.error("Failed to add product:", err);
+        setError("Failed to add product. Please try again.");
+      }
   };
 
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -86,6 +102,29 @@ export default function AutobasketPage({ navigation }) {
     setSelectedProduct(product);
     setIsInfoModalVisible(true);
   };
+  
+  const handleIncrementProductAmount = async (basketItemId, currentAmount) => {
+    try {
+      await updateProductAmountInAutoBasket(userId, basketItemId, currentAmount + 1);
+      await loadProducts();
+    } catch (err) {
+      console.error("Failed to increment product quantity:", err);
+    }
+  };
+
+  const handleDecrementProductAmount = async (basketItemId, currentAmount) => {
+    try {
+      await updateProductAmountInAutoBasket(userId, basketItemId, currentAmount - 1);
+      await loadProducts();
+    } catch (err) {
+      console.error("Failed to decrement product quantity:", err);
+    }
+  };
+
+  const handleUpdateName = async (basketItemId, newName) => {
+    await updateAutoBasketItemName(userId, basketItemId, newName);
+    await loadProducts();
+  }
 
   return (
     <View style={styles.WholePage}>
