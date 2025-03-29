@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Dimensions } from 'react-native';
+import { View, ScrollView, Dimensions, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import useAuthStore from '../store/authStore';
@@ -92,9 +92,14 @@ export default function AutobasketPage({ navigation }) {
             searchQuery={searchQuery}
             handleSearch={handleSearch}
             filteredData={filteredData}
-            isBasket={true}
+            // isBasket={true}
+            isRecipeCreate={true} 
           />
       </ScrollView>
     </View>
   );
 }
+
+StyleSheet.create({
+
+});
