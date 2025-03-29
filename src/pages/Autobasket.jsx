@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+
+import useAuthStore from '../store/authStore';
+import { fetchAllProducts } from '../store/fridgeStore';
 
 import ButtonGoBack from '../components/ButtonGoBack';
 import SearchInput from '../components/Search';
@@ -8,6 +12,8 @@ import SearchModal from '../components/SearchModal';
 const { width } = Dimensions.get('window');
 
 export default function AutobasketPage({ navigation }) {
+  const userId = useAuthStore((state) => state.user?.uid);
+
   // State for search and modal visibility
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -15,39 +21,38 @@ export default function AutobasketPage({ navigation }) {
   
   // State for products loaded from your DB
   const [products, setProducts] = useState([]);
-  const modalSearchRef = useRef(null);
+  const modalSearchRef = React.useRef(null);
 
   // This flag disables the ability to create new products if not found in the DB
   const allowNewProduct = false;
 
-  // Example: Fetch products from DB when the component mounts
-  useEffect(() => {
-    const fetchProducts = async () => {
-      // Replace this with your actual fetch call
-      const allProducts = [
-        { id: 1, name: 'Apple' },
-        { id: 2, name: 'Orange' },
-        { id: 3, name: 'Banana' }
-      ];
-      setProducts(allProducts);
-    };
-    fetchProducts();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProducts();
+    }, [userId])
+  );
 
-  // Handle search input changes
+  const loadProducts = async () => {
+    if (userId) {
+      const fridgeProducts = await fetchAllProducts(userId);
+      setProducts(fridgeProducts);
+    }
+  };
+
   const handleSearch = (text) => {
     setSearchQuery(text);
+    console.log('Search text:', text);
     if (text) {
-      const results = products.filter(product =>
-        product.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredData(results);
+      const results = products.filter(product => 
+            product.name.toLowerCase().includes(text.toLowerCase())
+        );
+        console.log(results);
+        setFilteredData(results);
     } else {
       closeSearchModal();
     }
   };
 
-  // Open modal and focus input
   const openSearchModal = (text) => {
     setSearchQuery(text);
     setSearchModalVisible(true);
@@ -76,24 +81,17 @@ export default function AutobasketPage({ navigation }) {
       <ButtonGoBack navigation={navigation} />
       <ScrollView>
         {/* Search Input that opens the modal on text change */}
-        <SearchInput 
-          placeholder="Search product" 
-          query={searchQuery} 
-          onChangeText={openSearchModal} 
-        />
-
-        {/* SearchModal receives the extra prop to disable creation of new products */}
-        <SearchModal 
-          isSearchModalVisible={isSearchModalVisible}
-          closeSearchModal={closeSearchModal}
-          addProduct={addProduct}
-          searchQuery={searchQuery}
-          handleSearch={handleSearch}
-          filteredData={filteredData}
-          isBasket={false}
-          allowNewProduct={allowNewProduct}
-          ref={modalSearchRef}
-        />
+        <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+          
+          <SearchModal 
+            isSearchModalVisible={isSearchModalVisible}
+            closeSearchModal={closeSearchModal}
+            addProduct={addProduct}
+            searchQuery={searchQuery}
+            handleSearch={handleSearch}
+            filteredData={filteredData}
+            isBasket={true}
+          />
       </ScrollView>
     </View>
   );
