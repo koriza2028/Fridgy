@@ -189,11 +189,11 @@ const styles = StyleSheet.create({
   searchItem_Image: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    // borderRadius: 25,
   },
   NameAndHint: {
     flexDirection: 'column',
-    marginLeft: 10,
+    marginLeft: 16,
   },
   searchItem_Text: {
     fontSize: SecondTitleFontSize,

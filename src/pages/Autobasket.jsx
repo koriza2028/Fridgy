@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
 import { fetchAllProducts } from '../store/fridgeStore';
 
-import ButtonGoBack from '../components/ButtonGoBack';
+import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import { backgroundColor } from '../../assets/Styles/styleVariables';
@@ -79,11 +79,36 @@ export default function AutobasketPage({ navigation }) {
     closeSearchModal();
   };
 
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
+  
+  const handleItemPress = (product) => {
+    setSelectedProduct(product);
+    setIsInfoModalVisible(true);
+  };
+
   return (
     <View style={styles.WholePage}>
       <ScrollView>
         <View style={styles.WholePage_ContentWrapper}>
           <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+
+          {/* <View style={styles.BasketPage_ListOfBasketItems}>
+              {basket && basket.length > 0 ? (
+                basket.map((product) => (
+                  <BasketItem 
+                    key={product.basketId} 
+                    product={product} 
+                    isChecked={!!checkedItems[product.basketId]}
+                    onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
+                    onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
+                    onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
+                    openInfoModal={() => handleItemPress(product)}
+                    onChangeName={handleUpdateName}
+                  />
+                ))
+              ) : (<View />)}
+            </View> */}
           
           <SearchModal 
             isSearchModalVisible={isSearchModalVisible}
@@ -95,7 +120,13 @@ export default function AutobasketPage({ navigation }) {
             // isBasket={true}
             isRecipeCreate={true} 
           />
-          </View>
+
+          <ModalItemInfo 
+            isVisible={isInfoModalVisible} 
+            onClose={() => setIsInfoModalVisible(false)} 
+            selectedProduct={selectedProduct}
+          />
+        </View>
       </ScrollView>
     </View>
   );
