@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useFocusEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
 
 import ButtonGoBack from '../components/ButtonGoBack';
@@ -8,6 +8,9 @@ import SearchModal from '../components/SearchModal';
 const { width } = Dimensions.get('window');
 
 export default function AutobasketPage({ navigation }) {
+
+  const userId = useAuthStore((state) => state.user?.uid);
+
   // State for search and modal visibility
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -21,18 +24,22 @@ export default function AutobasketPage({ navigation }) {
   const allowNewProduct = false;
 
   // Example: Fetch products from DB when the component mounts
-  useEffect(() => {
-    const fetchProducts = async () => {
-      // Replace this with your actual fetch call
-      const allProducts = [
-        { id: 1, name: 'Apple' },
-        { id: 2, name: 'Orange' },
-        { id: 3, name: 'Banana' }
-      ];
-      setProducts(allProducts);
-    };
-    fetchProducts();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchProducts = async () => {
+        try {
+          const allProducts = await fetchAllProducts(userId); // or your own fetch logic
+          setProducts(allProducts);
+        } catch (error) {
+          console.error("Error fetching products:", error);
+        }
+      };
+  
+      fetchProducts();
+  
+      // If you don’t need a cleanup function, don’t return anything
+    }, [userId]) // or other deps
+  );
 
   // Handle search input changes
   const handleSearch = (text) => {

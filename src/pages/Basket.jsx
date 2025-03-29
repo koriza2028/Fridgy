@@ -65,9 +65,18 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     refreshBasket();
+  //   }, [userId])
+  // );
+
   useFocusEffect(
     React.useCallback(() => {
-      refreshBasket();
+      async function refreshData() {
+        await refreshBasket();
+      }
+      refreshData();
     }, [userId])
   );
 
