@@ -93,8 +93,10 @@ export default function FridgePage({ navigation }) {
   useFocusEffect(
     React.useCallback(async () => {
         if (userId) {
-            refreshProducts();
-            refreshUsedIngredients();
+            await Promise.all([
+                refreshProducts(),
+                refreshUsedIngredients()
+            ]);
         }
     }, [userId])
   );
