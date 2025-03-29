@@ -8,6 +8,8 @@ import {
   getDocs,
   collection
 } from "firebase/firestore";
+import { deleteObject, ref as storageRef } from "firebase/storage";
+import { storage } from "../firebaseConfig"; // your initialized Firebase Storage
 import { db } from "../firebaseConfig";
 
 /**
@@ -89,14 +91,33 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
   try {
     const productsColRef = collection(db, "users", userId, "products");
     let productId = productDataId;
+
     if (productDataId) {
       const productDocRef = doc(db, "users", userId, "products", productDataId);
+      const productSnap = await getDoc(productDocRef);
+
+      if (productSnap.exists()) {
+        const oldImageUri = productSnap.data()?.imageUri || null;
+        const newImageUri = productData.imageUri;
+
+        // Compare paths and delete old image if it has changed
+        if (oldImageUri && newImageUri && oldImageUri !== newImageUri) {
+          const oldImgRef = storageRef(storage, oldImageUri);
+          try {
+            await deleteObject(oldImgRef);
+          } catch (err) {
+            console.warn("⚠️ Failed to delete old image:", err);
+          }
+        }
+      }
+
       await updateDoc(productDocRef, productData);
     } else {
       productId = Date.now().toString();
       const productDocRef = doc(db, "users", userId, "products", productId);
       await setDoc(productDocRef, productData);
     }
+
     return fetchAvailableProducts(userId);
   } catch (error) {
     console.error("Error adding/updating product:", error);
@@ -169,7 +190,21 @@ export const deleteProduct = async (userId, productId) => {
     }
     
     const productDocRef = doc(db, "users", userId, "products", productId);
+    const productSnap = await getDoc(productDocRef);
+
+    let imagePath = null;
+    if (productSnap.exists()) {
+      imagePath = productSnap.data()?.imageUri || null;
+    }
+
+    // Delete product from Firestore
     await deleteDoc(productDocRef);
+
+    // Delete image from Firebase Storage (if it exists)
+    if (imagePath) {
+      const imgRef = storageRef(storage, imagePath);
+      await deleteObject(imgRef);
+    }
     
     return fetchAvailableProducts(userId);
   } catch (error) {

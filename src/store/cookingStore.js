@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firestore";
-import { db } from "../firebaseConfig"; // Adjust path as needed
+import { ref as storageRef, deleteObject } from "firebase/storage";
+import { db, storage } from "../firebaseConfig"; // Adjust path as needed
 
 /**
  * Fetch the user's recipes from Firestore.
@@ -47,17 +48,22 @@ const cleanIngredients = (ingredients = []) =>
  */
 export const addOrUpdateRecipe = async (userId, recipe) => {
   const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
+  let oldImageUri = null;
+  let newImageUri = recipe.imageUri || null;
+
+  // Firestore transaction for recipe update
+  const result = await runTransaction(db, async (transaction) => {
     let userDoc = await transaction.get(userDocRef);
     if (!userDoc.exists()) {
       const newUserData = {
         basket: { products: [] },
         fridge: { products: [] },
-        cooking: { recipes: [] }
+        cooking: { recipes: [] },
       };
       await setDoc(userDocRef, newUserData);
       userDoc = await transaction.get(userDocRef);
     }
+
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
 
@@ -72,17 +78,36 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
     if (recipe.id) {
       const index = cooking.recipes.findIndex(r => r.id === recipe.id);
       if (index !== -1) {
+        oldImageUri = cooking.recipes[index]?.imageUri;
         cooking.recipes[index] = { ...cooking.recipes[index], ...recipe };
       } else {
+        recipe.id = Date.now().toString();
         cooking.recipes.push(recipe);
       }
     } else {
       recipe.id = Date.now().toString();
       cooking.recipes.push(recipe);
     }
+
     transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
     return { recipes: cooking.recipes };
   });
+
+  // Storage deletion (must happen outside the transaction)
+  if (
+    oldImageUri &&
+    newImageUri &&
+    oldImageUri !== newImageUri
+  ) {
+    const oldImgRef = storageRef(storage, oldImageUri);
+    try {
+      await deleteObject(oldImgRef);
+    } catch (err) {
+      console.warn("Failed to delete old recipe image:", err);
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -94,17 +119,40 @@ export const addOrUpdateRecipe = async (userId, recipe) => {
  */
 export const updateRecipe = async (userId, recipeId, updatedRecipe) => {
   const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
+  let oldImageUri = null;
+  let newImageUri = updatedRecipe.imageUri || null;
+
+  const result = await runTransaction(db, async (transaction) => {
     const userDoc = await transaction.get(userDocRef);
     if (!userDoc.exists()) throw new Error("User document does not exist");
+
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
     const index = cooking.recipes.findIndex(r => r.id === recipeId);
     if (index === -1) throw new Error("Recipe not found");
+
+    oldImageUri = cooking.recipes[index]?.imageUri;
     cooking.recipes[index] = { ...cooking.recipes[index], ...updatedRecipe };
+
     transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
     return { recipes: cooking.recipes };
   });
+
+  // Delete old image from Storage if imagePath was changed
+  if (
+    oldImageUri &&
+    newImageUri &&
+    oldImageUri !== newImageUri
+  ) {
+    const oldImgRef = storageRef(storage, oldImageUri);
+    try {
+      await deleteObject(oldImgRef);
+    } catch (err) {
+      console.warn("Failed to delete old recipe image:", err);
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -115,15 +163,38 @@ export const updateRecipe = async (userId, recipeId, updatedRecipe) => {
  */
 export const removeRecipe = async (userId, recipeId) => {
   const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
+  let imagePathToDelete = null;
+
+  const result = await runTransaction(db, async (transaction) => {
     const userDoc = await transaction.get(userDocRef);
     if (!userDoc.exists()) throw new Error("User document does not exist");
+
     const userData = userDoc.data();
     const cooking = userData.cooking || { recipes: [] };
+
+    const recipeToDelete = cooking.recipes.find(r => r.id === recipeId);
+    if (!recipeToDelete) throw new Error("Recipe not found");
+
+    imagePathToDelete = recipeToDelete.imageUri || null;
+
     const updatedRecipes = cooking.recipes.filter(r => r.id !== recipeId);
     transaction.update(userDocRef, { "cooking.recipes": updatedRecipes });
+
     return { recipes: updatedRecipes };
   });
+
+  // 🔥 Delete associated image after transaction
+  if (imagePathToDelete) {
+    const imgRef = storageRef(storage, imagePathToDelete);
+    try {
+      await deleteObject(imgRef);
+      console.log("✅ Deleted image:", imagePathToDelete);
+    } catch (err) {
+      console.warn("⚠️ Failed to delete recipe image:", err);
+    }
+  }
+
+  return result;
 };
 
 /**
