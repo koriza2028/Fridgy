@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 // import * as ImagePicker from 'expo-image-picker';
 
 import Modal from "react-native-modal";
@@ -9,22 +9,6 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 
 
   return (
-    // <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
-    //   <View style={styles.imageModalContent}>
-    //     <Button title="Pick from device" onPress={pickImageFromDevice} />
-    //     <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
-    //     <View style={styles.StaticImageRow}>
-    //       {staticImages.map((img, index) => (
-    //         <TouchableOpacity key={index} onPress={() => handleStaticImageSelect(img)}>
-    //           <Image
-    //             source={img}
-    //             style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
-    //           />
-    //         </TouchableOpacity>
-    //       ))}
-    //     </View>
-    //   </View>
-    // </Modal>
 
     <Modal visible={modalVisible} animationType="fade" onBackdropPress={onClose} backdropColor="black" backdropOpacity={0.5} styles={{ margin: 0 }}>
       <BlurView intensity={0} style={styles.blurContainer}>
@@ -35,22 +19,22 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
           <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
 
-            <TouchableOpacity onPress={pickImageFromDevice} style={styles.optionImageContainer}>
+            <Pressable onPress={pickImageFromDevice} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Upload Image</Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {imageOptions.map((option, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
+              <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
                     <Image source={option} style={styles.optionImage} resizeMode="cover" />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
             
           </View>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Pressable style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
       </BlurView>
