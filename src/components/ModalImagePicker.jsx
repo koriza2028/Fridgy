@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-na
 import * as ImagePicker from 'expo-image-picker';
 
 
-const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) => {
+const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => {
   
   const requestPermissions = async () => {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
@@ -62,34 +62,43 @@ const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) =>
   };
 
   return (
+    // <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
+    //   <View style={styles.imageModalContent}>
+    //     <Button title="Pick from device" onPress={pickImageFromDevice} />
+    //     <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
+    //     <View style={styles.StaticImageRow}>
+    //       {staticImages.map((img, index) => (
+    //         <TouchableOpacity key={index} onPress={() => handleStaticImageSelect(img)}>
+    //           <Image
+    //             source={img}
+    //             style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
+    //           />
+    //         </TouchableOpacity>
+    //       ))}
+    //     </View>
+    //   </View>
+    // </Modal>
+
     <Modal visible={modalVisible} animationType="fade" transparent>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
+
           <Text style={styles.title}>Choose an Image</Text>
-
-          {/* Upload Options */}
           <View style={styles.optionsContainer}>
+
             <TouchableOpacity onPress={pickImageFromGallery} style={styles.optionImageContainer}>
-              <Text style={styles.uploadText}>Pick from Gallery</Text>
+              <Text style={styles.uploadText}>Upload Image</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={takePhoto} style={styles.optionImageContainer}>
-              <Text style={styles.uploadText}>Take a Photo</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Static Image Options */}
-          <View style={styles.optionsContainer}>
             {imageOptions.map((option, index) => (
               <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
-                  <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
+                    <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
                 </View>
               </TouchableOpacity>
             ))}
+            
           </View>
-
-          {/* Close Button */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
           </TouchableOpacity>
@@ -158,4 +167,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageOptionsModal;
+
+
+export default ModalImagePicker;
