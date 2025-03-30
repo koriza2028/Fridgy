@@ -3,9 +3,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  setPersistence,
-  inMemoryPersistence
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';

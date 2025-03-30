@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Modal, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Pressable, Modal, Dimensions, StyleSheet } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 
 import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, addButtonColor, buttonColor } from '../../../assets/Styles/styleVariables';
@@ -91,7 +91,7 @@ const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
 
   return (
     <View style={styles.dropdownContainer} ref={dropdownRef}>
-      <TouchableOpacity
+      <Pressable
         style={[styles.dropdownHeader, selectedOptions.length > 0 && styles.selectedDropdownContainer]}
         onPress={toggleDropdown}
       >
@@ -101,10 +101,10 @@ const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
         ) : (
           <Entypo name="chevron-down" size={12} />
         )}
-      </TouchableOpacity>
+      </Pressable>
       {open && dropdownLayout && (
         <Modal transparent animationType="none">
-          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={toggleDropdown}>
+          <Pressable style={styles.modalOverlay} activeOpacity={1} onPress={toggleDropdown}>
             <View
               style={[
                 styles.dropdownOptions,
@@ -121,7 +121,7 @@ const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
               }}
             >
               <Text style={styles.optionsHeader}>Filter by {label}</Text>
-              <TouchableOpacity
+              <Pressable
                 style={styles.resetButton}
                 onPress={() => {
                   setSelectedOptions([]);
@@ -129,22 +129,22 @@ const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
                 }}
               >
                 <Text style={styles.resetButtonText}>Clear filters</Text>
-              </TouchableOpacity>
+              </Pressable>
               {options.map((option, index) => {
                 const isSelected = selectedOptions.some((o) => o.tagName === option.tagName);
                 return (
-                  <TouchableOpacity key={index} style={styles.dropdownOption} onPress={() => toggleSelection(option)}>
+                  <Pressable key={index} style={styles.dropdownOption} onPress={() => toggleSelection(option)}>
                     <Text style={styles.optionText}>
                       {option.tagIcon} {option.tagName}
                     </Text>
                     <View style={styles.checkbox}>
                       {isSelected && <Entypo name="check" size={12} color="black" />}
                     </View>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
             </View>
-          </TouchableOpacity>
+          </Pressable>
         </Modal>
       )}
     </View>
@@ -166,10 +166,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     height: 30,
     overflow: 'hidden',
-    shadowColor: "darkgrey",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
+    boxShadowColor: "darkgrey",
+    boxShadowOffset: { width: 0, height: 1 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 1,
     elevation: 1,
   },
   selectedDropdownContainer: {
@@ -193,10 +193,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     minWidth: 160,
     borderRadius: 10,
-    shadowColor: "darkgrey",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: "darkgrey",
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,
   },
   dropdownOption: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Keyboard, Text, View, TouchableOpacity, ScrollView, RefreshControl, StyleSheet, Dimensions } from 'react-native';
+import { Keyboard, Text, View, Pressable, ScrollView, RefreshControl, StyleSheet, Dimensions } from 'react-native';
 
 import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';

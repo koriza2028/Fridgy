@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TextInput, Pressable, Image } from 'react-native';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 
 import { MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
@@ -37,18 +37,17 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
 
   const getImageSource = (product) => {
     if (product.imageUri) return product.imageUri;
-    console.log(product);
     if (product.staticImagePath) return product.staticImagePath;
     return require('../../../assets/ProductImages/banana_test.png');
   };
 
   return (
     product.isFromFridge ? (
-      <TouchableOpacity onPress={() => openInfoModal(product)}>
+      <Pressable onPress={() => openInfoModal(product)}>
         <View style={styles.BasketItem}>
-          <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+          <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
             <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.BasketItem_Name}>
             <Image 
@@ -65,24 +64,24 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           </View>
 
           <View style={styles.BasketItem_AmountAndButtons}>
-          <TouchableOpacity style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+          <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
-          <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
+          <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-           </TouchableOpacity>
+           </Pressable>
          </View>
 
         </View>
-      </TouchableOpacity>
+      </Pressable>
     ) : (
       <View style={styles.BasketItem}>
-        <TouchableOpacity style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+        <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
           <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
-        </TouchableOpacity>
+        </Pressable>
 
         <View style={styles.BasketItem_Name}>
           <Image 
@@ -106,15 +105,15 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
         </View>
 
         <View style={styles.BasketItem_AmountAndButtons}>
-          <TouchableOpacity style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+          <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
-          <TouchableOpacity style={styles.BasketItem_AddButton} onPress={addProduct}>
+          <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-           </TouchableOpacity>
+           </Pressable>
          </View>
 
       </View>

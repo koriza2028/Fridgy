@@ -188,9 +188,8 @@ export const removeRecipe = async (userId, recipeId) => {
     const imgRef = storageRef(storage, imagePathToDelete);
     try {
       await deleteObject(imgRef);
-      console.log("✅ Deleted image:", imagePathToDelete);
     } catch (err) {
-      console.warn("⚠️ Failed to delete recipe image:", err);
+      console.warn("Failed to delete recipe image:", err);
     }
   }
 

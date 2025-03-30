@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontFamily: MainFont,
 
-        shadowColor: "darkgrey", 
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 2,
+        boxShadowColor: "darkgrey", 
+        boxShadowOffset: { width: 0, height: 2 },
+        boxShadowOpacity: 0.4,
+        boxShadowRadius: 2,
         elevation: 2, 
       },
 })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { MainFont, TextFontSize, addButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import Dropdown from './Dropdown';
@@ -52,9 +52,9 @@ export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {
           onSelect={(selected) => handleDropdownChange(tagType, selected)}
         />
       ))}
-      <TouchableOpacity style={styles.globalResetButton} onPress={handleGlobalReset}>
+      <Pressable style={styles.globalResetButton} onPress={handleGlobalReset}>
         <Text style={styles.globalResetButtonText}>Clear filters</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

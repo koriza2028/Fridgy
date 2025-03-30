@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Text, Pressable, Dimensions, Image } from 'react-native';
 
 import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, SecondTitleFontSize, SecondTitleFontWeight, deleteButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -16,7 +16,7 @@ export default function MealCard({ navigation, recipe, isAvailable }) {
     });
       
     return (
-        <TouchableOpacity style={styles.MealBody} onPress={() => { navigation.navigate('RecipeCreatePage', {recipe}) }}>
+        <Pressable style={styles.MealBody} onPress={() => { navigation.navigate('RecipeCreatePage', {recipe}) }}>
             
             <View>
                 {recipe.imageUri ? (
@@ -51,7 +51,7 @@ export default function MealCard({ navigation, recipe, isAvailable }) {
             <View style={isAvailable ? styles.ProductAvailabilityLabel : 
                 [styles.ProductAvailabilityLabel, styles.ProductNonAvailabilityLabel]}/>
 
-        </TouchableOpacity>
+        </Pressable>
 )}
 
 
@@ -76,16 +76,16 @@ const styles = StyleSheet.create({
 
         backgroundColor: '#fff',
         borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
+        boxShadowColor: '#000',
+        boxShadowOffset: { width: 0, height: 2 },
+        boxShadowOpacity: 0.2,
+        boxShadowRadius: 6,
         elevation: 2,
   
-        // shadowColor: '#007bff', 
-        // shadowOffset: { width: 0, height: 4 },
-        // shadowOpacity: 0.4,
-        // shadowRadius: 10,
+        // boxShadowColor: '#007bff', 
+        // boxShadowOffset: { width: 0, height: 4 },
+        // boxShadowOpacity: 0.4,
+        // boxShadowRadius: 10,
         // elevation: 5,
     },
 

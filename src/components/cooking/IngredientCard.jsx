@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TextInput, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TextInput, Image, Pressable } from 'react-native';
 
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
@@ -36,10 +36,10 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
                 {/* Will be expandable or ...? */}
             </View>
             
-          <TouchableOpacity style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
+          <Pressable style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
             <Text style={styles.IngredientItem_RemoveButton_Text}>X</Text>
             {/* Will be replaced with Swipe */}
-          </TouchableOpacity>
+          </Pressable>
 
         </View>
 

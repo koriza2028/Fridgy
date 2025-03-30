@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -69,30 +69,30 @@ const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) =>
 
           {/* Upload Options */}
           <View style={styles.optionsContainer}>
-            <TouchableOpacity onPress={pickImageFromGallery} style={styles.optionImageContainer}>
+            <Pressable onPress={pickImageFromGallery} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Pick from Gallery</Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity onPress={takePhoto} style={styles.optionImageContainer}>
+            <Pressable onPress={takePhoto} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Take a Photo</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* Static Image Options */}
           <View style={styles.optionsContainer}>
             {imageOptions.map((option, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
+              <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
                   <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
 
           {/* Close Button */}
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Pressable style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Modal>
