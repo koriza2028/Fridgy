@@ -173,7 +173,7 @@ export default function ModalCreateProduct({
   };
 
   const createOrUpdateProduct = async () => {
-    const productData = { name, category, amount, isArchived: false, notes, imageUri };
+    const productData = { name, category, amount, isArchived: false, notes, imageUri, staticImagePath };
     try {
       await addOrUpdateProduct(userId, productDataId = id, productData);
   
