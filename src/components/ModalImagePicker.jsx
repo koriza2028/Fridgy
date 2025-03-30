@@ -3,7 +3,7 @@ import { Modal, View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 
-const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) => {
+const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => {
   
   const requestPermissions = async () => {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
@@ -62,12 +62,28 @@ const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) =>
   };
 
   return (
+    // <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
+    //   <View style={styles.imageModalContent}>
+    //     <Button title="Pick from device" onPress={pickImageFromDevice} />
+    //     <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
+    //     <View style={styles.StaticImageRow}>
+    //       {staticImages.map((img, index) => (
+    //         <TouchableOpacity key={index} onPress={() => handleStaticImageSelect(img)}>
+    //           <Image
+    //             source={img}
+    //             style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
+    //           />
+    //         </TouchableOpacity>
+    //       ))}
+    //     </View>
+    //   </View>
+    // </Modal>
+
     <Modal visible={modalVisible} animationType="fade" transparent>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>Choose an Image</Text>
 
-          {/* Upload Options */}
+          <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
             <Pressable onPress={pickImageFromGallery} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Pick from Gallery</Text>
@@ -83,10 +99,11 @@ const ImageOptionsModal = ({ modalVisible, imageOptions, onSelect, onClose }) =>
             {imageOptions.map((option, index) => (
               <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
-                  <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
+                    <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
                 </View>
               </Pressable>
             ))}
+            
           </View>
 
           {/* Close Button */}
@@ -158,4 +175,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageOptionsModal;
+
+
+export default ModalImagePicker;

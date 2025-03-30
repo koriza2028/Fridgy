@@ -17,7 +17,7 @@ import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import ModalProductCategoryPicker from "./ModalProductCategoryPicker";
-import ImageOptionsModal from "../../components/ModalImagePicker";
+// import ModalImagePicker from "../../components/ModalImagePicker";
 import useAuthStore from '../../store/authStore';  // Correct path to your auth store
 import { addOrUpdateProduct, deleteProduct } from "../../store/fridgeStore";
 
@@ -254,6 +254,8 @@ export default function ModalCreateProduct({
                     </View>
                   </View>
                 </Modal>
+
+
               </View>
 
               <View style={styles.productDataEntry_Wrapper}>
@@ -498,9 +500,11 @@ const styles = StyleSheet.create({
     color: blackTextColor,
     fontWeight: 'bold',
   },
+
+
   StaticImageLabel: { fontSize: 14, marginBottom: 6, color: greyTextColor, textAlign: 'center' },
   StaticImageRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
   StaticThumbnail: { width: 60, height: 60, borderRadius: 8, marginHorizontal: 5, borderWidth: 1, borderColor: '#ccc' },
   SelectedStaticImage: { borderColor: buttonColor, borderWidth: 2 },
-  imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' }
+  imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' },
 });
