@@ -19,7 +19,8 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import 'react-native-gesture-handler'; 
-import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import useAuthStore from './store/authStore';
 
 
@@ -87,78 +88,93 @@ const App = () => {
   if (user === null) {
     // User is not logged in, show the login page
     return (
-      <NavigationContainer>
-        <LoginPage />
-      </NavigationContainer>
+      <GestureHandlerRootView style={styles.container}>
+        <NavigationContainer>
+          <LoginPage />
+        </NavigationContainer>
+      </GestureHandlerRootView>
     );
   }
   return (
-    <NavigationContainer >
-      <View style={{backgroundColor: backgroundColor, flex: 1}}>
-      <Tab.Navigator 
-        initialRouteName="Fridge"
-        // initialRouteName="Cooking"
-        // initialRouteName="ReceiptCreatePage"
+    <GestureHandlerRootView style={styles.container}>
 
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarLabelStyle: { fontFamily: MainFont, fontSize: 10 },
-          tabBarIcon: ({ focused, color }) => {
-            let iconName;
-            let size = focused ? 30 : 24;
+      <NavigationContainer >
+        <View style={{backgroundColor: backgroundColor, flex: 1}}>
+        <Tab.Navigator 
+          initialRouteName="Fridge"
+          // initialRouteName="Cooking"
+          // initialRouteName="ReceiptCreatePage"
 
-            if (route.name === 'Fridge') {
-              iconName = 'fridge';
-              return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
-            } else if (route.name === 'Cooking') {
-              iconName = 'kitchen-set';
-              return <FontAwesomeIcons name={iconName} size={size} color={color} />;
-            } else if (route.name === 'Basket') {
-              iconName = 'shopping-basket';
-              return <MaterialIcons name={iconName} size={size} color={color} />;
-            }
-          },
-          tabBarActiveTintColor: '#0056b3', // Active tab icon color
-          tabBarInactiveTintColor: 'black', // Inactive tab icon color
-          tabBarActiveBackgroundColor: buttonColor, // Active tab background color
-          tabBarInactiveBackgroundColor: '#ffffff', // Inactive tab background color
-          tabBarStyle: {
-            borderTopWidth: 0,
-            elevation: 0, 
-            height: 50,
-            borderTopRightRadius: 20,
-            borderTopLeftRadius: 20,
-            borderColor: 'white',
-            // margin: 10, 
-            overflow: 'hidden',
-          },
-        })}
-      >
-        <Tab.Screen
-          name="Fridge"
-          component={FridgeStack}
-          options={{
-            tabBarShowLabel: false,
-          }}
-        />
-        <Tab.Screen
-          name="Cooking"
-          component={CookingStack}
-          options={{
-            tabBarShowLabel: false,
-          }}
-        />
-        <Tab.Screen
-          name="Basket"
-          component={BasketStack}
-          options={{
-            tabBarShowLabel: false,
-          }}
-        />
-      </Tab.Navigator>
-      </View>
-    </NavigationContainer>
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarLabelStyle: { fontFamily: MainFont, fontSize: 10 },
+            tabBarIcon: ({ focused, color }) => {
+              let iconName;
+              let size = focused ? 30 : 24;
+
+              if (route.name === 'Fridge') {
+                iconName = 'fridge';
+                return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
+              } else if (route.name === 'Cooking') {
+                iconName = 'kitchen-set';
+                return <FontAwesomeIcons name={iconName} size={size} color={color} />;
+              } else if (route.name === 'Basket') {
+                iconName = 'shopping-basket';
+                return <MaterialIcons name={iconName} size={size} color={color} />;
+              }
+            },
+            tabBarActiveTintColor: '#0056b3', // Active tab icon color
+            tabBarInactiveTintColor: 'black', // Inactive tab icon color
+            tabBarActiveBackgroundColor: buttonColor, // Active tab background color
+            tabBarInactiveBackgroundColor: '#ffffff', // Inactive tab background color
+            tabBarStyle: {
+              borderTopWidth: 0,
+              elevation: 0, 
+              height: 50,
+              borderTopRightRadius: 20,
+              borderTopLeftRadius: 20,
+              borderColor: 'white',
+              // margin: 10, 
+              overflow: 'hidden',
+            },
+          })}
+        >
+          <Tab.Screen
+            name="Fridge"
+            component={FridgeStack}
+            options={{
+              tabBarShowLabel: false,
+            }}
+          />
+          <Tab.Screen
+            name="Cooking"
+            component={CookingStack}
+            options={{
+              tabBarShowLabel: false,
+            }}
+          />
+          <Tab.Screen
+            name="Basket"
+            component={BasketStack}
+            options={{
+              tabBarShowLabel: false,
+            }}
+          />
+        </Tab.Navigator>
+        </View>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
-export default gestureHandlerRootHOC(App);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  navigationContainer: {
+    flex: 1,
+    backgroundColor: backgroundColor,
+  }
+});
+
+export default App;

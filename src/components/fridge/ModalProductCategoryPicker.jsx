@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import Modal from 'react-native-modal';
 import { BlurView } from 'expo-blur';
 
@@ -66,9 +66,9 @@ export default function ModalProductCategoryPicker({
 
   return (
     <Modal isVisible={isCategoryModalVisible} style={styles.modal} backdropColor="darkgrey" backdropOpacity={0.2} >
-      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+      <Pressable onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeButtonText}>X</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <BlurView intensity={70} style={styles.blurContainer}>
         <View style={styles.modalContent}>
@@ -78,7 +78,7 @@ export default function ModalProductCategoryPicker({
             {Object.entries(groupedCategories).map(([tagType, tags]) => (
               <View key={tagType} style={styles.categoryGroup}>
                 {tags.map((category, index) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={category.tagName}
                     index={index}
                     style={[styles.CategoryPickerOption, 
@@ -101,16 +101,16 @@ export default function ModalProductCategoryPicker({
                       {category.tagName}
                     </Text>
 
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </View>
             ))}
           </View>
 
           {multiSelect && (
-            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmSelection}>
+            <Pressable style={styles.confirmButton} onPress={handleConfirmSelection}>
               <Text style={styles.confirmButtonText}>Confirm selection</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </BlurView>

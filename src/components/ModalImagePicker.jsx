@@ -34,23 +34,30 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 
           <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
+            <Pressable onPress={pickImageFromGallery} style={styles.optionImageContainer}>
+              <Text style={styles.uploadText}>Pick from Gallery</Text>
+            </Pressable>
 
             <TouchableOpacity onPress={pickImageFromDevice} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Upload Image</Text>
             </TouchableOpacity>
 
+          {/* Static Image Options */}
+          <View style={styles.optionsContainer}>
             {imageOptions.map((option, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
+              <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
                     <Image source={option} style={styles.optionImage} resizeMode="cover" />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
             
           </View>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+
+          {/* Close Button */}
+          <Pressable style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
       </BlurView>

@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   Image,
-  TouchableOpacity,
+  Pressable,
   Alert,
   Platform,
   Dimensions,
@@ -221,9 +221,9 @@ export default function ModalCreateProduct({
     <Modal isVisible={isVisible} style={styles.modal} animationIn="slideInUp" animationOut="slideOutDown" backdropColor="black" backdropOpacity={0.5}>
       <BlurView intensity={0} style={styles.blurContainer}>
         <View style={styles.modalContent}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <Pressable onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>X</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.CreateProduct_ContentWrapper}>
             <View style={styles.ProductInfo}>
@@ -234,9 +234,9 @@ export default function ModalCreateProduct({
               </View>
 
               <View style={styles.ProductCreatePicture}>
-                <TouchableOpacity onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
+                <Pressable onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
                   {renderProductImage()}
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
                   <View style={styles.imageModalContent}>
@@ -244,12 +244,12 @@ export default function ModalCreateProduct({
                     <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
                     <View style={styles.StaticImageRow}>
                       {staticImages.map((img, index) => (
-                        <TouchableOpacity key={index} onPress={() => handleStaticImageSelect(img)}>
+                        <Pressable key={index} onPress={() => handleStaticImageSelect(img)}>
                           <Image
                             source={img}
                             style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
                           />
-                        </TouchableOpacity>
+                        </Pressable>
                       ))}
                     </View>
                   </View>
@@ -262,7 +262,6 @@ export default function ModalCreateProduct({
                   imageOptions={staticImages}
                   pickImageFromDevice={pickImageFromDevice}
                 />
-
 
               </View>
 
@@ -278,7 +277,7 @@ export default function ModalCreateProduct({
                   />
                 </View>
                 
-                <TouchableOpacity style={[styles.productDataEntry]} onPress={openCategoryModal}>
+                <Pressable style={[styles.productDataEntry]} onPress={openCategoryModal}>
                   <Text style={styles.productCategory_Text}>
                     Category:
                     <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
@@ -294,7 +293,7 @@ export default function ModalCreateProduct({
                     categories={categories}
                     alreadySelectedCategory={category}
                   />
-                </TouchableOpacity>
+                </Pressable>
                
                 <View style={[styles.productDataEntry, styles.productAmountWrapper]}>
                   <TextInput
@@ -321,16 +320,16 @@ export default function ModalCreateProduct({
 
                 <View style={styles.buttonPanel}>
                   {!isCreatingNew && (
-                    <TouchableOpacity style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
+                    <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
                       <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   )}
 
-                  <TouchableOpacity 
+                  <Pressable 
                     style={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
                     onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
                     <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             </View> 
@@ -418,10 +417,10 @@ const styles = StyleSheet.create({
     minHeight: 36,
     backgroundColor: buttonColor,
     borderRadius: 30,
-    shadowColor: buttonColor, 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: buttonColor, 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,          
   },
   productCategory_Text: {
@@ -460,10 +459,10 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     fontFamily: MainFont_Title,
     fontSize: SecondTitleFontSize,
-    shadowColor: buttonColor, 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: buttonColor, 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,  
   },
   Button_UpdateProductAlone: {
@@ -475,10 +474,10 @@ const styles = StyleSheet.create({
   },
   Button_UpdateProductDisabled: {
     backgroundColor: '#A9A9A9', 
-    shadowColor: '#A9A9A9', 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: '#A9A9A9', 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4, 
   },
   Button_DeleteProduct: {
@@ -488,10 +487,10 @@ const styles = StyleSheet.create({
     backgroundColor: deleteButtonColor,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: deleteButtonColor, 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: deleteButtonColor, 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,  
   },
   Button_DeleteProduct_Text: {

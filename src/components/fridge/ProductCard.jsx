@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
+import { StyleSheet, View, Text, Image, Pressable, Dimensions } from "react-native";
 
 import { buttonColor, addButtonColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -35,7 +35,6 @@ export default function ProductCard(props) {
     };
 
     const handleMoveToBasket = async (id) => {
-        console.log(id);
         await moveProductToBasket(userId, id);
         props.onChange();
         props.onMoveToBasket();
@@ -56,25 +55,25 @@ export default function ProductCard(props) {
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            
-                    <TouchableOpacity style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
+                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>-</Text>
-                    </TouchableOpacity>
+                    </Pressable>
 
                     <Text style={styles.ProductAmountLabel}>{props.product.amount} {props.product.UoM}</Text>
 
-                    <TouchableOpacity style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
+                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
 
-                <TouchableOpacity style={styles.ProductNameAndCategory} onPress={() => props.onOpenModal(props.product)}>
+                <Pressable style={styles.ProductNameAndCategory} onPress={() => props.onOpenModal(props.product)}>
                     <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
                     <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
+                <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
                     <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
-                </TouchableOpacity>
+                </Pressable>
                 
             </View>
         </View>
@@ -93,10 +92,10 @@ const styles = StyleSheet.create({
 
         backgroundColor: '#fff',
         borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
+        boxShadowColor: '#000',
+        boxShadowOffset: { width: 0, height: 4 },
+        boxShadowOpacity: 0.2,
+        boxShadowRadius: 6,
         elevation: 4,
     },
     ProductPicture: {
@@ -144,10 +143,10 @@ const styles = StyleSheet.create({
         position: 'relative',
         top: -36,
 
-        shadowColor: buttonColor, 
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
+        boxShadowColor: buttonColor, 
+        boxShadowOffset: { width: 0, height: 4 },
+        boxShadowOpacity: 0.4,
+        boxShadowRadius: 4,
         elevation: 4,  
     },
     ProductAmountLabel: {

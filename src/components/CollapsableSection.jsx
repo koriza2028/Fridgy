@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, Animated, StyleSheet, Text, Pressable } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import { MainFont, ReceiptFont, MainFont_Bold, MainFont_Title, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
@@ -50,14 +50,14 @@ import { useFonts } from 'expo-font';
 
 //   return (
 //     <View style={styles.section}>
-//       <TouchableOpacity
+//       <Pressable
 //         onPress={toggleCollapse}
 //         style={styles.CollapsableTitle}
 //         accessibilityLabel={`Toggle ${title} section`}
 //       >
 //         <Text style={styles.FridgeProductListHeader}>{title}</Text>
 //         <Entypo name={`chevron-${IconDirection}`} size={32} />
-//       </TouchableOpacity>
+//       </Pressable>
 
 //     {/* Immediately render the children but apply animation to height */}
 //     <Animated.View
