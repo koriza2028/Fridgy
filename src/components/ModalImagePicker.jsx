@@ -34,30 +34,23 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 
           <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
-            <Pressable onPress={pickImageFromGallery} style={styles.optionImageContainer}>
-              <Text style={styles.uploadText}>Pick from Gallery</Text>
-            </Pressable>
 
             <TouchableOpacity onPress={pickImageFromDevice} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Upload Image</Text>
             </TouchableOpacity>
 
-          {/* Static Image Options */}
-          <View style={styles.optionsContainer}>
             {imageOptions.map((option, index) => (
-              <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
+              <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
                     <Image source={option} style={styles.optionImage} resizeMode="cover" />
                 </View>
-              </Pressable>
+              </TouchableOpacity>
             ))}
             
           </View>
-
-          {/* Close Button */}
-          <Pressable style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
       </BlurView>
@@ -66,6 +59,19 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 };
 
 const styles = StyleSheet.create({
+
+  // StaticImageLabel: { fontSize: 14, marginBottom: 6, color: greyTextColor, textAlign: 'center' },
+  // StaticImageRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
+  // StaticThumbnail: { width: 60, height: 60, borderRadius: 8, marginHorizontal: 5, borderWidth: 1, borderColor: '#ccc' },
+  // SelectedStaticImage: { borderColor: buttonColor, borderWidth: 2 },
+  // imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' },
+
+  // blurContainer: {
+  //   flex: 1,
+  //   width: '100%',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
 
   modalContainer: {
     flex: 1,
