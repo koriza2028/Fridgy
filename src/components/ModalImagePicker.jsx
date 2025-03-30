@@ -1,65 +1,12 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+// import * as ImagePicker from 'expo-image-picker';
 
+import Modal from "react-native-modal";
+import { BlurView } from 'expo-blur';
+import { backgroundColor } from '../../assets/Styles/styleVariables';
+const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickImageFromDevice }) => {
 
-const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => {
-  
-  const requestPermissions = async () => {
-    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-    const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (cameraStatus !== 'granted' || galleryStatus !== 'granted') {
-      Alert.alert('Permission Denied', 'You need to allow camera and gallery access.');
-      return false;
-    }
-    return true;
-  };
-
-  // Pick an image from the gallery
-  const pickImageFromGallery = async () => {
-    const permissionGranted = await requestPermissions();
-    if (!permissionGranted) return;
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.5,
-    });
-
-    if (!result.canceled) {
-      onSelect(result.assets[0].uri); // Send the image URI to the parent component
-    }
-  };
-
-  // Take a photo using the camera
-  const takePhoto = async () => {
-    const permissionGranted = await requestPermissions();
-    if (!permissionGranted) return;
-
-    let result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      onSelect(result.assets[0].uri); // Send the image URI to the parent component
-    }
-  };
-
-  // Get image source for both static and uploaded images
-  const getImageSource = (imageName) => {
-    if (typeof imageName === 'string' && imageName.startsWith('file://')) {
-      return { uri: imageName }; // Handle dynamic images
-    }
-    const images = {
-      '../../../assets/ProductImages/banana_test.png': require('../../assets/ProductImages/banana_test.png'),
-      '../../../assets/ProductImages/apple_test.png': require('../../assets/ProductImages/apple_test.png'),
-      '../../../assets/ProductImages/milk_test.png': require('../../assets/ProductImages/milk_test.png'),
-    };
-
-    return images[imageName] || require('../../assets/ProductImages/banana_test.png'); // Default fallback
-  };
 
   return (
     // <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
@@ -79,21 +26,23 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => 
     //   </View>
     // </Modal>
 
-    <Modal visible={modalVisible} animationType="fade" transparent>
+    <Modal visible={modalVisible} animationType="fade" onBackdropPress={onClose} backdropColor="black" backdropOpacity={0.5} styles={{ margin: 0 }}>
+      <BlurView intensity={0} style={styles.blurContainer}>
       <View style={styles.modalContainer}>
+
         <View style={styles.modalContent}>
 
           <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
 
-            <TouchableOpacity onPress={pickImageFromGallery} style={styles.optionImageContainer}>
+            <TouchableOpacity onPress={pickImageFromDevice} style={styles.optionImageContainer}>
               <Text style={styles.uploadText}>Upload Image</Text>
             </TouchableOpacity>
 
             {imageOptions.map((option, index) => (
               <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
-                    <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
+                    <Image source={option} style={styles.optionImage} resizeMode="cover" />
                 </View>
               </TouchableOpacity>
             ))}
@@ -104,22 +53,29 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => 
           </TouchableOpacity>
         </View>
       </View>
+      </BlurView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // Dimmed background
+    // backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center',
     justifyContent: 'center',
+    // backgroundColor: backgroundColor,
+    // backgroundColor: 'rgba(255, 255, 255, 0)',
+    borderColor: '#C0C0C0',
+    borderWidth: 1,
+    borderRadius: 10,
   },
   modalContent: {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
-    width: '80%',
+    width: '100%',
   },
   title: {
     fontSize: 18,
