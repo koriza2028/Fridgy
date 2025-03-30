@@ -255,7 +255,6 @@ export default function ModalCreateProduct({
                   </View>
                 </Modal>
 
-
               </View>
 
               <View style={styles.productDataEntry_Wrapper}>
