@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     color: greyTextColor,
-    lineHeight: '140%',
+    lineHeight: 20,
   },
   buttonPanel: {
     width: '100%',

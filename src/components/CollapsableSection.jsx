@@ -5,78 +5,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import { MainFont, ReceiptFont, MainFont_Bold, MainFont_Title, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
-// const CollapsibleSection = ({ children, title}) => {
-
-//   const [fontsLoaded] = useFonts({
-//       'Grotesk': require('../../assets/fonts/Grotesk/SpaceGrotesk-Regular.ttf'),
-//       'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
-//       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
-//       'Inter-Title': require('../../assets/fonts/Inter/Inter_24pt-Bold.ttf'),
-//   });
-
-//   const [isCollapsed, setIsCollapsed] = useState(false); // State for collapse/expand
-//   const [contentHeight, setContentHeight] = useState(0); // Measured content height
-//   const animationHeight = useRef(new Animated.Value(0)).current; // Animation height
-
-//   const [IconDirection, setIconDirection] = useState('down');
-
-//   // Toggle collapse/expand
-//   const toggleCollapse = () => {
-//     Animated.timing(animationHeight, {
-//       toValue: isCollapsed ? contentHeight : 0, // Expand to content height or collapse to 0
-//       duration: 100, // Animation duration
-//       useNativeDriver: false, // Height animations require `false`
-//     }).start(() =>  { 
-//       setIconDirection(isCollapsed ? "down" : "up");
-//       setIsCollapsed(!isCollapsed);
-//     }); 
-//   };
-
-//   useEffect(() => {
-//     if (contentHeight > 0) {
-//       animationHeight.setValue(contentHeight); // Set initial height
-//     }
-//   }, [contentHeight]);
-
-
-//   const handleLayout = (event) => {
-//     const { height } = event.nativeEvent.layout;
-//     setContentHeight(height); // Save the measured height
-//     if (!isCollapsed && animationHeight._value === 0) {
-//       animationHeight.setValue(height); // Set initial expanded height
-//     }
-//   };
-
-
-//   return (
-//     <View style={styles.section}>
-//       <Pressable
-//         onPress={toggleCollapse}
-//         style={styles.CollapsableTitle}
-//         accessibilityLabel={`Toggle ${title} section`}
-//       >
-//         <Text style={styles.FridgeProductListHeader}>{title}</Text>
-//         <Entypo name={`chevron-${IconDirection}`} size={32} />
-//       </Pressable>
-
-//     {/* Immediately render the children but apply animation to height */}
-//     <Animated.View
-//       style={[
-//         styles.collapsibleView,
-//         { height: animationHeight }, // Animate height based on measured height
-//       ]}
-//     >
-//       <View
-//         style={styles.FridgeProductLis}
-//         onLayout={handleLayout} // Measure the content height
-//       >
-//         {children}
-//       </View>
-//     </Animated.View>
-//   </View>
-
-//   );
-// };
 
 const CollapsibleSection = ({ children, title}) => {
 
@@ -103,6 +31,7 @@ const styles = StyleSheet.create({
 
   section: {
     // padding: 4,
+    marginBottom: 10,
   },
     collapsibleView: {
       overflow: 'hidden',

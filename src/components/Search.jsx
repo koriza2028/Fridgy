@@ -14,7 +14,7 @@ export default function SearchInput({ placeholder, query, onChangeText }) {
     // const searchQuery = (searchQuery !== null && typeof searchQuery !== 'object' && searchQuery !== undefined) ? searchQuery : "";
 
     return (         
-        <TextInput style={styles.searchInput} placeholder={placeholder} value={query} onChangeText={onChangeText} placeholderTextColor={'#9e9e9e'} ></TextInput>
+        <TextInput style={styles.searchInput} placeholder={placeholder} value={query} onChangeText={(text) => onChangeText(text)} placeholderTextColor={'#9e9e9e'} ></TextInput>
     )}
 
 const styles = StyleSheet.create({

@@ -152,7 +152,7 @@ export default function FridgePage({ navigation }) {
                                 />
                             ))
                         ) : (
-                            <Text style={{paddingLeft: 4, fontFamily: MainFont}}>No available products found.</Text>
+                            <Text style={{fontFamily: MainFont, marginBottom: 10}}>No available products found.</Text>
                         )}
                     </CollapsibleSection>
                 
@@ -168,7 +168,7 @@ export default function FridgePage({ navigation }) {
                                 />
                             ))
                         ) : (
-                            <Text style={{paddingLeft: 4, fontFamily: MainFont}}>No archived products found.</Text>
+                            <Text style={{fontFamily: MainFont, marginBottom: 10}}>No archived products found.</Text>
                         )}
                     </CollapsibleSection>
 
@@ -224,7 +224,6 @@ const styles = StyleSheet.create({
     ProductFilterCategory: {
       marginRight: 10,
       marginBottom: 6,
-      paddingHorizontal: 8,
       paddingVertical: 6,
       paddingHorizontal: 10,
       borderRadius: 10,

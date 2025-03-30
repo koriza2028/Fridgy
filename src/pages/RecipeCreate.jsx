@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     fontSize: TextFontSize,
     height: 150,
     paddingVertical: 10,
-    lineHeight: Platform.OS === 'android' ? 24 : '140%',
+    lineHeight: Platform.OS === 'android' ? 24 : 20,
     borderColor: '#ddd',
     borderBottomWidth: 1,
   },

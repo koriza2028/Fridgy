@@ -12,7 +12,7 @@ import { moveProductToBasket, decrementProductAmount, incrementProductAmount } f
 const { width } = Dimensions.get('window');
 // const productCardWidth = width*0.465;
 const productCardWidth = width*0.46;
-const productCardHeight = productCardWidth*1.34;
+const productCardHeight = productCardWidth*1.38;
 
 // Make the view for ipads too
 
