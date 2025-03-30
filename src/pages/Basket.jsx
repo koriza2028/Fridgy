@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, ScrollView, TouchableOpacity, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, ScrollView, Pressable, Text, Dimensions, StyleSheet } from 'react-native';
 
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
@@ -64,12 +64,6 @@ export default function BasketPage({ navigation }) {
       setError("Failed to fetch basket.");
     }
   };
-
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     refreshBasket();
-  //   }, [userId])
-  // );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -196,13 +190,13 @@ export default function BasketPage({ navigation }) {
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
 
-          <TouchableOpacity onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
+          <Pressable onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
             <Text style={styles.tempButtonText}>AutoBasket</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Pressable onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
           
@@ -241,9 +235,9 @@ export default function BasketPage({ navigation }) {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
+      <Pressable style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
         <Text style={styles.Button_ShowReceipt_Text}><MaterialCommunityIcons name={"basket-check"} size={32} color={isAnyChecked ? addButtonColor : 'black'} /></Text>
-      </TouchableOpacity>
+      </Pressable>
 
     </View>
   );
@@ -278,10 +272,10 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderColor: addButtonColor,
     borderWidth: 2,
-    shadowColor: '#007bff', 
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
+    boxShadowColor: '#007bff', 
+    boxShadowOffset: { width: 0, height: 2 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 2,
     elevation: 2,        
   },
   logoutButton: {

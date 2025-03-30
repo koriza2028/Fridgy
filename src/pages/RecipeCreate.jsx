@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { 
-  StyleSheet, View, Text, TextInput, Image, TouchableOpacity, 
+  StyleSheet, View, Text, TextInput, Image, Pressable, 
   Alert, Platform, Dimensions, ScrollView, RefreshControl 
 } from "react-native";
 
@@ -49,7 +49,6 @@ export default function RecipeCreatePage({ navigation, route }) {
         [
           {
             text: 'Cancel',
-            onPress: () => console.log('Deletion cancelled'),
             style: 'cancel',
           },
           {
@@ -135,7 +134,6 @@ export default function RecipeCreatePage({ navigation, route }) {
     if (userId) {
       fetchAllProducts(userId)
         .then(fetchedProducts => {
-          console.log('Fetched products:', fetchedProducts);
           const allProducts = fetchedProducts.sort((a, b) => a.name.localeCompare(b.name));
           setProducts(allProducts);
           setAvailableProducts(allProducts.filter(product => !product.isArchived));
@@ -273,7 +271,7 @@ export default function RecipeCreatePage({ navigation, route }) {
               style={styles.ProductCreatePicture} 
               source={imageUri ? { uri: imageUri } : require('../../assets/ProductImages/banana_test.png')}
             />
-            <TouchableOpacity onPress={handleImageUpload} style={styles.ProductPicture_Button}></TouchableOpacity>
+            <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button}></Pressable>
           </View>
 
           <View style={styles.productDataEntry_Wrapper}> 
@@ -300,7 +298,7 @@ export default function RecipeCreatePage({ navigation, route }) {
               />
             </View>
             <View style={styles.productDataEntry}>
-              <TouchableOpacity 
+              <Pressable 
                 style={[styles.productDataEntryInput, styles.productTags]} 
                 onPress={openCategoryModal}
               >
@@ -311,7 +309,7 @@ export default function RecipeCreatePage({ navigation, route }) {
                 ) : (
                   <Tag name={'Add tags +'} />
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
             <ModalProductCategoryPicker 
               isCategoryModalVisible={isCategoryModalVisible} 
@@ -329,9 +327,9 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
                 {isCreatingNew && (
-                  <TouchableOpacity onPress={() => openIngredientSearchModal(true)} style={styles.addIngredient_Button}>
+                  <Pressable onPress={() => openIngredientSearchModal(true)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             </View>
@@ -358,9 +356,9 @@ export default function RecipeCreatePage({ navigation, route }) {
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
                 {isCreatingNew && (
-                  <TouchableOpacity onPress={() => openIngredientSearchModal(false)} style={styles.addIngredient_Button}>
+                  <Pressable onPress={() => openIngredientSearchModal(false)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             </View>
@@ -394,11 +392,11 @@ export default function RecipeCreatePage({ navigation, route }) {
 
       <View style={styles.buttonPanel}>
         {!isCreatingNew && (
-          <TouchableOpacity style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
+          <Pressable style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
             <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
-        <TouchableOpacity 
+        <Pressable 
           style={[
             styles.Button_SaveRecipe, 
             isSaveDisabled && styles.Button_SaveRecipeDisabled, 
@@ -406,7 +404,7 @@ export default function RecipeCreatePage({ navigation, route }) {
           ]}
           onPress={saveOrUpdateRecipe} disabled={isSaveDisabled} >
           <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ButtonGoBack navigation={navigation} />
@@ -497,10 +495,10 @@ const styles = StyleSheet.create({
     borderColor: addButtonColor,
     paddingVertical: 4,
     paddingHorizontal: 6,
-    shadowColor: addButtonColor, 
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
+    boxShadowColor: addButtonColor, 
+    boxShadowOffset: { width: 0, height: 1 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 1,
     elevation: 1, 
   },
   addIngredient_ButtonText: {
@@ -532,10 +530,10 @@ const styles = StyleSheet.create({
     width: '80%',
     height: width / 9,
     borderRadius: 60,
-    shadowColor: buttonColor, 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: buttonColor, 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,         
   },
   Button_UpdateProduct_Text: {
@@ -552,18 +550,18 @@ const styles = StyleSheet.create({
     backgroundColor: deleteButtonColor,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: deleteButtonColor, 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: deleteButtonColor, 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4,
   },
   Button_SaveRecipeDisabled: {
     backgroundColor: '#A9A9A9',
-    shadowColor: '#A9A9A9', 
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    boxShadowColor: '#A9A9A9', 
+    boxShadowOffset: { width: 0, height: 4 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 4,
     elevation: 4, 
   },
 });

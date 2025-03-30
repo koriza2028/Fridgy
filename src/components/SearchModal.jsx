@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import { TextInput, View, Text, Pressable, FlatList, Image } from 'react-native';
 import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -41,7 +41,6 @@ const SearchModal = ({
   let renderItem = () => null;
 
   const getImageSource = (item) => {
-    console.log(item);
     if (item.imageUri) {
         return { uri: item.imageUri };
     }
@@ -56,15 +55,15 @@ const SearchModal = ({
       // If the item is a string, then it represents a new item option.
       if (typeof item === 'string') {
         return (
-          <TouchableOpacity style={styles.newItem} onPress={() => addProduct(item, false)}>
+          <Pressable style={styles.newItem} onPress={() => addProduct(item, false)}>
             <Text style={styles.searchItem_Text}>{item}</Text>
             <Text style={styles.ItemCategoryHint}>Add new item</Text>
-          </TouchableOpacity>
+          </Pressable>
         );
       }
       // Otherwise, it's an object from the fridge products.
       return (
-        <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
+        <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
           <Image
             source={getImageSource(item)}
             style={styles.searchItem_Image}
@@ -73,12 +72,12 @@ const SearchModal = ({
             <Text style={styles.searchItem_Text}>{item.name}</Text>
             <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       );
     };
   } else if (isRecipeCreate) {
     renderItem = ({ item }) => (
-      <TouchableOpacity style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
+      <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
         <Image
           source={getImageSource(item)}
           style={styles.searchItem_Image}
@@ -87,7 +86,7 @@ const SearchModal = ({
             <Text style={styles.searchItem_Text}>{item.name}</Text>
             <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
           </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 
@@ -108,9 +107,9 @@ const SearchModal = ({
       animationOutTiming={1}
       style={styles.modal}
     >
-      <TouchableOpacity onPress={closeSearchModal} style={styles.closeButton}>
+      <Pressable onPress={closeSearchModal} style={styles.closeButton}>
         <Entypo name="chevron-left" size={20} />
-      </TouchableOpacity>
+      </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
       <TextInput
@@ -170,10 +169,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontFamily: MainFont,
 
-    shadowColor: "darkgrey", 
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 2,
+    boxShadowColor: "darkgrey", 
+    boxShadowOffset: { width: 0, height: 2 },
+    boxShadowOpacity: 0.4,
+    boxShadowRadius: 2,
     elevation: 2, 
     // marginTop: 20,
     // marginBottom: 10,

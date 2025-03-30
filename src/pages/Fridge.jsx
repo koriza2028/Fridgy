@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Dimensions, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Dimensions, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
 // import { ServiceFactory } from "../../services/ServiceFactory";
@@ -91,12 +91,14 @@ export default function FridgePage({ navigation }) {
 };
 
   useFocusEffect(
-    React.useCallback(async () => {
+    React.useCallback(() => {
         if (userId) {
-            await Promise.all([
+            Promise.all([
                 refreshProducts(),
                 refreshUsedIngredients()
-            ]);
+            ]).catch(error => {
+                console.error("Error refreshing data:", error);
+            });
         }
     }, [userId])
   );
@@ -129,12 +131,12 @@ export default function FridgePage({ navigation }) {
 
                   <View style={styles.ProductFilter}>
                       {['All', ...categoryNames].map((category, index) => (
-                          <TouchableOpacity key={index} 
+                          <Pressable key={index} 
                           style={[styles.ProductFilterCategory, selectedCategory === category && styles.SelectedCategory,
                           ]}
                            onPress={() => filterByCategory(category)}>
                               <Text style={[styles.ProductFilterCategory_Text]}>{category}</Text>
-                          </TouchableOpacity>
+                          </Pressable>
                       ))}
                   </View>   
 
@@ -183,9 +185,9 @@ export default function FridgePage({ navigation }) {
               </View>
           </ScrollView>
 {/* 
-          <TouchableOpacity style={styles.Button_AddProduct} onPress={openModal}>
+          <Pressable style={styles.Button_AddProduct} onPress={openModal}>
               <Text style={styles.Button_AddProduct_Text}>+</Text>
-          </TouchableOpacity> */}
+          </Pressable> */}
 
           <AddNewButton creativeAction={openModal} />
       </View>
@@ -229,11 +231,11 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: '#ccc',
 
-      shadowColor: "darkgrey", 
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
-    elevation: 1, 
+      boxShadowColor: "darkgrey", 
+      boxShadowOffset: { width: 0, height: 1 },
+      boxShadowOpacity: 0.4,
+      boxShadowRadius: 1,
+      elevation: 1, 
     },
 
     ProductFilterCategory_Text: {

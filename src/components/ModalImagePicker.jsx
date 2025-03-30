@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Modal, View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -85,23 +85,31 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose }) => 
 
           <Text style={styles.title}>Choose an Image</Text>
           <View style={styles.optionsContainer}>
+            <Pressable onPress={pickImageFromGallery} style={styles.optionImageContainer}>
+              <Text style={styles.uploadText}>Pick from Gallery</Text>
+            </Pressable>
 
-            <TouchableOpacity onPress={pickImageFromGallery} style={styles.optionImageContainer}>
-              <Text style={styles.uploadText}>Upload Image</Text>
-            </TouchableOpacity>
+            <Pressable onPress={takePhoto} style={styles.optionImageContainer}>
+              <Text style={styles.uploadText}>Take a Photo</Text>
+            </Pressable>
+          </View>
 
+          {/* Static Image Options */}
+          <View style={styles.optionsContainer}>
             {imageOptions.map((option, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
+              <Pressable key={index} onPress={() => onSelect(option)} style={styles.optionContainer}>
                 <View style={styles.imageWrapper}>
                     <Image source={getImageSource(option)} style={styles.optionImage} resizeMode="cover" />
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             ))}
             
           </View>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+
+          {/* Close Button */}
+          <Pressable style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Modal>
