@@ -236,7 +236,9 @@ export default function BasketPage({ navigation }) {
       </ScrollView>
 
       <Pressable style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
-        <Text style={styles.Button_ShowReceipt_Text}><MaterialCommunityIcons name={"basket-check"} size={32} color={isAnyChecked ? addButtonColor : 'black'} /></Text>
+        <MaterialCommunityIcons name={"basket-check"} color={isAnyChecked ? addButtonColor : 'black'} 
+          style={styles.basketButtonIcon}
+        />
       </Pressable>
 
     </View>
@@ -277,6 +279,13 @@ const styles = StyleSheet.create({
     boxShadowOpacity: 0.4,
     boxShadowRadius: 2,
     elevation: 2,        
+  },
+  basketButtonIcon: { 
+    fontSize: 28, 
+    textAlign: 'center', 
+    marginTop: 16, 
+    width: 50, 
+    height: 50,
   },
   logoutButton: {
     alignSelf: 'flex-end',

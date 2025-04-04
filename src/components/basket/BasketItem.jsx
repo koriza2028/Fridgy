@@ -41,12 +41,16 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
     return require('../../../assets/ProductImages/banana_test.png');
   };
 
+
+
+
+  
   return (
     product.isFromFridge ? (
       <Pressable onPress={() => openInfoModal(product)}>
         <View style={styles.BasketItem}>
           <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
+            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
           </Pressable>
 
           <View style={styles.BasketItem_Name}>
@@ -80,7 +84,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
     ) : (
       <View style={styles.BasketItem}>
         <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-          <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
+          <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={12} />
         </Pressable>
 
         <View style={styles.BasketItem_Name}>
@@ -99,7 +103,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
             style={[styles.BasketItem_Text, styles.textEdit]}
             editable={true} // Ensure it's editable
             onChangeText={(text) => setTitle(text)} 
-            onPressIn={(e) => e.stopPropagation()}
+            // onPressIn={(e) => e.stopPropagation()}
             onBlur={() => onChangeName(product.basketId, title)}
           />
         </View>

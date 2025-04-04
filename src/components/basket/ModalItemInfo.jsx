@@ -34,12 +34,15 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
       style={styles.modal}
     >
       <View style={styles.container}>
+
+        
          
          <Image style={styles.productImage}
                 source={ selectedProduct?.imageUri 
                 ? { uri: selectedProduct?.imageUri } 
                 : require('../../../assets/ProductImages/banana_test.png')
                   }/>
+        <Text style={styles.yourNotes}>{selectedProduct?.name}</Text>
         <Text style={styles.yourNotes}>Your notes</Text>
         <Text style={styles.productNotes}>{selectedProduct?.notes}</Text>
             

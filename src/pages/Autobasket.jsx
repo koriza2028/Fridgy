@@ -15,7 +15,7 @@ import {
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
-import BasketItem from '../components/basket/BasketItem';
+import BasketItem from '../components/basket/AutobasketItem';
 import { backgroundColor } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');

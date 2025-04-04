@@ -38,9 +38,9 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
   return (
       <Pressable onPress={() => openInfoModal(product)}>
         <View style={styles.BasketItem}>
-          <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={32} />
-          </Pressable>
+          {/* <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
+          </Pressable> */}
 
           <View style={styles.BasketItem_Name}>
             <Image 
