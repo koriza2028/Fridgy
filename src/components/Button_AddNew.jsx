@@ -4,7 +4,7 @@ import { addButtonColor, MainFont_Bold } from '../../assets/Styles/styleVariable
 
 const AddNewButton = ({ creativeAction }) => {
     return (
-        <Pressable style={styles.Button_AddProduct} onPress={creativeAction}>
+        <Pressable style={styles.Button_AddProduct} onPress={() => creativeAction()}>
             <Text style={styles.Button_AddProduct_Text}>+</Text>
         </Pressable>
     );
@@ -15,13 +15,13 @@ const styles = StyleSheet.create({
           position: 'absolute',
           bottom: 20,
           right: 10,
-          flexDirection: 'row',
+        //   flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
           width: 50,
           height: 50,
-          paddingVertical: 15,
-          paddingHorizontal: 15,
+        //   paddingVertical: 15,
+        //   paddingHorizontal: 15,
           marginHorizontal: 10,
           backgroundColor: '#FFF',
           borderRadius: 60,
@@ -38,6 +38,8 @@ const styles = StyleSheet.create({
         Button_AddProduct_Text: {
             fontFamily: MainFont_Bold,
             fontSize: 28,
+            textAlign: 'center',
+            marginBottom: 2,
         }
 });
 

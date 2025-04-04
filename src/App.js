@@ -110,7 +110,7 @@ const App = () => {
             tabBarLabelStyle: { fontFamily: MainFont, fontSize: 10 },
             tabBarIcon: ({ focused, color }) => {
               let iconName;
-              let size = focused ? 30 : 24;
+              let size = focused ? 28 : 24;
 
               if (route.name === 'Fridge') {
                 iconName = 'fridge';
@@ -130,11 +130,11 @@ const App = () => {
             tabBarStyle: {
               borderTopWidth: 0,
               elevation: 0, 
-              height: 50,
+              height: 80,
               borderTopRightRadius: 20,
               borderTopLeftRadius: 20,
               borderColor: 'white',
-              // margin: 10, 
+              margin: 4, 
               overflow: 'hidden',
             },
           })}

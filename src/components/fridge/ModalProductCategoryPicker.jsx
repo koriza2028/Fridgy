@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
       marginBottom: 10,
-      marginTop: 4,
+      marginTop: 40,
       borderBottomWidth: 1,
       borderColor: '#eee',
       width: '100%',
@@ -225,12 +225,12 @@ const styles = StyleSheet.create({
 
     closeButton: {
       position: 'absolute',
-      top: 20,
+      top: 56,
       left: 20,
       zIndex: 10,
     },
     closeButtonText: {
-      fontSize: 20,
+      fontSize: 22,
       color: 'white',
       fontWeight: 'bold',
     },

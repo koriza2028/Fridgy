@@ -277,13 +277,12 @@ export default function ModalCreateProduct({
                   />
                 </View>
                 
-                <Pressable style={[styles.productDataEntry]} onPress={openCategoryModal}>
+                <Pressable style={[styles.productDataEntry, styles.productCategory]} onPress={openCategoryModal}>
                   <Text style={styles.productCategory_Text}>
-                    Category:
-                    <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
+                    Category:</Text>
+                  <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
                       {category?.tagName || defaultCategory.name}
-                    </Text> 
-                  </Text>
+                  </Text> 
 
                   <ModalProductCategoryPicker
                     isCategoryModalVisible={isCategoryModalVisible}
@@ -433,6 +432,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: MainFont,
     fontSize: SecondTitleFontSize + 1,
+  },
+  productCategory: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
   },
   productNotes: {
     height: 80,
