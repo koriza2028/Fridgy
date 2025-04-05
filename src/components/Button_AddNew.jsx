@@ -28,10 +28,10 @@ const styles = StyleSheet.create({
           borderColor: addButtonColor,
           borderWidth: 2,
           
-          boxShadowColor: '#007bff', 
-          boxShadowOffset: { width: 0, height: 2 },
-          boxShadowOpacity: 0.4,
-          boxShadowRadius: 2,
+          shadowColor: '#007bff', 
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.4,
+          shadowRadius: 2,
           elevation: 2,        
         },
     

@@ -35,7 +35,7 @@ export default function CookingPage({ navigation }) {
   const [selectedFilters, setSelectedFilters] = useState([]);
 
   // Pull-to-refresh state.
-  const [refreshing, setRefreshing] = useState(false);
+  // const [refreshing, setRefreshing] = useState(false);
 
   // Fetch enriched recipes and available fridge products.
   useFocusEffect(
@@ -104,21 +104,21 @@ export default function CookingPage({ navigation }) {
     setSearchQuery(text);
   };
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    if (userId) {
-      fetchEnrichedRecipes(userId)
-        .then(enrichedData => {
-          setRecipeBook({ recipes: enrichedData });
-          setFilteredData(enrichedData || []);
-          setRefreshing(false);
-        })
-        .catch(error => {
-          console.error("Failed to refresh recipes", error);
-          setRefreshing(false);
-        });
-    }
-  }, [userId]);
+  // const onRefresh = useCallback(() => {
+  //   setRefreshing(true);
+  //   if (userId) {
+  //     fetchEnrichedRecipes(userId)
+  //       .then(enrichedData => {
+  //         setRecipeBook({ recipes: enrichedData });
+  //         setFilteredData(enrichedData || []);
+  //         setRefreshing(false);
+  //       })
+  //       .catch(error => {
+  //         console.error("Failed to refresh recipes", error);
+  //         setRefreshing(false);
+  //       });
+  //   }
+  // }, [userId]);
 
   // Check if an ingredient (by its reference) is available in the fridge.
   const checkIngredientIsAvailable = (ingredient) => {
@@ -139,7 +139,8 @@ export default function CookingPage({ navigation }) {
 
   return (
     <View style={styles.CookingPage}>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      {/* <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}> */}
+      <ScrollView >
         <View style={styles.CookingPage_ContentWrapper}>
           <SearchInput 
             placeholder={'Find a recipe'} 

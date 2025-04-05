@@ -11,8 +11,8 @@ import { moveProductToBasket, decrementProductAmount, incrementProductAmount } f
 
 const { width } = Dimensions.get('window');
 // const productCardWidth = width*0.465;
-const productCardWidth = width*0.46;
-const productCardHeight = productCardWidth*1.38;
+const productCardWidth = width*0.44;
+const productCardHeight = productCardWidth*1.34;
 
 // Make the view for ipads too
 
@@ -92,10 +92,10 @@ const styles = StyleSheet.create({
 
         backgroundColor: '#fff',
         borderRadius: 8,
-        boxShadowColor: '#000',
-        boxShadowOffset: { width: 0, height: 4 },
-        boxShadowOpacity: 0.2,
-        boxShadowRadius: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
         elevation: 4,
     },
     ProductPicture: {
@@ -143,10 +143,10 @@ const styles = StyleSheet.create({
         position: 'relative',
         top: -36,
 
-        boxShadowColor: buttonColor, 
-        boxShadowOffset: { width: 0, height: 4 },
-        boxShadowOpacity: 0.4,
-        boxShadowRadius: 4,
+        shadowColor: buttonColor, 
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
         elevation: 4,  
     },
     ProductAmountLabel: {

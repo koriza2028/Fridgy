@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
 
     FridgePage_ContentWrapper: {
       width: width * 0.96,
+      paddingHorizontal: 8,
     //   borderColor: 'black',
     //   borderWidth: 1,
     },
@@ -230,10 +231,10 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: '#ccc',
 
-      boxShadowColor: "darkgrey", 
-      boxShadowOffset: { width: 0, height: 1 },
-      boxShadowOpacity: 0.4,
-      boxShadowRadius: 1,
+      shadowColor: "darkgrey", 
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.4,
+      shadowRadius: 1,
       elevation: 1, 
     },
 

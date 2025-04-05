@@ -10,7 +10,7 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 
   return (
 
-    <Modal visible={modalVisible} animationType="fade" onBackdropPress={onClose} backdropColor="black" backdropOpacity={0.5} styles={{ margin: 0 }}>
+    <Modal visible={modalVisible} animationType="fade" onBackdropPress={onClose} backdropColor="black" backdropOpacity={0.5} style={{ margin: 10 }}>
       <BlurView intensity={0} style={styles.blurContainer}>
       <View style={styles.modalContainer}>
 
@@ -44,19 +44,6 @@ const ModalImagePicker = ({ modalVisible, imageOptions, onSelect, onClose, pickI
 
 const styles = StyleSheet.create({
 
-  // StaticImageLabel: { fontSize: 14, marginBottom: 6, color: greyTextColor, textAlign: 'center' },
-  // StaticImageRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
-  // StaticThumbnail: { width: 60, height: 60, borderRadius: 8, marginHorizontal: 5, borderWidth: 1, borderColor: '#ccc' },
-  // SelectedStaticImage: { borderColor: buttonColor, borderWidth: 2 },
-  // imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' },
-
-  // blurContainer: {
-  //   flex: 1,
-  //   width: '100%',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-
   modalContainer: {
     flex: 1,
     // backgroundColor: 'rgba(0,0,0,0.5)',
@@ -65,14 +52,26 @@ const styles = StyleSheet.create({
     // backgroundColor: backgroundColor,
     // backgroundColor: 'rgba(255, 255, 255, 0)',
     borderColor: '#C0C0C0',
-    borderWidth: 1,
+    // borderWidth: 1,
     borderRadius: 10,
+  },
+  blurContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: backgroundColor,
   },
   modalContent: {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     width: '100%',
+    // borderWidth: 1,
+    shadowColor: '#C0C0C0',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   title: {
     fontSize: 18,
@@ -119,7 +118,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-
 
 export default ModalImagePicker;

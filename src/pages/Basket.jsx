@@ -4,6 +4,7 @@ import { View, ScrollView, Pressable, Text, Dimensions, StyleSheet } from 'react
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
+import BasketCustomItem from '../components/basket/BasketCustomItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -210,7 +211,7 @@ export default function BasketPage({ navigation }) {
             isBasket={true}
           />
           
-          <View style={styles.BasketPage_ListOfBasketItems}>
+          {/* <View style={styles.BasketPage_ListOfBasketItems}>
             {basket && basket.length > 0 ? (
               basket.map((product) => (
                 <BasketItem 
@@ -225,7 +226,49 @@ export default function BasketPage({ navigation }) {
                 />
               ))
             ) : (<View />)}
-          </View>
+          </View> */}
+
+<View style={styles.BasketPage_ListOfBasketItems}>
+  {basket && basket.length > 0 ? (
+    <>
+      {/* Render non-fridge items (BasketCustomItem) at the top */}
+      {basket
+        .filter(product => !product.isFromFridge)
+        .map(product => (
+          <BasketCustomItem 
+            key={product.basketId} 
+            product={product} 
+            isChecked={!!checkedItems[product.basketId]}
+            onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
+            onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
+            onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
+            // openInfoModal={() => handleItemPress(product)}
+            onChangeName={handleUpdateName}
+          />
+        ))
+      }
+      {/* Render fridge items (BasketItem) below */}
+      {basket
+        .filter(product => product.isFromFridge)
+        .map(product => (
+          <BasketItem 
+            key={product.basketId} 
+            product={product} 
+            isChecked={!!checkedItems[product.basketId]}
+            onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
+            onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
+            onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
+            openInfoModal={() => handleItemPress(product)}
+            onChangeName={handleUpdateName}
+          />
+        ))
+      }
+    </>
+  ) : (
+    <View />
+  )}
+</View>
+
 
           <ModalItemInfo 
             isVisible={isInfoModalVisible} 
@@ -274,10 +317,10 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderColor: addButtonColor,
     borderWidth: 2,
-    boxShadowColor: '#007bff', 
-    boxShadowOffset: { width: 0, height: 2 },
-    boxShadowOpacity: 0.4,
-    boxShadowRadius: 2,
+    shadowColor: '#007bff', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
     elevation: 2,        
   },
   basketButtonIcon: { 
