@@ -48,7 +48,7 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
   return (
       <View style={styles.BasketItem}>
         <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-          <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={12} />
+          <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
         </Pressable>
 
         <View style={styles.BasketItem_Name}>
@@ -69,6 +69,7 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
             onChangeText={(text) => setTitle(text)} 
             // onPressIn={(e) => e.stopPropagation()}
             onBlur={() => onChangeName(product.basketId, title)}
+            onSubmitEditing={() => onChangeName(product.basketId, title)}
           />
         </View>
 
@@ -127,6 +128,7 @@ const styles = StyleSheet.create({
   textEdit: {
     outlineStyle: 'none',
     overflow: 'hidden',
+    flex: 1,
   },
   BasketItem_AmountAndButtons: {
     flexDirection: 'row',

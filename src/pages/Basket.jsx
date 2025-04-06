@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, ScrollView, Pressable, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, ScrollView, Pressable, Text, Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
 
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
@@ -187,6 +187,7 @@ export default function BasketPage({ navigation }) {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.BasketPage}>
       <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
@@ -285,6 +286,7 @@ export default function BasketPage({ navigation }) {
       </Pressable>
 
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 

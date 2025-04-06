@@ -158,6 +158,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
   //     </View>
   //   )
   // );
+  
 }
 
 const styles = StyleSheet.create({
