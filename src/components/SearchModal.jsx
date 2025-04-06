@@ -44,9 +44,9 @@ const SearchModal = ({
     if (item.imageUri) {
         return { uri: item.imageUri };
     }
-    if (item.staticImagePath) {
-        return item.staticImagePath;
-    }
+    // if (item.staticImagePath) {
+    //     return item.staticImagePath;
+    // }
     return require('../../assets/ProductImages/banana_test.png');
   };
 
@@ -108,7 +108,7 @@ const SearchModal = ({
       style={styles.modal}
     >
       <Pressable onPress={closeSearchModal} style={styles.closeButton}>
-        <Entypo name="chevron-left" size={20} />
+        <Entypo name="chevron-left" size={22} />
       </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     margin: 0, // Full-screen modal
     justifyContent: 'flex-start',
     backgroundColor: 'white',
-    paddingTop: 20,
+    paddingTop: 40,
   },
   modalContent: {
     padding: 16,
@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
 
   closeButton: {
     position: 'absolute',
-    top: 34,
-    left: 5,
+    top: 54,
+    left: 4,
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 5,

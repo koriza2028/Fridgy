@@ -299,7 +299,7 @@ export default function ModalCreateProduct({
                     style={styles.productAmount}
                     selectTextOnFocus={true}
                     keyboardType="numeric"
-                    value={amount || 0}
+                    value={amount !== undefined && amount !== null ? String(amount) : ""}
                     onChangeText={text => setAmount(text)}
                     placeholder='Amount...'
                     placeholderTextColor={'#9e9e9e'}

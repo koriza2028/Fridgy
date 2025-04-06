@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, Image, Pressable } from 'react-native';
 
+
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
@@ -11,11 +12,12 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
     if (ingredient.imageUri) {
         return { uri: ingredient.imageUri };
     }
-    if (ingredient.staticImagePath) {
-        return ingredient.staticImagePath;
-    }
+    // if (ingredient.staticImagePath) {
+    //     return ingredient.staticImagePath;
+    // }
     return require('../../../assets/ProductImages/banana_test.png');
   };
+
 
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
@@ -36,13 +38,11 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
                 {/* Will be expandable or ...? */}
             </View>
             
-          <Pressable style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
+          {/* <Pressable style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
             <Text style={styles.IngredientItem_RemoveButton_Text}>X</Text>
-            {/* Will be replaced with Swipe */}
-          </Pressable>
+          </Pressable> */}
 
         </View>
-
 )}
 
 const styles = StyleSheet.create({

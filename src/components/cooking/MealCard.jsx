@@ -22,7 +22,7 @@ export default function MealCard({ navigation, recipe, isAvailable }) {
                 {recipe.imageUri ? (
                     <Image
                         style={styles.MealImage}
-                        source={recipe.imageUri}
+                        source={ {uri: recipe.imageUri }}
                     />
                     ) : (
                     <Image

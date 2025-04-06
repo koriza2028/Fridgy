@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { 
   StyleSheet, View, Text, TextInput, Image, Pressable, 
-  Alert, Platform, Dimensions, ScrollView, RefreshControl 
+  Alert, Platform, Dimensions, ScrollView, RefreshControl, TouchableWithoutFeedback, Keyboard,
 } from "react-native";
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 import ButtonGoBack from '../components/ButtonGoBack';
 import IngredientItem from "../components/cooking/IngredientCard";
@@ -224,12 +225,28 @@ export default function RecipeCreatePage({ navigation, route }) {
   };
   
 
-  const removeIngredient = (productId, mandatoryFlag) => {
+  // const removeIngredient = (productId, mandatoryFlag) => {
+  //   try {
+  //     if (mandatoryFlag) {
+  //       setMandatoryIngredients(prev => prev.filter(ing => ing._id !== productId));
+  //     } else {
+  //       setOptionalIngredients(prev => prev.filter(ing => ing._id !== productId));
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to remove ingredient:", error);
+  //     setError("Failed to remove ingredient. Please try again.");
+  //   }
+  // };
+  const removeIngredient = (idToRemove, mandatoryFlag) => {
     try {
       if (mandatoryFlag) {
-        setMandatoryIngredients(prev => prev.filter(ing => ing._id !== productId));
+        setMandatoryIngredients(prev =>
+          prev.filter(ing => (ing._id || ing.productId) !== idToRemove)
+        );
       } else {
-        setOptionalIngredients(prev => prev.filter(ing => ing._id !== productId));
+        setOptionalIngredients(prev =>
+          prev.filter(ing => (ing._id || ing.productId) !== idToRemove)
+        );
       }
     } catch (error) {
       console.error("Failed to remove ingredient:", error);
@@ -262,8 +279,10 @@ export default function RecipeCreatePage({ navigation, route }) {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.RecipeCreatePage}>
-      <ScrollView style={{ height: '100vh' }}>
+      {/* <ScrollView style={{ height: '100vh' }}> */}
+      <ScrollView >
         <View style={styles.RecipeCreatePage_ContentWrapper}>
 
           <View>
@@ -324,16 +343,18 @@ export default function RecipeCreatePage({ navigation, route }) {
 
           <View style={styles.ListOfIngredients}>
             <View style={styles.SubListOfIngredients}>
+
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
-                {isCreatingNew && (
+                {/* {isCreatingNew && ( */}
                   <Pressable onPress={() => openIngredientSearchModal(true)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
                   </Pressable>
-                )}
+                {/* )} */}
               </View>
             </View>
-            {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
+
+            {/* {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
               mandatoryIngredients.map((ingredient) => (
                 <IngredientItem 
                   key={ingredient._id || ingredient.productId} 
@@ -351,18 +372,59 @@ export default function RecipeCreatePage({ navigation, route }) {
                   Select at least one ingredient
                 </Text>
               </View>
-            )}
+            )} */}
+
+{mandatoryIngredients && mandatoryIngredients.length > 0 ? (
+  <SwipeListView
+    data={mandatoryIngredients}
+    keyExtractor={(item) => item._id || item.productId}
+    renderItem={({ item }) => (
+      <View style={styles.rowFront}>
+        <IngredientItem 
+          ingredient={item}
+          isAvailable={checkIngredientIsAvailable(item.productId)}
+          isMandatory={true}
+          onRemove={removeIngredient}
+          isEditing={isEditing}
+          isCreatingNew={isCreatingNew}
+        />
+      </View>
+    )}
+    renderHiddenItem={({ item }) => (
+      <View style={styles.rowBack}>
+        <Pressable 
+          style={styles.deleteButton}
+          onPress={() => removeIngredient(item._id || item.productId, true)}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
+      </View>
+    )}
+    rightOpenValue={-75}
+    disableRightSwipe
+    disableScrollOnSwipe
+    nestedScrollEnabled={true}
+    scrollEnabled={false}
+    contentContainerStyle={{ paddingBottom: 10 }}
+  />
+) : (
+  <Text style={{ fontFamily: MainFont, fontSize: 14, marginBottom: 6 }}>
+    Select at least one ingredient
+  </Text>
+)}
+
             <View style={styles.SubListOfIngredients}>
               <View style={styles.IngredientsHeader}>
                 <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
-                {isCreatingNew && (
+                {/* {isCreatingNew && ( */}
                   <Pressable onPress={() => openIngredientSearchModal(false)} style={styles.addIngredient_Button}>
                     <Text style={styles.addIngredient_ButtonText}>Add</Text>
                   </Pressable>
-                )}
+                {/* )} */}
               </View>
             </View>
-            {optionalIngredients && optionalIngredients.length > 0 ? (
+            
+            {/* {optionalIngredients && optionalIngredients.length > 0 ? (
               optionalIngredients.map((ingredient) => (
                 <IngredientItem 
                   key={ingredient._id || ingredient.productId} 
@@ -373,7 +435,46 @@ export default function RecipeCreatePage({ navigation, route }) {
                   isCreatingNew={true}
                 />
               ))
-            ) : (<View></View>)}
+            ) : (<View></View>)} */}
+
+{optionalIngredients && optionalIngredients.length > 0 ? (
+  <SwipeListView
+    data={optionalIngredients}
+    keyExtractor={(item) => item._id || item.productId}
+    renderItem={({ item }) => (
+      <View style={styles.rowFront}>
+        <IngredientItem 
+          ingredient={item}
+          isMandatory={false}
+          onRemove={removeIngredient}
+          isEditing={isEditing}
+          isCreatingNew={isCreatingNew}
+        />
+      </View>
+    )}
+    renderHiddenItem={({ item }) => (
+      <View style={styles.rowBack}>
+        <Pressable 
+          style={styles.deleteButton}
+          onPress={() => removeIngredient(item._id || item.productId, false)}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
+      </View>
+    )}
+    rightOpenValue={-75}
+    disableRightSwipe
+    disableScrollOnSwipe
+    nestedScrollEnabled={true}
+    scrollEnabled={false}
+    contentContainerStyle={{ paddingBottom: 10 }}
+  />
+) : (
+  <View />
+)}
+
+
+
           </View>
 
           <SearchModal 
@@ -409,10 +510,42 @@ export default function RecipeCreatePage({ navigation, route }) {
 
       <ButtonGoBack navigation={navigation} />
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+
+  rowFront: {
+    backgroundColor: 'white',
+    // Ensure the front row has a fixed or minimum height matching your IngredientItem
+    // For example, if your IngredientItem is about 70 pixels tall:
+    minHeight: 70,
+    justifyContent: 'center',
+  },
+  rowBack: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 75,
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 75,
+  },
+  deleteText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  
+
   RecipeCreatePage: {
     flex: 1,
     backgroundColor: '#FFF',

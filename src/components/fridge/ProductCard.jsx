@@ -41,8 +41,8 @@ export default function ProductCard(props) {
     };
 
     const getImageSource = (product) => {
-        if (product.imageUri) return product.imageUri;
-        if (product.staticImagePath) return product.staticImagePath;
+        if (product.imageUri) return { uri: product.imageUri };
+        // if (product.staticImagePath) return product.staticImagePath.uri;
         return require('../../../assets/ProductImages/banana_test.png');
     };
 
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     ProductCategoryLabel: {
         marginBottom: 10,
         fontFamily: MainFont,
-        fontSize: 18,
+        fontSize: 14,
     },
     ProductAmountAndActions: {
         // borderColor: '#C0C0C0',

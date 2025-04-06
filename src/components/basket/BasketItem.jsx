@@ -36,8 +36,8 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
     }
 
   const getImageSource = (product) => {
-    if (product.imageUri) return product.imageUri;
-    if (product.staticImagePath) return product.staticImagePath;
+    if (product.imageUri) return { uri: product.imageUri } ;
+    // if (product.staticImagePath) return product.staticImagePath;
     return require('../../../assets/ProductImages/banana_test.png');
   };
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { View, StyleSheet, Text, TextInput, Pressable, Image } from 'react-native';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 
@@ -25,6 +25,7 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
   };
 
   const [title, setTitle] = useState(product.name || "");
+  // const inputRef = useRef();
   
     useEffect(() => {
       setTitle(product.name || "");
@@ -41,10 +42,6 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
     return require('../../../assets/ProductImages/banana_test.png');
   };
 
-
-
-
-  
   return (
       <View style={styles.BasketItem}>
         <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
@@ -54,22 +51,19 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
         <View style={styles.BasketItem_Name}>
           <Image 
             style={styles.ProductPicture}
-            source={ product.imageUri 
-                      ? { uri: product.imageUri } 
-                      : require('../../../assets/ProductImages/banana_test.png')
-                  }
+            source={ getImageSource(product)}
           />
           <TextInput 
-            multiline={true}
-            numberOfLines={2}
+            // multiline
+            // numberOfLines={2}
             maxLength={20}
             value={title} 
             style={[styles.BasketItem_Text, styles.textEdit]}
+            selectTextOnFocus={false}
             editable={true} // Ensure it's editable
             onChangeText={(text) => setTitle(text)} 
-            // onPressIn={(e) => e.stopPropagation()}
             onBlur={() => onChangeName(product.basketId, title)}
-            onSubmitEditing={() => onChangeName(product.basketId, title)}
+            
           />
         </View>
 
