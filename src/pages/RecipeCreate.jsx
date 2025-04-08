@@ -341,6 +341,7 @@ export default function RecipeCreatePage({ navigation, route }) {
             onRemove={removeIngredient}
             isEditing={isEditing}
             isCreatingNew={isCreatingNew}
+            isAvailable={checkIngredientIsAvailable(item.ingredient.productId)}
           />
         </View>
       );
@@ -801,7 +802,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 14,
+    // marginTop: 14,
+    marginBottom: 10,
     paddingHorizontal: 10,
   },
   addIngredient_Button: {
