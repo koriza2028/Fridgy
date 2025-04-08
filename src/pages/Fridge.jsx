@@ -11,7 +11,7 @@ import ProductCard from "../components/fridge/ProductCard";
 import SearchInput from '../components/Search';
 import AddNewButton from "../components/Button_AddNew";
 
-import { backgroundColor, buttonColor, MainFont, TextFontSize } from '../../assets/Styles/styleVariables';
+import { backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import { categoryNames } from "../../assets/Variables/categories";
 
@@ -208,8 +208,7 @@ const styles = StyleSheet.create({
     },
 
     FridgePage_ContentWrapper: {
-      width: width * 0.96,
-      paddingHorizontal: 8,
+    //   width: width * 0.98,
     //   borderColor: 'black',
     //   borderWidth: 1,
     },
@@ -217,6 +216,7 @@ const styles = StyleSheet.create({
     ProductFilter: {
       flexDirection: 'row',
       marginBottom: 10,
+      marginHorizontal: 10,
     //   marginLeft: 6,
       overflow: 'hidden',
       flexWrap: 'wrap',
@@ -231,16 +231,16 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: '#ccc',
 
-      shadowColor: "darkgrey", 
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.4,
-      shadowRadius: 1,
-      elevation: 1, 
+    //   shadowColor: "darkgrey", 
+    //   shadowOffset: { width: 0, height: 1 },
+    //   shadowOpacity: 0.4,
+    //   shadowRadius: 1,
+    //   elevation: 1, 
     },
 
     ProductFilterCategory_Text: {
         fontFamily: MainFont,
-        fontSize: TextFontSize - 2,
+        fontSize: TextFontSize,
     },
 
     SelectedCategory: {

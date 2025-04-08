@@ -63,17 +63,17 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
             </Text>  
           </View>
 
-          <View style={styles.BasketItem_AmountAndButtons}>
-          <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
-            <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-          </Pressable>
+          {/* <View style={styles.BasketItem_AmountAndButtons}>
+            <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
+            </Pressable>
 
-          <Text style={styles.BasketItem_Text}>{product.amount}</Text>
+            <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
-          <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
-             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-           </Pressable>
-         </View>
+            <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
+              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
+            </Pressable>
+          </View> */}
 
         </View>
       </Pressable>
@@ -168,10 +168,11 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     maxWidth: '100%',
     paddingVertical: 8,
+    paddingHorizontal: 4,
     paddingBottom: 16,
     marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#ddd',
     height: 54,
   },
   BasketItem_Checkbox: {
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
   ProductPicture: {
     height: 46,
     width: 46,
+    borderRadius: 10,
   },
   BasketItem_Text: {
     fontFamily: MainFont,

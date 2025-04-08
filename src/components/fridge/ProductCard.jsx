@@ -11,7 +11,7 @@ import { moveProductToBasket, decrementProductAmount, incrementProductAmount } f
 
 const { width } = Dimensions.get('window');
 // const productCardWidth = width*0.465;
-const productCardWidth = width*0.44;
+const productCardWidth = width*0.46;
 const productCardHeight = productCardWidth*1.34;
 
 // Make the view for ipads too
@@ -47,7 +47,7 @@ export default function ProductCard(props) {
     };
 
     return (         
-        <View style={styles.ProductCard}>
+        <Pressable style={styles.ProductCard} onPress={() => props.onOpenModal(props.product)}>
             <Image
                 style={styles.ProductPicture}
                 source={getImageSource(props.product)}
@@ -55,7 +55,7 @@ export default function ProductCard(props) {
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            
-                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
+                    {/* <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>-</Text>
                     </Pressable>
 
@@ -63,20 +63,21 @@ export default function ProductCard(props) {
 
                     <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
-                    </Pressable>
+                    </Pressable> */}
+                    <Text style={styles.ProductAmountLabel}>{props.product.name}</Text>
                 </View>
 
-                <Pressable style={styles.ProductNameAndCategory} onPress={() => props.onOpenModal(props.product)}>
+                <View style={styles.ProductNameAndCategory} >
                     <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
                     <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text>
-                </Pressable>
+                </View>
 
                 <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
                     <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
                 </Pressable>
                 
             </View>
-        </View>
+        </Pressable>
     )
 };
 
@@ -90,8 +91,9 @@ const styles = StyleSheet.create({
         // marginHorizontal: width*0.01,
         width: productCardWidth,
 
-        backgroundColor: '#fff',
+        // backgroundColor: '#fff',
         borderRadius: 8,
+        // borderBottomWidth: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         height: productCardHeight - productCardWidth,
-        backgroundColor: '#FFF',  
+        // backgroundColor: '#FFF',  
         borderRadius: 10,  
         
     },

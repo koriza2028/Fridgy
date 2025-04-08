@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   section: {
     // padding: 4,
     marginBottom: 10,
+    marginHorizontal: 10,
   },
     collapsibleView: {
       overflow: 'hidden',
@@ -57,7 +58,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        // paddingHorizontal: 5,
     //   borderColor: '#C0C0C0',
     //   borderWidth: 1,
     }

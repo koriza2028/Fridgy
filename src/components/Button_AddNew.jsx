@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
             fontFamily: MainFont_Bold,
             fontSize: 28,
             textAlign: 'center',
-            marginBottom: 2,
+            marginBottom: 4,
+            // marginRight: 1,
         }
 });
 

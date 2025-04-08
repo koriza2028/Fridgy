@@ -33,14 +33,9 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
                 <View style={styles.IngredientItem_Name}>
                   <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} </Text>
                 </View>
-                {isMandatory && (<TextInput style={styles.IngredientItem_Instructions} placeholder='How much?'></TextInput>)}
-                
-                {/* Will be expandable or ...? */}
+
             </View>
-            
-          {/* <Pressable style={styles.IngredientItem_RemoveButton} onPress={removeProduct}>
-            <Text style={styles.IngredientItem_RemoveButton_Text}>X</Text>
-          </Pressable> */}
+
 
         </View>
 )}

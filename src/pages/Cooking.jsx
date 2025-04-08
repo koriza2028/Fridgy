@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     width: width,
   },
   CookingPage_ContentWrapper: {
-    width: width * 0.96,
+    // width: width * 0.94,
     paddingBottom: 20,
   },
   SuggestedMeals_Text: {
@@ -209,8 +209,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   MealList_Wrapper: {
-    width: '100%',
+    // width: '100%',
     marginTop: -20,
+    marginHorizontal: 10,
   },
   AvailableMeals_Section: {
     marginBottom: 20,

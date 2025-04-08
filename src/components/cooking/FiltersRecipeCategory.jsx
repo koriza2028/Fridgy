@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     flexWrap: 'wrap',
+    marginHorizontal: 10,
   },
   globalResetButton: {
     alignItems: 'center',

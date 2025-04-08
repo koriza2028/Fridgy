@@ -5,7 +5,7 @@ import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 import { MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
-export default function BasketCustomItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, onChangeName }) {
+export default function BasketCustomItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, onChangeName, swipeOpen }) {
   const [fontsLoaded] = useFonts({
     'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -54,21 +54,23 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
             source={ getImageSource(product)}
           />
           <TextInput 
-            // multiline
-            // numberOfLines={2}
-            maxLength={20}
-            value={title} 
-            style={[styles.BasketItem_Text, styles.textEdit]}
-            selectTextOnFocus={false}
-            editable={true} // Ensure it's editable
-            onChangeText={(text) => setTitle(text)} 
-            onBlur={() => onChangeName(product.basketId, title)}
+
+
+          onStartShouldSetResponderCapture={() => false}
+          maxLength={30}
+          value={title} 
+          style={[styles.BasketItem_Text, styles.textEdit]}
+          selectTextOnFocus={false}
+          editable={!swipeOpen}  // disable editing when the row is swiped open
+          onChangeText={(text) => setTitle(text)} 
+          onBlur={() => onChangeName(product.basketId, title)}
             
           />
         </View>
 
         <View style={styles.BasketItem_AmountAndButtons}>
-          <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+          <Text>*</Text>
+          {/* <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
           </Pressable>
 
@@ -76,7 +78,7 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
 
           <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-           </Pressable>
+           </Pressable> */}
          </View>
 
       </View>
@@ -90,10 +92,11 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     maxWidth: '100%',
     paddingVertical: 8,
+    paddingHorizontal: 4,
     paddingBottom: 16,
     marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#ddd',
     height: 54,
   },
   BasketItem_Checkbox: {
@@ -112,6 +115,7 @@ const styles = StyleSheet.create({
   ProductPicture: {
     height: 46,
     width: 46,
+    borderRadius: 10,
   },
   BasketItem_Text: {
     fontFamily: MainFont,
@@ -129,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: '100%',
-    width: 80,
+    // width: 80,
     marginRight: 20,
   },
   BasketItem_ButtonText: { 

@@ -37,6 +37,11 @@ const FridgeStack = () => (
       options={{
         headerShown: true,
         headerTitle: "Your fridge",
+        headerStyle: {
+          backgroundColor: backgroundColor,
+          shadowColor: 'transparent',
+          elevation: 0, 
+        },
       }}
     />
   </Stack.Navigator>
@@ -49,7 +54,12 @@ const CookingStack = () => (
       component={CookingPage}
       options={{
         headerShown: true,
-        headerTitle: 'Cooking space'
+        headerTitle: 'Cooking space',
+        headerStyle: {
+          backgroundColor: backgroundColor,
+          shadowColor: 'transparent',
+          elevation: 0, 
+        },
       }}
     />
     <Stack.Screen
@@ -67,7 +77,12 @@ const BasketStack = () => (
       component={BasketPage}
       options={{ 
         headerShown: true,
-        headerTitle: 'Basket to go shopping'
+        headerTitle: 'Basket to go shopping',
+        headerStyle: {
+          backgroundColor: backgroundColor,
+          shadowColor: 'transparent',
+          elevation: 0, 
+        },
        }}
     />
     <Stack.Screen

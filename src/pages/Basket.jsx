@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, ScrollView, Pressable, Text, Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import { View, ScrollView, Pressable, TouchableOpacity, Text, Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
@@ -26,7 +27,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function BasketPage({ navigation }) {
   const [fontsLoaded] = useFonts({
@@ -186,10 +187,28 @@ export default function BasketPage({ navigation }) {
     setIsInfoModalVisible(true);
   };
 
+  const combinedData = [
+    ...basket.filter(product => !product.isFromFridge),
+    ...basket.filter(product => product.isFromFridge),
+  ];
+
+  const [openRowKey, setOpenRowKey] = useState(null);
+
+  // Render the hidden row with a delete button
+  const renderHiddenItem = ({ item }) => (
+    <View style={styles.rowBack}>
+      <Pressable
+        style={styles.deleteButton}
+        onPress={() => handleDecrementProductAmount(item.basketId, item.amount)}
+      >
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </Pressable>
+    </View>
+  );
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.BasketPage}>
-      <ScrollView>
         <View style={styles.BasketPage_ContentWrapper}>
 
           <Pressable onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
@@ -212,64 +231,48 @@ export default function BasketPage({ navigation }) {
             isBasket={true}
           />
           
-          {/* <View style={styles.BasketPage_ListOfBasketItems}>
-            {basket && basket.length > 0 ? (
-              basket.map((product) => (
-                <BasketItem 
-                  key={product.basketId} 
-                  product={product} 
-                  isChecked={!!checkedItems[product.basketId]}
-                  onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
-                  onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
-                  onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
-                  openInfoModal={() => handleItemPress(product)}
+
+        <View style={styles.BasketPage_ListOfBasketItems}>
+
+        <SwipeListView
+          data={combinedData}
+          keyExtractor={(item) => item.basketId.toString()}
+          renderHiddenItem={renderHiddenItem}
+          rightOpenValue={-75}
+          disableRightSwipe={true}
+          onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
+          onRowClose={(rowKey) => setOpenRowKey(null)}
+          contentContainerStyle={styles.BasketPage_ListOfBasketItems}
+          renderItem={({ item }) => (
+            <View style={styles.rowFront}>
+              {item.isFromFridge ? (
+                <BasketItem
+                  product={item}
+                  isChecked={!!checkedItems[item.basketId]}
+                  onDecrement={() => handleDecrementProductAmount(item.basketId, item.amount)}
+                  onAdd={() => handleIncrementProductAmount(item.basketId, item.amount)}
+                  onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.basketId, isChecked)}
+                  openInfoModal={() => handleItemPress(item)}
                   onChangeName={handleUpdateName}
+                  swipeOpen={openRowKey === item.basketId}
                 />
-              ))
-            ) : (<View />)}
-          </View> */}
-
-<View style={styles.BasketPage_ListOfBasketItems}>
-  {basket && basket.length > 0 ? (
-    <>
-      {/* Render non-fridge items (BasketCustomItem) at the top */}
-      {basket
-        .filter(product => !product.isFromFridge)
-        .map(product => (
-          <BasketCustomItem 
-            key={product.basketId} 
-            product={product} 
-            isChecked={!!checkedItems[product.basketId]}
-            onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
-            onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
-            onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
-            // openInfoModal={() => handleItemPress(product)}
-            onChangeName={handleUpdateName}
+              ) : (
+                <BasketCustomItem
+                  product={item}
+                  isChecked={!!checkedItems[item.basketId]}
+                  onDecrement={() => handleDecrementProductAmount(item.basketId, item.amount)}
+                  onAdd={() => handleIncrementProductAmount(item.basketId, item.amount)}
+                  onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.basketId, isChecked)}
+                  onChangeName={handleUpdateName}
+                  swipeOpen={openRowKey === item.basketId}
+                />
+              )}
+            </View>
+            )}
+            
           />
-        ))
-      }
-      {/* Render fridge items (BasketItem) below */}
-      {basket
-        .filter(product => product.isFromFridge)
-        .map(product => (
-          <BasketItem 
-            key={product.basketId} 
-            product={product} 
-            isChecked={!!checkedItems[product.basketId]}
-            onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
-            onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
-            onToggleCheckbox={(isChecked) => handleToggleCheckbox(product.basketId, isChecked)}
-            openInfoModal={() => handleItemPress(product)}
-            onChangeName={handleUpdateName}
-          />
-        ))
-      }
-    </>
-  ) : (
-    <View />
-  )}
-</View>
 
+          </View>
 
           <ModalItemInfo 
             isVisible={isInfoModalVisible} 
@@ -277,7 +280,6 @@ export default function BasketPage({ navigation }) {
             selectedProduct={selectedProduct}
           />
         </View>
-      </ScrollView>
 
       <Pressable style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
         <MaterialCommunityIcons name={"basket-check"} color={isAnyChecked ? addButtonColor : 'black'} 
@@ -291,6 +293,30 @@ export default function BasketPage({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  rowFront: {
+    backgroundColor: backgroundColor,
+  },
+  rowBack: {
+    alignItems: 'center',
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    width: 75,        // Fixed width matching rightOpenValue
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  deleteButton: {
+    // paddingHorizontal: 20,
+    // paddingVertical: 10,
+  },
+  deleteButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+
+
   BasketPage: {
     flex: 1,
     backgroundColor: backgroundColor,
@@ -298,10 +324,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   BasketPage_ContentWrapper: {
-    width: width * 0.96,
+    width: width,
   },
   BasketPage_ListOfBasketItems: {
     marginTop: 10,
+    // marginHorizontal: 10,
+    height: height,
   },
   Button_ShowReceipt: {
     position: 'absolute',

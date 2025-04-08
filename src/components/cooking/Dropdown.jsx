@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
-    height: 30,
+    // height: 30,
     overflow: 'hidden',
-    shadowColor: "darkgrey",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
-    elevation: 1,
+    // shadowColor: "darkgrey",
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.4,
+    // shadowRadius: 1,
+    // elevation: 1,
   },
   selectedDropdownContainer: {
     backgroundColor: buttonColor,
@@ -183,9 +183,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   dropdownHeaderText: {
-    fontSize: 12,
+    fontSize: TextFontSize,
     fontFamily: MainFont,
-    marginRight: 4,
+    // marginRight: 4,
   },
   dropdownOptions: {
     borderWidth: 1,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     borderColor: 'lightgrey',
   },
   optionText: {
-    fontSize: 12,
+    fontSize: TextFontSize,
     fontFamily: MainFont,
   },
   checkbox: {
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resetButtonText: {
-    fontSize: TextFontSize - 2,
+    fontSize: TextFontSize,
     color: addButtonColor,
   },
 });
