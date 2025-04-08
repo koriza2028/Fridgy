@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { 
   StyleSheet, View, Text, TextInput, Image, Pressable, 
-  Alert, Platform, Dimensions, ScrollView, RefreshControl, TouchableWithoutFeedback, Keyboard, SectionList
+  Alert, Platform, Dimensions, ScrollView, RefreshControl, TouchableWithoutFeedback, Keyboard, Animated
 } from "react-native";
 import { SwipeListView } from 'react-native-swipe-list-view';
+const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
 
 import ButtonGoBack from '../components/ButtonGoBack';
 import IngredientItem from "../components/cooking/IngredientCard";
@@ -30,7 +31,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import app from "../firebaseConfig";
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+
 
 export default function RecipeCreatePage({ navigation, route }) {
   const userId = useAuthStore((state) => state.user?.uid);
@@ -225,18 +228,6 @@ export default function RecipeCreatePage({ navigation, route }) {
   };
   
 
-  // const removeIngredient = (productId, mandatoryFlag) => {
-  //   try {
-  //     if (mandatoryFlag) {
-  //       setMandatoryIngredients(prev => prev.filter(ing => ing._id !== productId));
-  //     } else {
-  //       setOptionalIngredients(prev => prev.filter(ing => ing._id !== productId));
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to remove ingredient:", error);
-  //     setError("Failed to remove ingredient. Please try again.");
-  //   }
-  // };
   const removeIngredient = (idToRemove, mandatoryFlag) => {
     try {
       if (mandatoryFlag) {
@@ -277,6 +268,7 @@ export default function RecipeCreatePage({ navigation, route }) {
   const isSaveDisabled = title.trim() === '' || mandatoryIngredients.length === 0;
 
   const [isEditing, setIsEditing] = useState(false);
+  
 
   const combinedData = [];
 
@@ -370,7 +362,7 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   const ListHeader = () => (
       <View style={styles.RecipeCreatePage_ContentWrapper}>
-
+        
         <View>
           <Image 
             style={styles.ProductCreatePicture} 
@@ -380,6 +372,7 @@ export default function RecipeCreatePage({ navigation, route }) {
         </View>
 
         <View style={styles.productDataEntry_Wrapper}> 
+
           <View style={styles.productDataEntry}>
             <TextInput 
               style={[styles.productDataEntryInput, styles.productName]} 
@@ -389,7 +382,8 @@ export default function RecipeCreatePage({ navigation, route }) {
               placeholder='How is it called?' 
               placeholderTextColor={'#9e9e9e'}
             />
-          </View>    
+          </View> 
+
           <View style={styles.productDataEntry}>
             <TextInput 
               style={[styles.productDataEntryInput, styles.productNotes]} 
@@ -402,6 +396,7 @@ export default function RecipeCreatePage({ navigation, route }) {
               textAlignVertical="top"
             />
           </View>
+
           <View style={styles.productDataEntry}>
             <Pressable 
               style={[styles.productDataEntryInput, styles.productTags]} 
@@ -416,6 +411,7 @@ export default function RecipeCreatePage({ navigation, route }) {
               )}
             </Pressable>
           </View>
+
           <ModalProductCategoryPicker 
             isCategoryModalVisible={isCategoryModalVisible} 
             setIsCategoryModalVisible={setIsCategoryModalVisible} 
@@ -444,7 +440,7 @@ export default function RecipeCreatePage({ navigation, route }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.RecipeCreatePage}>
-        <SwipeListView
+        <AnimatedSwipeListView
           data={combinedData}
           keyExtractor={(item) => item.key}
           ListHeaderComponent={ListHeader}
@@ -454,8 +450,8 @@ export default function RecipeCreatePage({ navigation, route }) {
           disableRightSwipe
           disableScrollOnSwipe
           nestedScrollEnabled
-          // style={styles.ListOfIngredients}
           contentContainerStyle={{ paddingBottom: 100 }}
+          // bounces={false}
         />
 
         {/* Footer Buttons */}
