@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { View, ScrollView, Pressable, TouchableOpacity, Text, Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+import React, { useState, useRef, } from 'react';
+import { View, ScrollView, Pressable, TouchableOpacity, Text, 
+  Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
@@ -206,6 +209,8 @@ export default function BasketPage({ navigation }) {
     </View>
   );
 
+
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.BasketPage}>
@@ -231,7 +236,6 @@ export default function BasketPage({ navigation }) {
             isBasket={true}
           />
           
-
         <View style={styles.BasketPage_ListOfBasketItems}>
 
         <SwipeListView
@@ -268,8 +272,7 @@ export default function BasketPage({ navigation }) {
                 />
               )}
             </View>
-            )}
-            
+            )}          
           />
 
           </View>
@@ -279,6 +282,7 @@ export default function BasketPage({ navigation }) {
             onClose={() => setIsInfoModalVisible(false)} 
             selectedProduct={selectedProduct}
           />
+
         </View>
 
       <Pressable style={[styles.Button_ShowReceipt]} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
@@ -356,7 +360,7 @@ const styles = StyleSheet.create({
   basketButtonIcon: { 
     fontSize: 28, 
     textAlign: 'center', 
-    marginTop: 16, 
+    marginTop: 18, 
     width: 50, 
     height: 50,
   },

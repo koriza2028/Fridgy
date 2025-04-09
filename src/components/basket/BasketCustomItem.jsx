@@ -1,9 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { View, StyleSheet, Text, TextInput, Pressable, Image } from 'react-native';
-import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 
 import { MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
+import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 
 export default function BasketCustomItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, onChangeName, swipeOpen }) {
   const [fontsLoaded] = useFonts({
@@ -44,9 +45,19 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
 
   return (
       <View style={styles.BasketItem}>
-        <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
+        {/* <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
           <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
-        </Pressable>
+        </Pressable> */}
+
+        <BouncyCheckbox style={styles.BasketItem_Checkbox}
+            size={24}
+            fillColor='black'
+            unfillColor="#FFFFFF"
+            iconStyle={{ borderColor: "red" }}
+            innerIconStyle={{ borderWidth: 2 }}
+            // textStyle={{ fontFamily: "JosefinSans-Regular" }}
+            onPress={handleToggle}
+        />
 
         <View style={styles.BasketItem_Name}>
           <Image 
@@ -69,7 +80,6 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
         </View>
 
         <View style={styles.BasketItem_AmountAndButtons}>
-          <Text>*</Text>
           {/* <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
           </Pressable>
@@ -103,6 +113,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     marginLeft: 10,
+    marginTop: 4,
   },
   BasketItem_Name: {
     alignSelf: 'center',

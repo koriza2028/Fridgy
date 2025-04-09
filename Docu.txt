@@ -1,0 +1,11 @@
+const backdropComputedStyle = [
+        {
+          width: this.getDeviceWidth(),
+          height: this.getDeviceHeight(),
+          backgroundColor: this.state.showContent && !hasCustomBackdrop
+            ? backdropColor
+            : 'transparent',
+          opacity: this.props.backdropOpacity
+        },
+      ];
++ opacity: this.props.backdropOpacity

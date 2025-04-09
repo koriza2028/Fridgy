@@ -30,6 +30,7 @@ import useAuthStore from "../store/authStore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import app from "../firebaseConfig";
+import { translate } from "react-native-redash";
 
 const { width } = Dimensions.get('window');
 
@@ -363,9 +364,17 @@ export default function RecipeCreatePage({ navigation, route }) {
   const ListHeader = () => (
       <View style={styles.RecipeCreatePage_ContentWrapper}>
         
-        <View>
+        {/* <View>
           <Image 
             style={styles.ProductCreatePicture} 
+            source={imageUri ? { uri: imageUri } : require('../../assets/ProductImages/banana_test.png')}
+          />
+          <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button}></Pressable>
+        </View> */}
+
+        <View>
+          <Animated.Image 
+            style={styles.ProductCreatePicture(scrollA)} 
             source={imageUri ? { uri: imageUri } : require('../../assets/ProductImages/banana_test.png')}
           />
           <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button}></Pressable>
@@ -437,10 +446,13 @@ export default function RecipeCreatePage({ navigation, route }) {
       </View>
   )
 
+  const scrollA = useRef(new Animated.Value(0)).current;
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.RecipeCreatePage}>
         <AnimatedSwipeListView
+          onScroll={Animated.event([{nativeEvent: { contentOffset: { y: scrollA } }}], {useNativeDriver: true})}
           data={combinedData}
           keyExtractor={(item) => item.key}
           ListHeaderComponent={ListHeader}
@@ -730,10 +742,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // marginBottom: 10,
   },
-  ProductCreatePicture: {
+  ProductCreatePicture: scrollA => ({
     width: width,
     height: width,
-  }, 
+    transform: [
+      { translateY: scrollA},
+    {
+      scale: scrollA.interpolate({
+        inputRange: [-width, 0, width],
+        outputRange: [2, 1, 1], 
+      }),
+    }],
+  }), 
   ProductPicture_Button: {
     zIndex: 3,
     height: 40,
@@ -745,10 +765,12 @@ const styles = StyleSheet.create({
     left: width - 50,
   },
   productDataEntry_Wrapper: {
-    width: '100%',
+    width: '90%',
     backgroundColor: '#fff',
     marginTop: -90,
     paddingTop: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   productDataEntry: {        
     paddingHorizontal: 10,
@@ -799,8 +821,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     // marginTop: 14,
-    marginBottom: 10,
+    paddingBottom: 10,
     paddingHorizontal: 10,
+    backgroundColor: 'white',
   },
   addIngredient_Button: {
     marginRight: 14,
