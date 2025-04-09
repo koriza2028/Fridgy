@@ -64,13 +64,22 @@ export default function ProductCard(props) {
                     <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
                     </Pressable> */}
-                    <Text style={styles.ProductAmountLabel}>{props.product.name}</Text>
+                    {/* <Text style={styles.ProductAmountLabel}>{props.product.name}</Text> */}
+                    <View style={styles.ProductNameAndCategory} >
+                        <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
+                    {/* <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text> */}
+                    </View>
                 </View>
 
-                <View style={styles.ProductNameAndCategory} >
+                {/* <View style={styles.ProductNameAndCategory} >
                     <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
                     <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text>
-                </View>
+                </View> */}
+
+
+                <Pressable style={styles.Availability_Button} >
+                    <Text style={styles.Availability_Button_Text}>In Fridge</Text>
+                </Pressable>
 
                 <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
                     <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
@@ -119,14 +128,16 @@ const styles = StyleSheet.create({
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
         width: '100%',
-        height: productCardHeight - productCardWidth,
+        paddingVertical: 6,
+        // height: productCardHeight - productCardWidth,
         justifyContent: 'space-between',
         paddingLeft: 4,
-        marginTop: -20 
+        // marginTop: -20 
     },
     ProductNameLabel: {
         fontWeight: 'bold',
         fontFamily: MainFont_Bold,
+        textAlign: 'center',
     },
     ProductCategoryLabel: {
         marginBottom: 10,
@@ -136,14 +147,14 @@ const styles = StyleSheet.create({
     ProductAmountAndActions: {
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
-        borderRadius: 6,
+        borderRadius: 10,
         backgroundColor: buttonColor,
-        width: '100%',
+        width: '90%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'relative',
-        top: -36,
+        top: -46,
 
         shadowColor: buttonColor, 
         shadowOffset: { width: 0, height: 4 },
@@ -177,4 +188,14 @@ const styles = StyleSheet.create({
         // color: 'green',
         color: addButtonColor,
     },
+
+    Availability_Button: {
+        position: 'absolute',
+        left: 10,
+        bottom: '40%',
+    },
+    Availability_Button_Text: {
+        fontFamily: MainFont,
+        fontSize: 16,
+    }
 });

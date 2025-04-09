@@ -329,6 +329,7 @@ export default function ModalCreateProduct({
                     onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
                     <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
                   </Pressable>
+
                 </View>
               </View>
             </View> 
@@ -506,7 +507,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   closeButtonText: {
-    fontSize: 20,
+    fontSize: 24,
     color: blackTextColor,
     fontWeight: 'bold',
   },
