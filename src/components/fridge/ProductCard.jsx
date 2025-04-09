@@ -78,7 +78,7 @@ export default function ProductCard(props) {
 
 
                 <Pressable style={styles.Availability_Button} >
-                    <Text style={styles.Availability_Button_Text}>In Fridge</Text>
+                    <Text style={styles.Availability_Button_Text}>Availability</Text>
                 </Pressable>
 
                 <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
@@ -192,10 +192,10 @@ const styles = StyleSheet.create({
     Availability_Button: {
         position: 'absolute',
         left: 10,
-        bottom: '40%',
+        bottom: '46%',
     },
     Availability_Button_Text: {
         fontFamily: MainFont,
-        fontSize: 16,
+        fontSize: 14,
     }
 });

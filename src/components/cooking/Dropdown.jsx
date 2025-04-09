@@ -18,7 +18,7 @@ const getLabelForTagType = (tagType) => {
   }
 };
 
-const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
+const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect ,id, openDropdownId, setOpenDropdownId}) => {
   const [fontsLoaded] = useFonts({
     'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -95,7 +95,7 @@ const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
         style={[styles.dropdownHeader, selectedOptions.length > 0 && styles.selectedDropdownContainer]}
         onPress={toggleDropdown}
       >
-        <Text style={styles.dropdownHeaderText}>{displayText}</Text>
+        <Text style={[styles.dropdownHeaderText, selectedOptions.length > 0 && styles.selectedDropdownContainer_Text]}>{displayText}</Text>
         {open ? (
           <Entypo name="chevron-up" size={12} />
         ) : (
@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
+    backgroundColor: 'white',
     // height: 30,
     overflow: 'hidden',
     // shadowColor: "darkgrey",
@@ -174,6 +175,11 @@ const styles = StyleSheet.create({
   },
   selectedDropdownContainer: {
     backgroundColor: buttonColor,
+  },
+  selectedDropdownContainer_Text: {
+    fontFamily: MainFont_Bold,
+    color: 'white',
+    paddingRight: 4,
   },
   dropdownHeader: {
     flexDirection: 'row',

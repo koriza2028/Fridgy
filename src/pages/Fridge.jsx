@@ -135,7 +135,7 @@ export default function FridgePage({ navigation }) {
                           style={[styles.ProductFilterCategory, selectedCategory === category && styles.SelectedCategory,
                           ]}
                            onPress={() => filterByCategory(category)}>
-                              <Text style={[styles.ProductFilterCategory_Text]}>{category}</Text>
+                              <Text style={[styles.ProductFilterCategory_Text, selectedCategory === category && styles.SelectedCategory_Text]}>{category}</Text>
                           </Pressable>
                       ))}
                   </View>   
@@ -230,6 +230,7 @@ const styles = StyleSheet.create({
       borderRadius: 10,
       borderWidth: 1,
       borderColor: '#ccc',
+      backgroundColor: 'white',
 
     //   shadowColor: "darkgrey", 
     //   shadowOffset: { width: 0, height: 1 },
@@ -246,5 +247,10 @@ const styles = StyleSheet.create({
     SelectedCategory: {
         backgroundColor: buttonColor,
     },
+
+    SelectedCategory_Text: {
+        color: 'white',
+        fontFamily: MainFont_Bold,
+    }
   
   });
