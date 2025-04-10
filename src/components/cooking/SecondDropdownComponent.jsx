@@ -75,11 +75,11 @@ export default function SecondDropdownComponent({
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <Text style={[styles.label, isFocus && { color: '#5A67D8' }]}>
+      <Text style={[styles.label, isFocus && { color: addButtonColor }]}>
         Filters
       </Text>
       <Dropdown
-        style={[styles.dropdown, isFocus && { borderColor: '#5A67D8' }]}
+        style={[styles.dropdown, isFocus && { borderColor: addButtonColor }]}
         containerStyle={styles.dropdownOptionsContainer}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
@@ -93,7 +93,7 @@ export default function SecondDropdownComponent({
           fontFamily: MainFont,
           borderRadius: 10,
         }}
-        maxHeight={300}
+        maxHeight={280}
         labelField="label"
         valueField="value"
         value={selectedValues} // technically unused for multi
@@ -185,7 +185,7 @@ const getLabelForTagType = (tagType) => {
     label: {
       position: 'absolute',
       backgroundColor: 'white',
-      left: 2,
+      left: 4,
       top: -6,
       zIndex: 999,
       paddingHorizontal: 2,

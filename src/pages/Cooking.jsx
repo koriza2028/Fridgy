@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   AvailableMeals_Section: {
-    marginBottom: 20,
+    marginBottom: 0,
   },
   UnavailableMeals_Section: {
     marginTop: 20,

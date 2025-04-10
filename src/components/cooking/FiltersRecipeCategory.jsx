@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { MainFont, TextFontSize, addButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
-import Dropdown from './Dropdown';
-import DropdownComponent from './DropdownComponent';
+// import Dropdown from './Dropdown';
+// import DropdownComponent from './DropdownComponent';
 import SecondDropdownComponent from './SecondDropdownComponent';
 
 export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {

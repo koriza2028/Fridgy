@@ -291,6 +291,10 @@ export default function BasketPage({ navigation }) {
         />
       </Pressable>
 
+      <Pressable style={[styles.Button_GenerateAutobasket]}>
+        <Text>A</Text>
+      </Pressable>
+
     </View>
     </TouchableWithoutFeedback>
   );
@@ -363,6 +367,28 @@ const styles = StyleSheet.create({
     marginTop: 18, 
     width: 50, 
     height: 50,
+  },
+  Button_GenerateAutobasket: {
+    position: 'absolute',
+    bottom: 30,
+    left: 80,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 50,
+    height: 50,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    marginHorizontal: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 60,
+    borderColor: addButtonColor,
+    borderWidth: 2,
+    shadowColor: '#007bff', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 2,        
   },
   logoutButton: {
     alignSelf: 'flex-end',
