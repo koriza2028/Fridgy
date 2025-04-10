@@ -65,6 +65,11 @@ export default function SecondDropdownComponent({
 
   const getDynamicPlaceholder = () => {
     if (!selectedValues.length) return placeholder;
+  
+    if (selectedValues.length > 3) {
+      return `${selectedValues.slice(0, 4).join(', ')} +${selectedValues.length - 3} more`;
+    }
+  
     return selectedValues.join(', ');
   };
 
@@ -80,12 +85,29 @@ export default function SecondDropdownComponent({
         selectedTextStyle={styles.selectedTextStyle}
         iconStyle={styles.iconStyle}
         data={mappedOptions}
+        search
+        searchPlaceholder="Search filters..."
+        inputSearchStyle={{
+          height: 40,
+          fontSize: 14,
+          fontFamily: MainFont,
+          borderRadius: 10,
+        }}
+        maxHeight={300}
         labelField="label"
         valueField="value"
         value={selectedValues} // technically unused for multi
         placeholder={getDynamicPlaceholder()}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
+        renderLeftIcon={() => (
+          <AntDesign
+            style={styles.icon}
+            color={isFocus ? addButtonColor : 'black'}
+            name="filter"
+            size={18}
+          />
+        )}
         renderItem={(item) => {
           if (item.value === '__clear__') {
             return (
@@ -114,11 +136,11 @@ export default function SecondDropdownComponent({
                 {isSelected ? '☑️' : '⬜'} {item.label}
               </Text>
             </Pressable>
-          );
-        }}
-      />
-    </View>
-  );
+            );
+          }}
+        />
+      </View>
+      );
 }
 
 const getLabelForTagType = (tagType) => {
@@ -191,7 +213,7 @@ const getLabelForTagType = (tagType) => {
       alignItems: 'center',
       paddingVertical: 8,
       paddingHorizontal: 10,
-      borderBottomWidth: 1,
+      // borderBottomWidth: 1,
       borderColor: 'lightgrey',
       backgroundColor: 'white',
       borderRadius: 20,
@@ -205,4 +227,9 @@ const getLabelForTagType = (tagType) => {
       fontSize: TextFontSize,
       fontFamily: MainFont,
     },
+
+    clearButton: {
+      marginLeft: 10,
+      marginVertical: 6,
+    }
   });
