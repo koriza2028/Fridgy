@@ -55,7 +55,7 @@ export default function ProductCard(props) {
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            
-                    {/* <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
+                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>-</Text>
                     </Pressable>
 
@@ -63,23 +63,19 @@ export default function ProductCard(props) {
 
                     <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
-                    </Pressable> */}
+                    </Pressable>
                     {/* <Text style={styles.ProductAmountLabel}>{props.product.name}</Text> */}
-                    <View style={styles.ProductNameAndCategory} >
-                        <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
-                    {/* <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text> */}
-                    </View>
                 </View>
 
-                {/* <View style={styles.ProductNameAndCategory} >
+                <View style={styles.ProductNameAndCategory} >
                     <Text style={styles.ProductNameLabel}>{props.product.name}</Text>
-                    <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text>
-                </View> */}
+                    {/* <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text> */}
+                </View>
 
 
-                <Pressable style={styles.Availability_Button} >
+                {/* <Pressable style={styles.Availability_Button} >
                     <Text style={styles.Availability_Button_Text}>Availability</Text>
-                </Pressable>
+                </Pressable> */}
 
                 <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
                     <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
@@ -100,9 +96,8 @@ const styles = StyleSheet.create({
         // marginHorizontal: width*0.01,
         width: productCardWidth,
 
-        // backgroundColor: '#fff',
+        backgroundColor: '#fff',
         borderRadius: 8,
-        // borderBottomWidth: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
@@ -114,13 +109,14 @@ const styles = StyleSheet.create({
         height: productCardWidth,
         // backgroundColor: 'blue',
         
+        
         borderRadius: 10,
     },
     ProductInfoAndButtons: {
         justifyContent: 'space-between',
         alignItems: 'center',
-        height: productCardHeight - productCardWidth,
-        // backgroundColor: '#FFF',  
+        height: productCardHeight - productCardWidth -10,
+        backgroundColor: '#FFF',  
         borderRadius: 10,  
         
     },
@@ -128,33 +124,31 @@ const styles = StyleSheet.create({
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
         width: '100%',
-        paddingVertical: 6,
-        // height: productCardHeight - productCardWidth,
+        height: productCardHeight - productCardWidth,
         justifyContent: 'space-between',
         paddingLeft: 4,
-        // marginTop: -20 
+        marginTop: -10 
     },
     ProductNameLabel: {
         fontWeight: 'bold',
         fontFamily: MainFont_Bold,
-        textAlign: 'center',
     },
     ProductCategoryLabel: {
-        marginBottom: 10,
+        marginBottom: 4,
         fontFamily: MainFont,
-        fontSize: 14,
+        fontSize: 18,
     },
     ProductAmountAndActions: {
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
-        borderRadius: 10,
+        borderRadius: 6,
         backgroundColor: buttonColor,
-        width: '90%',
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'relative',
-        top: -46,
+        top: -36,
 
         shadowColor: buttonColor, 
         shadowOffset: { width: 0, height: 4 },
@@ -181,21 +175,11 @@ const styles = StyleSheet.create({
     SendToBasket_Button: {
         position: 'absolute',
         right: 10,
-        bottom: '40%'
+        bottom: '20%'
     },
 
     SendToBasket_Button_Text: {
         // color: 'green',
         color: addButtonColor,
     },
-
-    Availability_Button: {
-        position: 'absolute',
-        left: 10,
-        bottom: '46%',
-    },
-    Availability_Button_Text: {
-        fontFamily: MainFont,
-        fontSize: 14,
-    }
 });
