@@ -18,7 +18,7 @@ const getLabelForTagType = (tagType) => {
   }
 };
 
-const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect ,id, openDropdownId, setOpenDropdownId}) => {
+const Dropdown = ({ tagType, options, placeholder, globalReset, onSelect }) => {
   const [fontsLoaded] = useFonts({
     'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),

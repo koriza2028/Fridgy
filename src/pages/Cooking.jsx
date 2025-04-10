@@ -6,6 +6,7 @@ import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';
 import FiltersRecipeCategory from '../components/cooking/FiltersRecipeCategory';
 import AddNewButton from '../components/Button_AddNew';
+import SecondDropdownComponent from '../components/cooking/SecondDropdownComponent';
 
 import { buttonColor, backgroundColor, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, addButtonColor } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -152,6 +153,8 @@ export default function CookingPage({ navigation }) {
             onFilterChange={setSelectedFilters} 
           />
 
+          {/* <SecondDropdownComponent/> */}
+
           <View style={styles.MealList_Wrapper}>
             <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
             {filteredData.length > 0 || searchQuery !== "" ? (
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     width: width,
   },
   CookingPage_ContentWrapper: {
-    // width: width * 0.94,
+    width: width,
     paddingBottom: 20,
   },
   SuggestedMeals_Text: {

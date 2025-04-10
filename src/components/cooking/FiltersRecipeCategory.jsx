@@ -3,6 +3,8 @@ import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { MainFont, TextFontSize, addButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import Dropdown from './Dropdown';
+import DropdownComponent from './DropdownComponent';
+import SecondDropdownComponent from './SecondDropdownComponent';
 
 export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {
   const [fontsLoaded] = useFonts({
@@ -12,10 +14,10 @@ export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {
 
   // State to trigger a reset on all dropdowns.
   const [globalResetCounter, setGlobalResetCounter] = useState(0);
-  // Local state to store selected filters for each tagType.
+  // // Local state to store selected filters for each tagType.
   const [selectedFilters, setSelectedFilters] = useState({});
 
-  // Group filterRules by tagType.
+  // // Group filterRules by tagType.
   const groupedOptions = filterRules.reduce((acc, curr) => {
     const { tagType } = curr;
     if (!acc[tagType]) {
@@ -25,7 +27,7 @@ export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {
     return acc;
   }, {});
 
-  // Handler when a dropdown selection changes.
+  // // Handler when a dropdown selection changes.
   const handleDropdownChange = (tagType, selectedValues) => {
     const updatedFilters = { ...selectedFilters, [tagType]: selectedValues };
     setSelectedFilters(updatedFilters);
@@ -41,20 +43,34 @@ export default function FiltersRecipeCategory({ filterRules, onFilterChange }) {
     onFilterChange([]);
   };
 
+
+  const handleMultiFilterChange = (selectedFilters) => {
+    // selectedFilters is a flat array of tag objects (with tagName, tagType, etc.)
+    onFilterChange(selectedFilters); // This updates whatever logic you're driving
+  };
+
+  // CAN ADD THE OPTION TO FIND BY INGREDIENT
+
   return (
     <View style={styles.container}>
-      {Object.keys(groupedOptions).map((tagType) => (
-        <Dropdown
-          key={tagType}
-          tagType={tagType}
-          options={groupedOptions[tagType]}
-          globalReset={globalResetCounter}
-          onSelect={(selected) => handleDropdownChange(tagType, selected)}
+      {/* {Object.keys(groupedOptions).map((tagType) => (
+        <DropdownComponent
+            key={tagType}
+            tagType={tagType}
+            options={groupedOptions[tagType]}
+            globalReset={globalResetCounter}
+            placeholder="Anything"
+            onSelect={(selected) => handleDropdownChange(tagType, selected)}
         />
-      ))}
-      <Pressable style={styles.globalResetButton} onPress={handleGlobalReset}>
+      ))} */}
+      <SecondDropdownComponent
+        allOptions={filterRules} // full list, each with tagType, tagName, tagIcon
+        globalReset={globalResetCounter}
+        onSelect={handleMultiFilterChange}
+      />
+      {/* <Pressable style={styles.globalResetButton} onPress={handleGlobalReset}>
         <Text style={styles.globalResetButtonText}>Clear filters</Text>
-      </Pressable>
+      </Pressable> */}
     </View>
   );
 }
@@ -66,6 +82,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexWrap: 'wrap',
     marginHorizontal: 10,
+    width: '100%',
+    // borderWidth: 1,
+    // borderColor: '#ccc',
   },
   globalResetButton: {
     alignItems: 'center',
