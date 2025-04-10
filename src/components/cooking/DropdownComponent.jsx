@@ -188,10 +188,10 @@ import React, { useState, useEffect } from 'react';
       borderRadius: 10,
       paddingHorizontal: 0,
       paddingTop: 4,
-      minWidth: 120,
+      // minWidth: 120,
     },
     icon: {
-      marginRight: 5,
+      // paddingHorizontal: 4,
     },
     label: {
       position: 'absolute',

@@ -175,12 +175,12 @@ const getLabelForTagType = (tagType) => {
       backgroundColor: 'white',
       borderWidth: 0.5,
       borderRadius: 10,
-      paddingHorizontal: 0,
+      paddingHorizontal: 4,
       paddingTop: 4,
       width: width - 20,
     },
     icon: {
-      marginRight: 5,
+      marginRight: 4,
     },
     label: {
       position: 'absolute',

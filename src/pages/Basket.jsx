@@ -1,9 +1,9 @@
 import React, { useState, useRef, } from 'react';
-import { View, ScrollView, Pressable, TouchableOpacity, Text, 
+import { View, ScrollView, Pressable, Text, 
   Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+// import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
@@ -249,7 +249,6 @@ export default function BasketPage({ navigation }) {
           contentContainerStyle={styles.BasketPage_ListOfBasketItems}
           renderItem={({ item }) => (
             <View style={styles.rowFront}>
-              {item.isFromFridge ? (
                 <BasketItem
                   product={item}
                   isChecked={!!checkedItems[item.basketId]}
@@ -260,17 +259,6 @@ export default function BasketPage({ navigation }) {
                   onChangeName={handleUpdateName}
                   swipeOpen={openRowKey === item.basketId}
                 />
-              ) : (
-                <BasketCustomItem
-                  product={item}
-                  isChecked={!!checkedItems[item.basketId]}
-                  onDecrement={() => handleDecrementProductAmount(item.basketId, item.amount)}
-                  onAdd={() => handleIncrementProductAmount(item.basketId, item.amount)}
-                  onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.basketId, isChecked)}
-                  onChangeName={handleUpdateName}
-                  swipeOpen={openRowKey === item.basketId}
-                />
-              )}
             </View>
             )}          
           />

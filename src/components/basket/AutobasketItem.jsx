@@ -59,7 +59,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
             </Text>  
           </View>
 
-          <View style={styles.BasketItem_AmountAndButtons}>
+          {/* <View style={styles.BasketItem_AmountAndButtons}>
           <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
             <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
           </Pressable>
@@ -69,7 +69,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
            </Pressable>
-         </View>
+         </View> */}
 
         </View>
       </Pressable>
@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignContent: 'center',
-    maxWidth: '100%',
+    width: '100%',
     paddingVertical: 8,
     paddingBottom: 16,
     marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#ddd',
     height: 54,
   },
   BasketItem_Checkbox: {
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
   },
   BasketItem_Name: {
     alignSelf: 'center',
-    marginLeft: 20,
     paddingRight: 10,
     flex: 1,
     flexDirection: 'row',
@@ -106,6 +105,7 @@ const styles = StyleSheet.create({
   ProductPicture: {
     height: 46,
     width: 46,
+    borderRadius: 10,
   },
   BasketItem_Text: {
     fontFamily: MainFont,

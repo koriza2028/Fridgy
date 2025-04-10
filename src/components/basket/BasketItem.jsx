@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignContent: 'center',
-    maxWidth: '100%',
+    // width: '100%',
     paddingVertical: 8,
     paddingHorizontal: 4,
     paddingBottom: 16,
