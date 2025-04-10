@@ -237,6 +237,7 @@ return (
                 openInfoModal={() => handleItemPress(item)}
                 onChangeName={handleUpdateName}
                 swipeOpen={openRowKey === item.basketId}
+                autobasket={true}
               />
             </View>
             )}          

@@ -7,7 +7,7 @@ import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, 
 import { useFonts } from 'expo-font';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 
-export default function BasketItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, openInfoModal, onChangeName }) {
+export default function BasketItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, openInfoModal, onChangeName, autobasket }) {
   const [fontsLoaded] = useFonts({
     'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -51,6 +51,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
             <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
           </Pressable> */}
 
+            {!autobasket && 
             <BouncyCheckbox style={styles.BasketItem_Checkbox}
                 size={24}
                 fillColor='black'
@@ -62,7 +63,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
                 }}
                 // textStyle={{ fontFamily: "JosefinSans-Regular" }}
                 onPress={handleToggle}
-            />
+            />}        
 
           <View style={styles.BasketItem_Name}>
             <Image 
