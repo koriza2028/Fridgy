@@ -398,19 +398,6 @@ export default function RecipeCreatePage({ navigation, route }) {
             />
           </View> 
 
-          {/* <View style={styles.productDataEntry}>
-            <TextInput 
-              style={[styles.productDataEntryInput, styles.productNotes]} 
-              autoCapitalize="sentences" 
-              value={description} 
-              onChangeText={setDescription}
-              placeholder='Do you need instructions how to cook it?' 
-              placeholderTextColor={'#9e9e9e'}
-              multiline={true} 
-              textAlignVertical="top"
-            />
-          </View> */}
-
           <View style={styles.productDataEntry}>
             <Pressable 
               style={[styles.productDataEntryInput, styles.productTags]} 
@@ -446,7 +433,25 @@ export default function RecipeCreatePage({ navigation, route }) {
           modalSearchRef={modalSearchRef}
         />
       </View>
-  )
+    )
+
+    const ListFooter = () => (
+      <View style={{ backgroundColor: 'white', width: '90%', marginHorizontal: 'auto', paddingTop: 20 }}>
+        <View style={styles.productDataEntry}>
+          <Text style={{fontFamily: MainFont_Title, fontSize: 18, marginBottom: 6}}>Notes</Text>
+          <TextInput 
+            style={[styles.productDataEntryInput, styles.productNotes]} 
+            autoCapitalize="sentences" 
+            value={description} 
+            onChangeText={setDescription}
+            placeholder='Do you need instructions how to cook it?' 
+            placeholderTextColor={'#9e9e9e'}
+            multiline={true} 
+            textAlignVertical="top"
+          />
+        </View>
+      </View>
+    );
 
   const scrollA = useRef(new Animated.Value(0)).current;
 
@@ -458,6 +463,7 @@ export default function RecipeCreatePage({ navigation, route }) {
           data={combinedData}
           keyExtractor={(item) => item.key}
           ListHeaderComponent={ListHeader}
+          ListFooterComponent={ListFooter}
           renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}
           rightOpenValue={-75}
@@ -581,7 +587,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     position: 'absolute',
     top: width - 140,
-    left: width - 50,
+    left: width*0.84,
   },
   productDataEntry_Wrapper: {
     width: '90%',
