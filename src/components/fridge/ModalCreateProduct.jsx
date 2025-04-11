@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, } from "react";
 import {
   StyleSheet,
   View,
@@ -8,8 +8,10 @@ import {
   Pressable,
   Alert,
   Platform,
+  Keyboard,
+  KeyboardAvoidingView,
   Dimensions,
-  Button,
+  Animated, Easing
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
@@ -217,10 +219,44 @@ export default function ModalCreateProduct({
     }
   };
 
+  
+  const keyboardHeight = useRef(new Animated.Value(0)).current;
+  const [isNotesFocused, setIsNotesFocused] = useState(false);
+
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (e) => {
+      if (isNotesFocused) {
+        Animated.timing(keyboardHeight, {
+          toValue: e.endCoordinates.height,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+  
+    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+      Animated.timing(keyboardHeight, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    });
+  
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, [isNotesFocused]);
+
+  
+
+
   return (
-    <Modal isVisible={isVisible} style={styles.modal} animationIn="slideInUp" animationOut="slideOutDown" backdropColor="black" backdropOpacity={0.5}>
+    <Modal isVisible={isVisible} style={styles.modal} animationIn="slideInUp" animationOut="slideOutDown" 
+    backdropColor="black" backdropOpacity={0.5} >
       <BlurView intensity={0} style={styles.blurContainer}>
-        <View style={styles.modalContent}>
+        
+        <Animated.View style={[styles.modalContent, { marginBottom: keyboardHeight }]}>
           <Pressable onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>X</Text>
           </Pressable>
@@ -237,23 +273,6 @@ export default function ModalCreateProduct({
                 <Pressable onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
                   {renderProductImage()}
                 </Pressable>
-
-                {/* <Modal isVisible={isImageModalVisible} onBackdropPress={() => setIsImageModalVisible(false)}>
-                  <View style={styles.imageModalContent}>
-                    <Button title="Pick from device" onPress={pickImageFromDevice} />
-                    <Text style={styles.StaticImageLabel}>Or select a static image:</Text>
-                    <View style={styles.StaticImageRow}>
-                      {staticImages.map((img, index) => (
-                        <Pressable key={index} onPress={() => handleStaticImageSelect(img)}>
-                          <Image
-                            source={img}
-                            style={[styles.StaticThumbnail, staticImagePath === img && styles.SelectedStaticImage]}
-                          />
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-                </Modal> */}
 
                 <ModalImagePicker
                   modalVisible={isImageModalVisible}
@@ -315,6 +334,8 @@ export default function ModalCreateProduct({
                   value={notes || ''}
                   multiline={true}
                   textAlignVertical="top"
+                  onFocus={() => setIsNotesFocused(true)}
+                  onBlur={() => setIsNotesFocused(false)}
                 />
 
                 <View style={styles.buttonPanel}>
@@ -334,7 +355,7 @@ export default function ModalCreateProduct({
               </View>
             </View> 
           </View>
-        </View>  
+        </Animated.View>  
       </BlurView>    
     </Modal>
   );

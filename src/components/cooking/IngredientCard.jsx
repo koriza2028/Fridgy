@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     IngredientItem: {
         flexDirection: 'row',
         marginVertical: 6,
+        marginHorizontal: 10,
         // justifyContent: 'space-between',
         // width: '90%',
         // borderColor: '#C0C0C0',
@@ -57,16 +58,16 @@ const styles = StyleSheet.create({
       IngredientItem_Picture: {
         width: 50,
         height: 50,
-        borderRadius: 60,
+        borderRadius: 30,
         // marginLeft: 6,
       },
 
       IngredientItem_NameAndInstructions: {
         marginTop: 4,
-        marginLeft: 10,
+        marginLeft: 12,
         marginBottom: 4,
         width: '70%',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
       },

@@ -323,19 +323,22 @@ export default function RecipeCreatePage({ navigation, route }) {
           </Pressable>
         </View>
       );
-    } else {
+    }
+     else {
       return (
         // <View style={styles.ListOfIngredients}>
         // <View style={styles.SubListOfIngredients}></View>
-        <View style={styles.rowFront}>
-          <IngredientItem
-            ingredient={item.ingredient}
-            isMandatory={item.mandatory}
-            onRemove={removeIngredient}
-            isEditing={isEditing}
-            isCreatingNew={isCreatingNew}
-            isAvailable={checkIngredientIsAvailable(item.ingredient.productId)}
-          />
+        <View style={styles.ingredientWrapper}>
+          <View style={styles.rowFront}>
+            <IngredientItem
+              ingredient={item.ingredient}
+              isMandatory={item.mandatory}
+              onRemove={removeIngredient}
+              isEditing={isEditing}
+              isCreatingNew={isCreatingNew}
+              isAvailable={checkIngredientIsAvailable(item.ingredient.productId)}
+            />
+          </View>
         </View>
       );
     }
@@ -345,10 +348,11 @@ export default function RecipeCreatePage({ navigation, route }) {
   const renderHiddenItem = ({ item }) => {
     if (item.type === 'header') {
       // Headers do not have swipe actions.
-      return <View style={{ height: 0 }} />;
+      return null;
     }
     return (
       <View style={styles.rowBack}>
+      <View style={styles.rowBackContent}>
         <Pressable
           style={styles.deleteButton}
           onPress={() =>
@@ -358,6 +362,7 @@ export default function RecipeCreatePage({ navigation, route }) {
           <Text style={styles.deleteText}>Delete</Text>
         </Pressable>
       </View>
+    </View>
     );
   };
 
@@ -393,7 +398,7 @@ export default function RecipeCreatePage({ navigation, route }) {
             />
           </View> 
 
-          <View style={styles.productDataEntry}>
+          {/* <View style={styles.productDataEntry}>
             <TextInput 
               style={[styles.productDataEntryInput, styles.productNotes]} 
               autoCapitalize="sentences" 
@@ -404,20 +409,17 @@ export default function RecipeCreatePage({ navigation, route }) {
               multiline={true} 
               textAlignVertical="top"
             />
-          </View>
+          </View> */}
 
           <View style={styles.productDataEntry}>
             <Pressable 
               style={[styles.productDataEntryInput, styles.productTags]} 
-              onPress={openCategoryModal}
-            >
+              onPress={openCategoryModal}>
               {categories && categories.length > 0 ? (
                 categories.map((category, index) => (
                   <Tag key={index} name={category.tagName} type={category.tagType} icon={category.tagIcon} />
                 ))
-              ) : (
-                <Tag name={'Add tags +'} />
-              )}
+              ) : (<Tag name={'Add tags +'} />)}
             </Pressable>
           </View>
 
@@ -463,8 +465,9 @@ export default function RecipeCreatePage({ navigation, route }) {
           disableScrollOnSwipe
           nestedScrollEnabled
           contentContainerStyle={{ paddingBottom: 100 }}
-          // bounces={false}
+          swipeRowDisabled={({ item }) => item.type === 'header'}
         />
+        
 
         {/* Footer Buttons */}
         <View style={styles.buttonPanel}>
@@ -497,208 +500,6 @@ export default function RecipeCreatePage({ navigation, route }) {
     </TouchableWithoutFeedback>
   );
 
-
-
-  // kek ONSCROLL MUST MAGNIFY THE PICTURE
-
-  // return (
-  //   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-  //   <View style={styles.RecipeCreatePage}>
-  //     <ScrollView >
-  //       <View style={styles.RecipeCreatePage_ContentWrapper}>
-
-  //         <View>
-  //           <Image 
-  //             style={styles.ProductCreatePicture} 
-  //             source={imageUri ? { uri: imageUri } : require('../../assets/ProductImages/banana_test.png')}
-  //           />
-  //           <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button}></Pressable>
-  //         </View>
-
-  //         <View style={styles.productDataEntry_Wrapper}> 
-  //           <View style={styles.productDataEntry}>
-  //             <TextInput 
-  //               style={[styles.productDataEntryInput, styles.productName]} 
-  //               autoCapitalize="sentences" 
-  //               value={title} 
-  //               onChangeText={setTitle}
-  //               placeholder='How is it called?' 
-  //               placeholderTextColor={'#9e9e9e'}
-  //             />
-  //           </View>    
-  //           <View style={styles.productDataEntry}>
-  //             <TextInput 
-  //               style={[styles.productDataEntryInput, styles.productNotes]} 
-  //               autoCapitalize="sentences" 
-  //               value={description} 
-  //               onChangeText={setDescription}
-  //               placeholder='Do you need instructions how to cook it?' 
-  //               placeholderTextColor={'#9e9e9e'}
-  //               multiline={true} 
-  //               textAlignVertical="top"
-  //             />
-  //           </View>
-  //           <View style={styles.productDataEntry}>
-  //             <Pressable 
-  //               style={[styles.productDataEntryInput, styles.productTags]} 
-  //               onPress={openCategoryModal}
-  //             >
-  //               {categories && categories.length > 0 ? (
-  //                 categories.map((category, index) => (
-  //                   <Tag key={index} name={category.tagName} type={category.tagType} icon={category.tagIcon} />
-  //                 ))
-  //               ) : (
-  //                 <Tag name={'Add tags +'} />
-  //               )}
-  //             </Pressable>
-  //           </View>
-  //           <ModalProductCategoryPicker 
-  //             isCategoryModalVisible={isCategoryModalVisible} 
-  //             setIsCategoryModalVisible={setIsCategoryModalVisible} 
-  //             onClose={closeCategoryModal}
-  //             onCategorySelect={handleMultipleCategoriesSelect} 
-  //             multiSelect={true}
-  //             categories={tags} 
-  //             alreadySelectedCategories={categories || []}
-  //           />
-  //         </View>   
-
-  //         <View style={styles.ListOfIngredients}>
-  //           <View style={styles.SubListOfIngredients}>
-
-  //             <View style={styles.IngredientsHeader}>
-  //               <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
-  //               {/* {isCreatingNew && ( */}
-  //                 <Pressable onPress={() => openIngredientSearchModal(true)} style={styles.addIngredient_Button}>
-  //                   <Text style={styles.addIngredient_ButtonText}>Add</Text>
-  //                 </Pressable>
-  //               {/* )} */}
-  //             </View>
-  //           </View>
-
-  //           {mandatoryIngredients && mandatoryIngredients.length > 0 ? (
-  //             <SwipeListView
-  //               data={mandatoryIngredients}
-  //               keyExtractor={(item) => item._id || item.productId}
-  //               renderItem={({ item }) => (
-  //                 <View style={styles.rowFront}>
-  //                   <IngredientItem 
-  //                     ingredient={item}
-  //                     isAvailable={checkIngredientIsAvailable(item.productId)}
-  //                     isMandatory={true}
-  //                     onRemove={removeIngredient}
-  //                     isEditing={isEditing}
-  //                     isCreatingNew={isCreatingNew}
-  //                   />
-  //                 </View>
-  //               )}
-  //               renderHiddenItem={({ item }) => (
-  //                 <View style={styles.rowBack}>
-  //                   <Pressable 
-  //                     style={styles.deleteButton}
-  //                     onPress={() => removeIngredient(item._id || item.productId, true)}
-  //                   >
-  //                     <Text style={styles.deleteText}>Delete</Text>
-  //                   </Pressable>
-  //                 </View>
-  //               )}
-  //               rightOpenValue={-75}
-  //               disableRightSwipe
-  //               disableScrollOnSwipe
-  //               nestedScrollEnabled={true}
-  //               scrollEnabled={false}
-  //               contentContainerStyle={{ paddingBottom: 10 }}
-  //             />
-  //           ) : (
-  //             <Text style={{ fontFamily: MainFont, fontSize: 14, marginBottom: 6 }}>
-  //               Select at least one ingredient
-  //             </Text>
-  //           )}
-
-  //           <View style={styles.SubListOfIngredients}>
-  //             <View style={styles.IngredientsHeader}>
-  //               <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
-  //               {/* {isCreatingNew && ( */}
-  //                 <Pressable onPress={() => openIngredientSearchModal(false)} style={styles.addIngredient_Button}>
-  //                   <Text style={styles.addIngredient_ButtonText}>Add</Text>
-  //                 </Pressable>
-  //               {/* )} */}
-  //             </View>
-  //           </View>
-          
-
-  //           {optionalIngredients && optionalIngredients.length > 0 ? (
-  //             <SwipeListView
-  //               data={optionalIngredients}
-  //               keyExtractor={(item) => item._id || item.productId}
-  //               renderItem={({ item }) => (
-  //                 <View style={styles.rowFront}>
-  //                   <IngredientItem 
-  //                     ingredient={item}
-  //                     isMandatory={false}
-  //                     onRemove={removeIngredient}
-  //                     isEditing={isEditing}
-  //                     isCreatingNew={isCreatingNew}
-  //                   />
-  //                 </View>
-  //               )}
-  //               renderHiddenItem={({ item }) => (
-  //                 <View style={styles.rowBack}>
-  //                   <Pressable 
-  //                     style={styles.deleteButton}
-  //                     onPress={() => removeIngredient(item._id || item.productId, false)}
-  //                   >
-  //                     <Text style={styles.deleteText}>Delete</Text>
-  //                   </Pressable>
-  //                 </View>
-  //               )}
-  //               rightOpenValue={-75}
-  //               disableRightSwipe
-  //               disableScrollOnSwipe
-  //               nestedScrollEnabled={true}
-  //               scrollEnabled={false}
-  //               contentContainerStyle={{ paddingBottom: 10 }}
-  //             />
-  //           ) : (
-  //             <View />
-  //           )}
-  //         </View>
-
-  //         <SearchModal 
-  //           isSearchModalVisible={isSearchModalVisible} 
-  //           closeSearchModal={closeSearchModal} 
-  //           searchQuery={searchQuery} 
-  //           handleSearch={handleSearchInput} 
-  //           filteredData={filteredData}
-  //           isRecipeCreate={true} 
-  //           addProduct={addIngredient} 
-  //           isMandatory={isMandatoryFlag}
-  //           modalSearchRef={modalSearchRef}
-  //         />
-  //       </View>
-  //     </ScrollView>
-
-  //     <View style={styles.buttonPanel}>
-  //       {!isCreatingNew && (
-  //         <Pressable style={[styles.Button_DeleteRecipe]} onPress={() => confirmDelete(id)}>
-  //           <Text style={styles.Button_SaveRecipe_Text}> <Entypo name="trash" size={28} /> </Text>
-  //         </Pressable>
-  //       )}
-  //       <Pressable 
-  //         style={[
-  //           styles.Button_SaveRecipe, 
-  //           isSaveDisabled && styles.Button_SaveRecipeDisabled, 
-  //           isCreatingNew && styles.Button_SaveRecipeAlone
-  //         ]}
-  //         onPress={saveOrUpdateRecipe} disabled={isSaveDisabled} >
-  //         <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-  //       </Pressable>
-  //     </View>
-
-  //     <ButtonGoBack navigation={navigation} />
-  //   </View>
-  //   </TouchableWithoutFeedback>
-  // );
 }
 
 const styles = StyleSheet.create({
@@ -709,24 +510,42 @@ const styles = StyleSheet.create({
     // For example, if your IngredientItem is about 70 pixels tall:
     minHeight: 70,
     justifyContent: 'center',
-    paddingHorizontal: 10,
+    // paddingHorizontal: '6%',
+    width: '100%',
+  },
+  ingredientWrapper: {
+    width: '90%',
+    alignSelf: 'center',
   },
   rowBack: {
     position: 'absolute',
-    top: 0,
+    top: 10,
     bottom: 0,
+    left: 0,
     right: 0,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    backgroundColor: 'transparent', // prevent red box overflow
+  },
+  
+  rowBackContent: {
+    width: '90%', // match the rowFront visible width
+    height: '100%',
+    alignSelf: 'center', // center it horizontally
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  
+  deleteButton: {
     width: 75,
+    height: 50,
     backgroundColor: 'red',
     justifyContent: 'center',
     alignItems: 'center',
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
   },
-  deleteButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 75,
-  },
+  
   deleteText: {
     color: 'white',
     fontWeight: 'bold',
@@ -824,6 +643,8 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     paddingHorizontal: 10,
     backgroundColor: 'white',
+    width: '90%',
+    marginHorizontal: 'auto',
   },
   addIngredient_Button: {
     marginRight: 14,

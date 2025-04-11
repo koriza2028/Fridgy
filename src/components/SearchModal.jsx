@@ -108,7 +108,7 @@ const SearchModal = ({
       style={styles.modal}
     >
       <Pressable onPress={closeSearchModal} style={styles.closeButton}>
-        <Entypo name="chevron-left" size={22} />
+        <Entypo name="chevron-left" size={28} />
       </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     top: 54,
-    left: 4,
+    left: 2,
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 5,
