@@ -34,7 +34,7 @@ export default function MealCard({ navigation, recipe, isAvailable }) {
 
             <View style={styles.MealDescription}>
                 <Text style={styles.MealTitle_Text}>{recipe.title}</Text>
-                <Text style={styles.MealDescription_Text}>Meal description</Text>
+                <Text style={styles.MealDescription_Text}>Meal description?</Text>
                 
                 <View style={styles.tagsContainer}>
                     {
