@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Text, Pressable, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Text, Pressable, Dimensions, 
+    // Image 
+} from 'react-native';
+import { Image } from 'expo-image';
 
 import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, SecondTitleFontSize, SecondTitleFontWeight, deleteButtonColor } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';

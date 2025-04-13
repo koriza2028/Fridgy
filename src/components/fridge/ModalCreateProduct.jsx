@@ -4,7 +4,7 @@ import {
   View,
   Text,
   TextInput,
-  Image,
+  // Image,
   Pressable,
   Alert,
   Platform,
@@ -13,6 +13,7 @@ import {
   Dimensions,
   Animated, Easing
 } from "react-native";
+import { Image } from 'expo-image';
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import { BlurView } from "expo-blur";

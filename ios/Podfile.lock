@@ -16,6 +16,12 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (13.0.4):
     - ExpoModulesCore
+  - ExpoImage (2.0.7):
+    - ExpoModulesCore
+    - libavif/libdav1d
+    - SDWebImage (~> 5.19.1)
+    - SDWebImageAVIFCoder (~> 0.11.0)
+    - SDWebImageSVGCoder (~> 1.7.0)
   - ExpoImagePicker (16.0.6):
     - ExpoModulesCore
   - ExpoKeepAwake (14.0.3):
@@ -50,6 +56,11 @@ PODS:
   - hermes-engine (0.76.9):
     - hermes-engine/Pre-built (= 0.76.9)
   - hermes-engine/Pre-built (0.76.9)
+  - libavif/core (0.11.1)
+  - libavif/libdav1d (0.11.1):
+    - libavif/core
+    - libdav1d (>= 0.6.0)
+  - libdav1d (1.2.0)
   - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
@@ -1840,6 +1851,14 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - SDWebImage (5.19.7):
+    - SDWebImage/Core (= 5.19.7)
+  - SDWebImage/Core (5.19.7)
+  - SDWebImageAVIFCoder (0.11.0):
+    - libavif/core (>= 0.11.0)
+    - SDWebImage (~> 5.10)
+  - SDWebImageSVGCoder (1.7.0):
+    - SDWebImage/Core (~> 5.6)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1853,6 +1872,7 @@ DEPENDENCIES:
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
@@ -1928,6 +1948,11 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - libavif
+    - libdav1d
+    - SDWebImage
+    - SDWebImageAVIFCoder
+    - SDWebImageSVGCoder
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1949,6 +1974,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
     :path: "../node_modules/expo-font/ios"
+  ExpoImage:
+    :path: "../node_modules/expo-image/ios"
   ExpoImagePicker:
     :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
@@ -2101,6 +2128,7 @@ SPEC CHECKSUMS:
   ExpoBlur: 392c1207f71d0ecf22371621c1fbd44ba84d9742
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoFont: f354e926f8feae5e831ec8087f36652b44a0b188
+  ExpoImage: d840b256050f4428d2942bc2b6e9251f9e0d7021
   ExpoImagePicker: 24e5ba8da111f74519b1e6dc556e0b438b2b8464
   ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
   ExpoModulesCore: c25d77625038b1968ea1afefc719862c0d8dd993
@@ -2109,6 +2137,8 @@ SPEC CHECKSUMS:
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
   glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
+  libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
+  libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
@@ -2170,6 +2200,9 @@ SPEC CHECKSUMS:
   RNGestureHandler: fffddeb8af59709c6d8de11b6461a6af63cad532
   RNReanimated: 2e5069649cbab2c946652d3b97589b2ae0526220
   RNScreens: 362f4c861dd155f898908d5035d97b07a3f1a9d1
+  SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
+  SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
+  SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 

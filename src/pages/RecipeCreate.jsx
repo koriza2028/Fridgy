@@ -11,7 +11,9 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Animated,
+  // Image
 } from "react-native";
+import { Image } from 'expo-image';
 import { SwipeListView } from "react-native-swipe-list-view";
 const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
 
@@ -47,7 +49,7 @@ import useAuthStore from "../store/authStore";
 
 // NEW IMPORTS FOR IMAGE UPLOAD
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getMetadata, getDownloadURL } from "firebase/storage";
 import app from "../firebaseConfig";
 import { translate } from "react-native-redash";
 
@@ -75,20 +77,23 @@ const HeaderImage = React.memo(({ imageUri, scrollA, handleImageUpload }) => {
   }), [scrollA]);
 
   const memoizedSource = useMemo(() => {
-    return imageUri
-      ? { uri: imageUri }
-      : require("../../assets/ProductImages/banana_test.png");
+    if (imageUri) {
+      // Image.prefetch(imageUri); // try to cache it ahead of time
+      return { uri: imageUri };
+    } else {
+      return require("../../assets/ProductImages/banana_test.png");
+    }
   }, [imageUri]);
 
   return (
-    <View>
-      <Animated.Image
-        style={memoizedImageStyle}
+    <Animated.View style={memoizedImageStyle}>
+      <Image
         source={memoizedSource}
+        style={{ width: "100%", height: "100%" }}
         resizeMode="cover"
       />
       <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button} />
-    </View>
+    </Animated.View>
   );
 });
 
@@ -222,7 +227,13 @@ export default function RecipeCreatePage({ navigation, route }) {
         const blob = await response.blob();
         const storage = getStorage(app);
         const storageRef = ref(storage, `recipeImages/${new Date().getTime()}`);
-        await uploadBytes(storageRef, blob);
+        const metadata = {
+          cacheControl: 'public,max-age=86400', // cache for 1 day
+          contentType: blob.type || 'image/jpeg',
+        };
+  
+        await uploadBytes(storageRef, blob, metadata);
+
         const downloadUrl = await getDownloadURL(storageRef);
         setImageUri(downloadUrl);
       }

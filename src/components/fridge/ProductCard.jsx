@@ -1,5 +1,6 @@
-import React from "react";
-import { StyleSheet, View, Text, Image, Pressable, Dimensions } from "react-native";
+import React, {useMemo} from "react";
+import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
+import { Image } from 'expo-image';
 
 import { buttonColor, addButtonColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -15,6 +16,7 @@ const productCardWidth = width*0.46;
 const productCardHeight = productCardWidth*1.34;
 
 // Make the view for ipads too
+
 
 export default function ProductCard(props) {
     const userId = useAuthStore((state) => state.user?.uid);
@@ -46,11 +48,19 @@ export default function ProductCard(props) {
         return require('../../../assets/ProductImages/banana_test.png');
     };
 
+    const memoizedSource = useMemo(() => {
+        return props.product.imageUri
+    ? { uri: props.product.imageUri }
+    : require('../../../assets/ProductImages/banana_test.png');
+}, [props.product.imageUri]);
+
     return (         
         <Pressable style={styles.ProductCard} onPress={() => props.onOpenModal(props.product)}>
             <Image
                 style={styles.ProductPicture}
-                source={getImageSource(props.product)}
+                source={memoizedSource}
+                contentFit="cover"
+      cachePolicy="disk"
             />
             <View style={styles.ProductInfoAndButtons}>
 

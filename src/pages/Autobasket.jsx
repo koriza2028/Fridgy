@@ -93,14 +93,13 @@ export default function AutoBasketPage() {
         return [...prev, { productId: item.id, amount: 1, basketId: Date.now().toString() }];
       }
     });
-    setEditMode(true);
+    handleSaveDraft()
     closeSearchModal();
   };
 
   const handleSaveDraft = async () => {
     await saveAutoBasketDraft(userId, autoBasketDraft);
     await loadProducts();
-    setEditMode(false); // Add this line
   };
   
 
@@ -124,7 +123,6 @@ export default function AutoBasketPage() {
     : autoBasket;
 
   const combinedData = [
-      ...autoBasket.filter(product => !product.isFromFridge),
       ...autoBasket.filter(product => product.isFromFridge),
     ];
   
