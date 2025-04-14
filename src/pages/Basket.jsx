@@ -8,8 +8,9 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
-import BasketCustomItem from '../components/basket/BasketCustomItem';
+// import BasketCustomItem from '../components/basket/BasketCustomItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
+import Button_Autobasket from '../components/basket/Button_Autobasket';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
@@ -216,9 +217,9 @@ export default function BasketPage({ navigation }) {
     <View style={styles.BasketPage}>
         <View style={styles.BasketPage_ContentWrapper}>
 
-          <Pressable onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
+          {/* <Pressable onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
             <Text style={styles.tempButtonText}>AutoBasket</Text>
-          </Pressable>
+          </Pressable> */}
 
           <Pressable onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
@@ -279,9 +280,10 @@ export default function BasketPage({ navigation }) {
         />
       </Pressable>
 
-      <Pressable style={[styles.Button_GenerateAutobasket]}>
+      {/* <Pressable style={[styles.Button_GenerateAutobasket]}>
         <Text>A</Text>
-      </Pressable>
+      </Pressable> */}
+      <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')}/>
 
     </View>
     </TouchableWithoutFeedback>
@@ -359,7 +361,7 @@ const styles = StyleSheet.create({
   Button_GenerateAutobasket: {
     position: 'absolute',
     bottom: 30,
-    left: 80,
+    right: 10,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
