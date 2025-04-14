@@ -101,6 +101,27 @@ export default function ModalCreateProduct({
     setIsCreatingNew(true);
   };
 
+  const shouldResetOnClose = useRef(false);
+  const [shouldRenderContent, setShouldRenderContent] = useState(true);
+
+  const handleClose = () => {
+    onClose(); // Trigger modal exit
+    setShouldRenderContent(false);
+    // Reset form data after a delay
+    setTimeout(() => {
+      resetForm();
+      setShouldRenderContent(true); // ready for next time the modal opens
+    }, 350);
+  };
+
+const handleModalHide = () => {
+  if (shouldResetOnClose.current) {
+    resetForm();
+    shouldResetOnClose.current = false;
+  }
+};
+
+
   const pickImageFromDevice = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -180,8 +201,8 @@ export default function ModalCreateProduct({
     try {
       await addOrUpdateProduct(userId, productDataId = id, productData);
   
-      resetForm();
       onClose();
+      resetForm();
       onChange();
     } catch (error) {
       console.error("Error saving product:", error);
@@ -230,7 +251,8 @@ export default function ModalCreateProduct({
         Animated.timing(keyboardHeight, {
           toValue: e.endCoordinates.height,
           duration: 300,
-          useNativeDriver: false,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
         }).start();
       }
     });
@@ -239,7 +261,7 @@ export default function ModalCreateProduct({
       Animated.timing(keyboardHeight, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }).start();
     });
   
@@ -249,16 +271,23 @@ export default function ModalCreateProduct({
     };
   }, [isNotesFocused]);
 
-  
-
 
   return (
-    <Modal isVisible={isVisible} style={styles.modal} animationIn="slideInUp" animationOut="slideOutDown" 
-    backdropColor="black" backdropOpacity={0.5} >
+    <Modal isVisible={isVisible} style={styles.modal} 
+        animationIn="slideInUp" animationOut="slideOutDown" animationInTiming={500}
+        useNativeDriver={true}
+        backdropColor="black" backdropOpacity={0.5} 
+        onModalHide={() => {
+          setTimeout(() => {
+            resetForm();
+          }, 50);
+        }} hideModalContentWhileAnimating={true}>
       <BlurView intensity={0} style={styles.blurContainer}>
         
-        <Animated.View style={[styles.modalContent, { marginBottom: keyboardHeight }]}>
-          <Pressable onPress={onClose} style={styles.closeButton}>
+      {shouldRenderContent && (
+        
+        <Animated.View style={[styles.modalContent, { transform: [{ translateY: Animated.multiply(keyboardHeight, -0.5) }] }]}>
+          <Pressable onPress={handleClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>X</Text>
           </Pressable>
 
@@ -357,6 +386,7 @@ export default function ModalCreateProduct({
             </View> 
           </View>
         </Animated.View>  
+      )}
       </BlurView>    
     </Modal>
   );
