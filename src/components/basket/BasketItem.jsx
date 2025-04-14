@@ -45,7 +45,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
 
 
   return (
-    <Pressable onPress={() => openInfoModal(product)}>
+    
         <View style={styles.BasketItem}>
           {/* <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
             <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
@@ -70,13 +70,12 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
               style={styles.ProductPicture}
               source={getImageSource(product)}
             />
-            <Text 
-              style={styles.BasketItem_Text}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {product.name}
-            </Text>  
+            <Pressable style={styles.BasketItem_Name_Button} onPress={() => openInfoModal(product)}>
+              <Text 
+                style={styles.BasketItem_Text} numberOfLines={2} ellipsizeMode="tail">
+                {product.name}
+              </Text>  
+            </Pressable>
           </View>
 
           {/* <View style={styles.BasketItem_AmountAndButtons}>
@@ -92,7 +91,7 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           </View> */}
 
         </View>
-      </Pressable>
+
   )
 
   
@@ -204,6 +203,11 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignContent: 'center',
+  },
+  BasketItem_Name_Button: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    width: '100%',
   },
   ProductPicture: {
     height: 46,

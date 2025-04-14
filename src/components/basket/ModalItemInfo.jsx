@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react";
-import { View, Text, StyleSheet, Pressable, Dimensions, Animated } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions, Animated, Easing } from "react-native";
 import { Image } from 'expo-image';
 import Modal from "react-native-modal";
 
@@ -26,15 +26,28 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
     onClose();
   }
 
-  const opacity = useRef(new Animated.Value(isVisible ? 1 : 0)).current;
+const [showContent, setShowContent] = useState(false);
+const opacity = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+useEffect(() => {
+  if (isVisible) {
+    setShowContent(true);
     Animated.timing(opacity, {
-      toValue: isVisible ? 1 : 0,
+      toValue: 1,
       duration: 300,
+      easing: Easing.bezier(0.33, 1, 0.68, 1),
       useNativeDriver: true,
     }).start();
-  }, [isVisible, opacity]);
+  } else {
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowContent(false); // hide content AFTER fade out
+    });
+  }
+}, [isVisible]);
 
 
   return (
@@ -44,15 +57,16 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
       swipeDirection="down"
       backdropColor="black" backdropOpacity={0.5} onBackdropPress={onModalClose}
       style={styles.modal}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
+      // animationIn="slideInUp"
+      // animationOut="slideOutDown"
       hideModalContentWhileAnimating={true}
       animationInTiming={400}
       // animationOutTiming={300}
-      backdropTransitionInTiming={300}
+      // backdropTransitionInTiming={800}
       // backdropTransitionOutTiming={300}
     >
-      <Animated.View style={[styles.modalContainer, { opacity }]} >
+      {showContent && (
+      <Animated.View style={[styles.modalContainer]} >
             <View style={styles.container}>      
          
          <Image style={styles.productImage}
@@ -66,6 +80,7 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
             
       </View>
     </Animated.View>
+      )}
     </Modal>
   );
 };

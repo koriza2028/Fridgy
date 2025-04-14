@@ -14,6 +14,7 @@ import BasketPage from './pages/Basket';
 import RecipeCreatePage from './pages/RecipeCreate';
 import LoginPage from './pages/Login';
 import AutoBasketPage from './pages/AutoBasket';
+import MealPlannerPage from "./pages/MealPlanner";
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -67,6 +68,24 @@ const CookingStack = () => (
         component={RecipeCreatePage}
         options={{ title: '', headerShown: false }}
       />
+  </Stack.Navigator>
+);
+
+const MealPlannerStack = () => (
+  <Stack.Navigator >
+    <Stack.Screen
+      name="MealPlannerPage"
+      component={MealPlannerPage}
+      options={{
+        headerShown: true,
+        headerTitle: "Meal Planning",
+        headerStyle: {
+          backgroundColor: backgroundColor,
+          shadowColor: 'transparent',
+          elevation: 0, 
+        },
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -136,6 +155,9 @@ const App = () => {
               } else if (route.name === 'Basket') {
                 iconName = 'shopping-basket';
                 return <MaterialIcons name={iconName} size={size} color={color} />;
+              } else if (route.name === 'MealPlanner') {
+                iconName = 'restaurant';
+                return <MaterialIcons name={iconName} size={size} color={color} />;
               }
             },
             tabBarActiveTintColor: '#0056b3', // Active tab icon color
@@ -148,7 +170,7 @@ const App = () => {
               height: 84,
               borderTopRightRadius: 20,
               borderTopLeftRadius: 20,
-              borderColor: 'white',
+              // borderTopWidth: 1,
               // margin: 4, 
               marginBottom: -14,
               overflow: 'hidden',
@@ -165,6 +187,13 @@ const App = () => {
           <Tab.Screen
             name="Cooking"
             component={CookingStack}
+            options={{
+              tabBarShowLabel: false,
+            }}
+          />
+          <Tab.Screen
+            name="MealPlanner"
+            component={MealPlannerStack}
             options={{
               tabBarShowLabel: false,
             }}
