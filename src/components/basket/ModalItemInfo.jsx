@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
-import { View, Text, Image, StyleSheet, Pressable, Dimensions, Animated } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions, Animated } from "react-native";
+import { Image } from 'expo-image';
 import Modal from "react-native-modal";
 
 
@@ -46,10 +47,10 @@ const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
       animationIn="slideInUp"
       animationOut="slideOutDown"
       hideModalContentWhileAnimating={true}
-      animationInTiming={300}
-      animationOutTiming={300}
+      animationInTiming={400}
+      // animationOutTiming={300}
       backdropTransitionInTiming={300}
-      backdropTransitionOutTiming={300}
+      // backdropTransitionOutTiming={300}
     >
       <Animated.View style={[styles.modalContainer, { opacity }]} >
             <View style={styles.container}>      

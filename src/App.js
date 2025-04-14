@@ -145,11 +145,12 @@ const App = () => {
             tabBarStyle: {
               borderTopWidth: 0,
               elevation: 0, 
-              height: 80,
+              height: 84,
               borderTopRightRadius: 20,
               borderTopLeftRadius: 20,
               borderColor: 'white',
-              margin: 4, 
+              // margin: 4, 
+              marginBottom: -14,
               overflow: 'hidden',
             },
           })}

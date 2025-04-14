@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     // paddingBottom: 100,
 
     position: 'absolute',
-        bottom: 30,
+        bottom: 20,
         right: 10,
         flexDirection: 'row',
         justifyContent: 'center',
@@ -107,6 +107,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
     padding: 16,
     borderRadius: 30,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',
