@@ -37,7 +37,7 @@ export default function MealCard({ navigation, recipe, isAvailable }) {
 
             <View style={styles.MealDescription}>
                 <Text style={styles.MealTitle_Text}>{recipe.title}</Text>
-                <Text style={styles.MealDescription_Text}>Meal description?</Text>
+                <Text style={styles.MealDescription_Text}>Calories, cooking time</Text>
                 
                 <View style={styles.tagsContainer}>
                     {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // borderColor: 'green',
         // borderWidth: 2,
-        width: '98%',
+        width: '100%',
         height: width / 4,
 
         backgroundColor: '#fff',

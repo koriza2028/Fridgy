@@ -485,7 +485,7 @@ export default function RecipeCreatePage({ navigation, route }) {
         <SearchModal
           isSearchModalVisible={isSearchModalVisible}
           closeSearchModal={closeSearchModal}
-          searchQuery={searchQuery}
+          // searchQuery={searchQuery}
           handleSearch={handleSearchInput}
           filteredData={filteredData}
           isRecipeCreate={true}
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   },
   SubListOfIngredients: {
     marginVertical: 6,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   buttonPanel: {
     width: "100%",

@@ -19,12 +19,13 @@ import { fetchAvailableProducts } from '../store/fridgeStore';
 const { width } = Dimensions.get('window');
 
 export default function CookingPage({ navigation }) {
-  const userId = useAuthStore((state) => state.user?.uid);
 
   const [fontsLoaded] = useFonts({
     'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
+
+  const userId = useAuthStore((state) => state.user?.uid);
 
   // recipeBook stores the full list of enriched recipes.
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });

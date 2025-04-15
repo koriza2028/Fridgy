@@ -4,6 +4,8 @@ import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
 
+import SearchInput from './Search';
+
 import { useFonts } from 'expo-font';
 import { MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 
@@ -112,13 +114,19 @@ const SearchModal = ({
       </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
-      <TextInput
+      {/* <TextInput
         style={styles.searchInput}
         placeholder="Find a product"
         value={searchQuery}
         onChangeText={handleSearch}
         ref={modalSearchRef}
-      />
+      /> */}
+
+      <SearchInput 
+          placeholder={'Find an ingredient'} 
+          query={searchQuery} 
+          // onChangeText={handleSearch} 
+        />
 
       {isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
@@ -155,7 +163,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   modalContent: {
-    padding: 16,
+    padding: 10,
   },
   searchInput: {
     backgroundColor: '#fff',
@@ -195,7 +203,7 @@ const styles = StyleSheet.create({
   searchItem_Image: {
     width: 50,
     height: 50,
-    // borderRadius: 25,
+    borderRadius: 8,
   },
   NameAndHint: {
     flexDirection: 'column',

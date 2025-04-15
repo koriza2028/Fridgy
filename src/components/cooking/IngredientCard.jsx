@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TextInput, Image, Pressable } from 'react-native';
-
+import { View, StyleSheet, Text, TextInput, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
@@ -44,8 +44,9 @@ const styles = StyleSheet.create({
 
     IngredientItem: {
         flexDirection: 'row',
-        marginVertical: 6,
+        // marginVertical: 6,
         marginHorizontal: 10,
+        marginTop: -10,
         // justifyContent: 'space-between',
         // width: '90%',
         // borderColor: '#C0C0C0',
