@@ -11,9 +11,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Animated,
-  // Image
 } from "react-native";
-import { Image } from 'expo-image';
+import ImageWithUpload from "../components/ImageWithUpload";
 import { SwipeListView } from "react-native-swipe-list-view";
 const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
 
@@ -47,55 +46,9 @@ import { addOrUpdateRecipe, removeRecipe } from "../store/cookingStore";
 import { fetchAllProducts } from "../store/fridgeStore";
 import useAuthStore from "../store/authStore";
 
-// NEW IMPORTS FOR IMAGE UPLOAD
-import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getMetadata, getDownloadURL } from "firebase/storage";
-import app from "../firebaseConfig";
 import { translate } from "react-native-redash";
 
 const { width } = Dimensions.get("window");
-
-/* 
-  --- HeaderImage Component ---
-  This component handles only the image.
-  It uses useMemo to cache its animated style and source,
-  and React.memo to skip re-rendering if these props remain unchanged.
-*/
-const HeaderImage = React.memo(({ imageUri, scrollA, handleImageUpload }) => {
-  const memoizedImageStyle = useMemo(() => ({
-    width: width,
-    height: width,
-    transform: [
-      { translateY: scrollA },
-      {
-        scale: scrollA.interpolate({
-          inputRange: [-width, 0, width],
-          outputRange: [2, 1, 1],
-        }),
-      },
-    ],
-  }), [scrollA]);
-
-  const memoizedSource = useMemo(() => {
-    if (imageUri) {
-      // Image.prefetch(imageUri); // try to cache it ahead of time
-      return { uri: imageUri };
-    } else {
-      return require("../../assets/ProductImages/banana_test.png");
-    }
-  }, [imageUri]);
-
-  return (
-    <Animated.View style={memoizedImageStyle}>
-      <Image
-        source={memoizedSource}
-        style={{ width: "100%", height: "100%" }}
-        resizeMode="cover"
-      />
-      <Pressable onPress={handleImageUpload} style={styles.ProductPicture_Button} />
-    </Animated.View>
-  );
-});
 
 /*
   --- Main Component: RecipeCreatePage ---
@@ -208,40 +161,6 @@ export default function RecipeCreatePage({ navigation, route }) {
         });
     }
   }, [userId]);
-
-  // Animated value defined once
-  const scrollA = useRef(new Animated.Value(0)).current;
-
-  // Wrap handleImageUpload so its identity is stable.
-  const handleImageUpload = useCallback(async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5,
-      });
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const storage = getStorage(app);
-        const storageRef = ref(storage, `recipeImages/${new Date().getTime()}`);
-        const metadata = {
-          cacheControl: 'public,max-age=86400', // cache for 1 day
-          contentType: blob.type || 'image/jpeg',
-        };
-  
-        await uploadBytes(storageRef, blob, metadata);
-
-        const downloadUrl = await getDownloadURL(storageRef);
-        setImageUri(downloadUrl);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      Alert.alert("Error", "Failed to upload image. Please try again.");
-    }
-  }, []);
 
   const saveOrUpdateRecipe = useCallback(() => {
     addOrUpdateRecipe(userId, {
@@ -438,14 +357,30 @@ export default function RecipeCreatePage({ navigation, route }) {
     [removeIngredient]
   );
 
+  const scrollA = useRef(new Animated.Value(0)).current;
+
+  const memoizedImageStyle = useMemo(() => ({
+    width,
+    height: width,
+    transform: [
+      { translateY: scrollA },
+      {
+        scale: scrollA.interpolate({
+          inputRange: [-width, 0, width],
+          outputRange: [2, 1, 1],
+        }),
+      },
+    ],
+  }), [scrollA]);
+
   // Memoize the header that contains the image and text inputs.
   const RenderedHeader = useMemo(() => {
     return (
       <View style={styles.RecipeCreatePage_ContentWrapper}>
-        <HeaderImage
+        <ImageWithUpload
           imageUri={imageUri}
-          scrollA={scrollA}
-          handleImageUpload={handleImageUpload}
+          animatedStyle={memoizedImageStyle}
+          setImageUri={setImageUri}
         />
         <View style={styles.productDataEntry_Wrapper}>
           <View style={styles.productDataEntry}>
@@ -498,7 +433,6 @@ export default function RecipeCreatePage({ navigation, route }) {
   }, [
     imageUri,
     scrollA,
-    handleImageUpload,
     title,
     categories,
     isCategoryModalVisible,

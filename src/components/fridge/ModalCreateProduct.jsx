@@ -14,6 +14,9 @@ import {
   Animated, Easing
 } from "react-native";
 import { Image } from 'expo-image';
+
+import ImageWithUpload from "../components/ImageWithUpload";
+
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import { BlurView } from "expo-blur";
@@ -233,7 +236,11 @@ const handleModalHide = () => {
 
   const renderProductImage = () => {
     if (imageUri) {
-      return <Image style={styles.ProductCreatePicture_Image} source={{ uri: imageUri }} />;
+      return <ImageWithUpload
+        imageUri={imageUri}
+        setImageUri={setImageUri}
+        />
+      //return <Image style={styles.ProductCreatePicture_Image} source={{ uri: imageUri }} />;
     } else if (staticImagePath) {
       return <Image style={styles.ProductCreatePicture_Image} source={staticImagePath} />;
     } else {
