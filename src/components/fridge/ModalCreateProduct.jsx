@@ -13,9 +13,8 @@ import {
   Dimensions,
   Animated, Easing
 } from "react-native";
-import { Image } from 'expo-image';
 
-import ImageWithUpload from "../components/ImageWithUpload";
+import ImageWithUpload from "../../components/ImageWithUpload";
 
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
@@ -23,7 +22,6 @@ import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import ModalProductCategoryPicker from "./ModalProductCategoryPicker";
-import ModalImagePicker from "../../components/ModalImagePicker";
 import useAuthStore from '../../store/authStore';  // Correct path to your auth store
 import { addOrUpdateProduct, deleteProduct } from "../../store/fridgeStore";
 
@@ -43,11 +41,6 @@ import {
 
 import { categories } from "../../../assets/Variables/categories";
 import { useFonts } from "expo-font";
-
-// NEW IMPORTS FOR IMAGE UPLOAD
-import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import app from "../../firebaseConfig";
 
 const { width, height } = Dimensions.get("window");
 const isSmallScreen = height < 700;
@@ -117,50 +110,11 @@ export default function ModalCreateProduct({
     }, 350);
   };
 
-const handleModalHide = () => {
-  if (shouldResetOnClose.current) {
-    resetForm();
-    shouldResetOnClose.current = false;
-  }
-};
-
-
-  const pickImageFromDevice = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images',
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5,
-      });
-
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const storage = getStorage(app);
-        const storageRef = ref(storage, `productImages/${new Date().getTime()}`);
-        const metadata = {
-          contentType: 'image/jpeg',
-          cacheControl: 'public,max-age=86400',
-        };
-        await uploadBytes(storageRef, blob, metadata);
-        const downloadUrl = await getDownloadURL(storageRef);
-        setImageUri(downloadUrl);
-        setStaticImagePath(null);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      Alert.alert("Error", "Failed to upload image. Please try again.");
-    }
-    setIsImageModalVisible(false);
-  };
-
-  const handleStaticImageSelect = (path) => {
-    setStaticImagePath(path);
-    setImageUri(null);
-    setIsImageModalVisible(false);
-  };
+  // const handleStaticImageSelect = (path) => {
+  //   setStaticImagePath(path);
+  //   setImageUri(null);
+  //   setIsImageModalVisible(false);
+  // };
 
   const handleCategorySelect = (selectedTag) => {
     setCategory(selectedTag);
@@ -235,17 +189,12 @@ const handleModalHide = () => {
   const isSaveDisabled = name.trim() === "" || amount === "" || isNaN(parseInt(amount, 10));
 
   const renderProductImage = () => {
-    if (imageUri) {
-      return <ImageWithUpload
+    return <ImageWithUpload
         imageUri={imageUri}
         setImageUri={setImageUri}
+        imageStyle={styles.ProductCreatePicture_Image}
+        containerStyle={styles.ProductCreatePicture_Image}
         />
-      //return <Image style={styles.ProductCreatePicture_Image} source={{ uri: imageUri }} />;
-    } else if (staticImagePath) {
-      return <Image style={styles.ProductCreatePicture_Image} source={staticImagePath} />;
-    } else {
-      return <Image style={styles.ProductCreatePicture_Image} source={require('../../../assets/ProductImages/banana_test.png')} />;
-    }
   };
 
   
@@ -310,15 +259,6 @@ const handleModalHide = () => {
                 <Pressable onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
                   {renderProductImage()}
                 </Pressable>
-
-                <ModalImagePicker
-                  modalVisible={isImageModalVisible}
-                  onClose={() => setIsImageModalVisible(false)}
-                  onSelect={handleStaticImageSelect}
-                  imageOptions={staticImages}
-                  pickImageFromDevice={pickImageFromDevice}
-                />
-
               </View>
 
               <View style={styles.productDataEntry_Wrapper}>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, } from 'react';
 import { View, ScrollView, Pressable, Text, 
-  Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
+  Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 // import { GestureHandlerRootView } from 'react-native-gesture-handler';
 // import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
@@ -19,7 +19,8 @@ import {
   updateProductAmountInBasket,
   fetchBasketProducts,
   moveProductsFromBasketToFridge,
-  updateBasketItemName
+  updateBasketItemName,
+  addAutoBasketProductsToBasket,
 } from '../store/basketStore';
 
 import { fetchAllProducts } from '../store/fridgeStore';
@@ -210,7 +211,15 @@ export default function BasketPage({ navigation }) {
     </View>
   );
 
-
+  const handleAddAutoBasketToBasket = async () => {
+    try {
+      const result = await addAutoBasketProductsToBasket(userId);
+      setBasket(result);
+    } catch (error) {
+      console.error("Error adding autoBasket products to basket:", error);
+      Alert.alert("Error", "Could not add products to basket. Please try again.");
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -283,7 +292,7 @@ export default function BasketPage({ navigation }) {
       {/* <Pressable style={[styles.Button_GenerateAutobasket]}>
         <Text>A</Text>
       </Pressable> */}
-      <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')}/>
+      <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')} onGClick={() => handleAddAutoBasketToBasket()}/>
 
     </View>
     </TouchableWithoutFeedback>

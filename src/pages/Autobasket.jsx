@@ -8,16 +8,14 @@ import useAuthStore from '../store/authStore';
 import { fetchAllProducts } from '../store/fridgeStore';
 import {
   fetchAutoBasketProducts,
-  saveAutoBasketDraft,
+  addProductToAutoBasket,
   updateProductAmountInAutoBasket,
-  updateAutoBasketItemName,
 } from '../store/autoBasketStore';
 
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
 import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
-import BasketCustomItem from '../components/basket/BasketCustomItem';
 import { backgroundColor } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
@@ -29,7 +27,6 @@ export default function AutoBasketPage() {
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
   const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
-  const [autoBasketDraft, setAutoBasketDraft] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
@@ -37,20 +34,23 @@ export default function AutoBasketPage() {
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts();
+      refreshAutoBasket();
     }, [userId])
   );
 
-  const loadProducts = async () => {
-    if (userId) {
-      const autoBasketItems = await fetchAutoBasketProducts(userId);
-      const fridgeProducts = await fetchAllProducts(userId);
-      setAutoBasket(autoBasketItems);
-      setProducts(fridgeProducts);
-      setAutoBasketDraft([]);
-      setEditMode(false);
-    }
-  };
+  const refreshAutoBasket = async () => {
+      try {
+        if (userId) {
+          const autoBasketItems = await fetchAutoBasketProducts(userId);
+          const fridgeProducts = await fetchAllProducts(userId);
+          setAutoBasket(autoBasketItems);
+          setProducts(fridgeProducts);
+        }
+      } catch (err) {
+        console.error("Failed to fetch basket products:", err);
+        setError("Failed to fetch basket.");
+      }
+    };
 
   const handleSearch = (text) => {
     setSearchQuery(text);
@@ -58,7 +58,6 @@ export default function AutoBasketPage() {
       const results = products.filter(
         (p) =>
           !autoBasket.some((a) => a.productId === p.id) &&
-          !autoBasketDraft.some((d) => d.productId === p.id) &&
           p.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredData(results);
@@ -82,164 +81,96 @@ export default function AutoBasketPage() {
     setFilteredData([]);
   };
 
-  const addProductToDraft = (item) => {
-    setAutoBasketDraft((prev) => {
-      const exists = prev.find((p) => p.productId === item.id);
-      if (exists) {
-        return prev.map((p) =>
-          p.productId === item.id ? { ...p, amount: p.amount + 1 } : p
-        );
-      } else {
-        return [...prev, { productId: item.id, amount: 1, basketId: Date.now().toString() }];
-      }
-    });
-    handleSaveDraft()
-    closeSearchModal();
-  };
-
-  const handleSaveDraft = async () => {
-    await saveAutoBasketDraft(userId, autoBasketDraft);
-    await loadProducts();
+  const addProduct = async (item) => {
+    try {
+      await addProductToAutoBasket(userId, item);
+      closeSearchModal();
+      await refreshAutoBasket();
+    } catch (err) {
+      console.error("Failed to add product:", err);
+      setError("Failed to add product. Please try again.");
+    }
   };
   
-
-  const handleIncrementProductAmount = async (id, current) => {
-    await updateProductAmountInAutoBasket(userId, id, current + 1);
-    await loadProducts();
+  const handleIncrementProductAmount = async (autoBasketItemId, currentAmount) => {
+    try {
+      await updateProductAmountInAutoBasket(userId, autoBasketItemId, currentAmount + 1);
+      await refreshAutoBasket();
+    } catch (err) {
+      console.error("Failed to increment product quantity:", err);
+    }
   };
 
-  const handleDecrementProductAmount = async (id, current) => {
-    await updateProductAmountInAutoBasket(userId, id, current - 1);
-    await loadProducts();
-  };
-
-  const handleUpdateName = async (id, name) => {
-    await updateAutoBasketItemName(userId, id, name);
-    await loadProducts();
-  };
-
-  const combinedItems = editMode
-    ? [...autoBasket, ...autoBasketDraft.map((d) => ({ ...d, isDraft: true }))]
-    : autoBasket;
-
-  const combinedData = [
-      ...autoBasket.filter(product => product.isFromFridge),
-    ];
+  const handleDecrementProductAmount = async (autoBasketItemId, currentAmount) => {
+    try {
+      await updateProductAmountInAutoBasket(userId, autoBasketItemId, currentAmount - 1);
+      await refreshAutoBasket();
+    } catch (err) {
+      console.error("Failed to decrement product quantity:", err);
+    }
+    };
   
-    const [openRowKey, setOpenRowKey] = useState(null);
-  
-    // Render the hidden row with a delete button
-    const renderHiddenItem = ({ item }) => (
-      <View style={styles.rowBack}>
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => handleDecrementProductAmount(item.basketId, item.amount)}
-        >
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </Pressable>
-      </View>
-    );
+  const [openRowKey, setOpenRowKey] = useState(null);
 
-  // return (
-  //   <View style={styles.WholePage}>
-  //     <ScrollView>
-  //       <View style={styles.WholePage_ContentWrapper}>
-  //         <SearchInput
-  //           placeholder="Find a product"
-  //           query={searchQuery}
-  //           onChangeText={openSearchModal}
-  //         />
+  // Render the hidden row with a delete button
+  const renderHiddenItem = ({ item }) => (
+    <View style={styles.rowBack}>
+      <Pressable
+        style={styles.deleteButton}
+        onPress={() => handleDecrementProductAmount(item.autoBasketId, item.amount)}
+      >
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </Pressable>
+    </View>
+  );
 
-  //         {editMode && (
-  //           <View style={styles.controlButtons}>
-  //             <Button title="Save" onPress={handleSaveDraft} />
-  //             <Button title="Cancel" color="red" onPress={() => {
-  //               setAutoBasketDraft([]);
-  //               setEditMode(false); // Add this line
-  //             }}
-  //             />
-  //           </View>
-  //         )}
+  const handleItemPress = (product) => {
+    setSelectedProduct(product);
+    setIsInfoModalVisible(true);
+  };
 
-  //         <View style={styles.BasketPage_ListOfBasketItems}>
-  //           {combinedItems.map((product) => (
-  //             <BasketItem
-  //               key={product.basketId}
-  //               product={product}
-  //               isChecked={false}
-  //               onDecrement={() => handleDecrementProductAmount(product.basketId, product.amount)}
-  //               onAdd={() => handleIncrementProductAmount(product.basketId, product.amount)}
-  //               onToggleCheckbox={() => {}}
-  //               openInfoModal={() => setSelectedProduct(product)}
-  //               onChangeName={handleUpdateName}
-  //             />
-  //           ))}
-  //         </View>
-
-  //         <SearchModal
-  //           isSearchModalVisible={isSearchModalVisible}
-  //           closeSearchModal={closeSearchModal}
-  //           addProduct={addProductToDraft}
-  //           searchQuery={searchQuery}
-  //           handleSearch={handleSearch}
-  //           filteredData={filteredData}
-  //           isRecipeCreate={true}
-  //         />
-
-  //         <ModalItemInfo
-  //           isVisible={isInfoModalVisible}
-  //           onClose={() => setIsInfoModalVisible(false)}
-  //           selectedProduct={selectedProduct}
-  //         />
-  //       </View>
-  //     </ScrollView>
-  //   </View>
-  // );
-
-
-return (
+  return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <View style={styles.BasketPage}>
-        <View style={styles.BasketPage_ContentWrapper}>
+      <View style={styles.BasketPage}>
+          <View style={styles.BasketPage_ContentWrapper}>
 
-          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
-          
-          <SearchModal 
-            isSearchModalVisible={isSearchModalVisible}
-            closeSearchModal={closeSearchModal}
-            addProduct={addProductToDraft}
-            searchQuery={searchQuery}
-            handleSearch={handleSearch}
-            filteredData={filteredData}
-            isRecipeCreate={true}
-          />
-          
-        <View style={styles.BasketPage_ListOfBasketItems}>
+            <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+            
+            <SearchModal 
+              isSearchModalVisible={isSearchModalVisible}
+              closeSearchModal={closeSearchModal}
+              addProduct={addProduct}
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+              filteredData={filteredData}
+              isRecipeCreate={true}
+            />
+            
+          <View style={styles.BasketPage_ListOfBasketItems}>
 
-        <SwipeListView
-          data={combinedData}
-          keyExtractor={(item) => item.basketId.toString()}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-75}
-          disableRightSwipe={true}
-          onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
-          onRowClose={(rowKey) => setOpenRowKey(null)}
-          contentContainerStyle={styles.BasketPage_ListOfBasketItems}
-          renderItem={({ item }) => (
-            <View style={styles.rowFront}>
-              <BasketItem
-                product={item}
-                onDecrement={() => handleDecrementProductAmount(item.basketId, item.amount)}
-                onAdd={() => handleIncrementProductAmount(item.basketId, item.amount)}
-                onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.basketId, isChecked)}
-                openInfoModal={() => handleItemPress(item)}
-                onChangeName={handleUpdateName}
-                swipeOpen={openRowKey === item.basketId}
-                autobasket={true}
-              />
-            </View>
-            )}          
-          />
+            <SwipeListView
+              data={autoBasket}
+              keyExtractor={(item) => item.autoBasketId.toString()}
+              renderHiddenItem={renderHiddenItem}
+              rightOpenValue={-75}
+              disableRightSwipe={true}
+              onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
+              onRowClose={(rowKey) => setOpenRowKey(null)}
+              contentContainerStyle={styles.BasketPage_ListOfBasketItems}
+              renderItem={({ item }) => (
+                <View style={styles.rowFront}>
+                  <BasketItem
+                    product={item}
+                    onDecrement={() => handleDecrementProductAmount(item.autoBasketId, item.amount)}
+                    onAdd={() => handleIncrementProductAmount(item.autoBasketId, item.amount)}
+                    onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.autoBasketId, isChecked)}
+                    openInfoModal={() => handleItemPress(item)}
+                    swipeOpen={openRowKey === item.autoBasketId}
+                    autobasket={true}
+                  />
+                </View>
+              )}          
+            />
 
           </View>
 
@@ -251,7 +182,7 @@ return (
 
         </View>
 
-    </View>
+      </View>
     </TouchableWithoutFeedback>
   );
 }

@@ -185,3 +185,52 @@ export const fetchBasketProducts = async (userId) => {
     return [];
   }
 };
+
+export const addAutoBasketProductsToBasket = async (userId) => {
+  const userDocRef = doc(db, "users", userId);
+
+  const updatedProducts = await runTransaction(db, async (transaction) => {
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
+    }
+
+    const userData = userDoc.data();
+    const autoBasket = userData.autoBasket || { products: [] };
+    const basket = userData.basket || { products: [] };
+
+    const existingProductIds = new Set(basket.products.map(p => p.productId));
+
+    const newProducts = autoBasket.products.filter(p => !existingProductIds.has(p.productId));
+
+    const productsToAdd = newProducts.map((product) => ({
+      ...product,
+      basketId: Date.now().toString() + Math.random().toString(36).substring(2, 8),
+      amount: 1,
+    }));
+
+    const updatedProducts = [...basket.products, ...productsToAdd];
+
+    transaction.update(userDocRef, {
+      "basket.products": updatedProducts,
+    });
+
+    return updatedProducts; // just IDs and basic info
+  });
+
+  // Step 2: Enrich basket products AFTER the transaction
+  const enrichedBasketItems = await Promise.all(
+    updatedProducts.map(async (basketItem) => {
+      const productDocRef = doc(db, "users", userId, "products", basketItem.productId);
+      const productSnap = await getDoc(productDocRef);
+      if (productSnap.exists()) {
+        const productData = productSnap.data();
+        return { ...productData, ...basketItem };
+      }
+      return basketItem;
+    })
+  );
+
+  console.log("Enriched basket items:", enrichedBasketItems); 
+  return enrichedBasketItems;
+};

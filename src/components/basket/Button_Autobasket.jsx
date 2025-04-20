@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { addButtonColor } from '../../../assets/Styles/styleVariables';
 
-export default function AnimatedButtonColumn({onAClick}) {
+export default function AnimatedButtonColumn({onAClick, onGClick}) {
     const [expanded, setExpanded] = useState(false);
     const animation = useRef(new Animated.Value(0)).current;
   
@@ -52,7 +52,7 @@ export default function AnimatedButtonColumn({onAClick}) {
             },
           ]}
         >
-          <Pressable style={styles.secondaryButton} onPress={() => console.log('B pressed')}>
+          <Pressable style={styles.secondaryButton} onPress={onGClick}>
             <Text style={styles.buttonText}>G</Text>
           </Pressable>
         </Animated.View>
