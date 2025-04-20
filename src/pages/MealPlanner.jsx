@@ -125,11 +125,11 @@ export default function MealPlannerPage({ navigation }) {
 
         <View style={styles.navigation}>
           <Pressable onPress={() => changeDate(-1)}>
-            <Text>{'<'}</Text>
+            <Text>Prev</Text>
           </Pressable>
           <Text>{formatDateDisplay(selectedDate)}</Text>
           <Pressable onPress={() => changeDate(1)}>
-            <Text>{'>'}</Text>
+            <Text>Next</Text>
           </Pressable>
         </View>
 

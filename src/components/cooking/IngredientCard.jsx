@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
 
       IngredientItem_Name_Text: {
         fontSize: 16,
-        fontWeight: 700,
+        // fontWeight: 700,
       },
 
       IngredientItem_Instructions: {
