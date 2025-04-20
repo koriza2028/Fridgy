@@ -90,6 +90,18 @@ const SearchModal = ({
           </View>
       </Pressable>
     );
+  } else {
+    renderItem = ({ item }) => (
+      <Pressable style={styles.fridgeItem} onPress={() => addProduct(item.id)}>
+        <Image
+          source={getImageSource(item)}
+          style={styles.searchItem_Image}
+        />
+        <View style={styles.NameAndHint}>
+            <Text style={styles.searchItem_Text}>{item.title}</Text>
+          </View>
+      </Pressable>
+    );
   }
 
   // For basket modals, always add a new string item at the end (if search query is non-empty)
@@ -123,10 +135,10 @@ const SearchModal = ({
       /> */}
 
       <SearchInput 
-          placeholder={'Find an ingredient'} 
-          query={searchQuery} 
-          // onChangeText={handleSearch} 
-        />
+        placeholder={'Find an ingredient'} 
+        query={searchQuery} 
+        onChangeText={handleSearch} 
+      />
 
       {isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
@@ -142,6 +154,17 @@ const SearchModal = ({
       )}
 
       {!isBasket && isRecipeCreate && (
+        <View style={styles.modalContent}>
+          <FlatList
+            data={filteredData}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={renderItem}
+            style={styles.flatList}
+          />
+        </View>
+      )}
+
+      {!isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
           <FlatList
             data={filteredData}

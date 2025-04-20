@@ -1,191 +1,146 @@
-import { doc, getDoc, setDoc, updateDoc, runTransaction } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc
+} from "firebase/firestore";
 import { ref as storageRef, deleteObject } from "firebase/storage";
-import { db, storage } from "../firebaseConfig"; // Adjust path as needed
+import { db, storage } from "../firebaseConfig";
 
 /**
- * Fetch the user's recipes from Firestore.
- * If the user document or the cooking field doesn't exist, create one with an empty recipes array.
- * @param {string} userId - The ID of the user.
- * @returns {Promise<object>} An object with a recipes array.
+ * Helper to strip down ingredients to minimal Firestore-friendly object
  */
-export const fetchUserRecipes = async (userId) => {
-  const userDocRef = doc(db, "users", userId);
-  let userSnap = await getDoc(userDocRef);
-  if (!userSnap.exists()) {
-    const newUserData = {
-      basket: { products: [] },
-      fridge: { products: [] },
-      cooking: { recipes: [] }
-    };
-    await setDoc(userDocRef, newUserData);
-    return { recipes: [] };
-  }
-  const userData = userSnap.data();
-  if (!userData.cooking) {
-    await updateDoc(userDocRef, { "cooking.recipes": [] });
-    return { recipes: [] };
-  }
-  return userData.cooking;
-};
-
 const cleanIngredients = (ingredients = []) =>
   ingredients.map(({ productId, amount, originalFridgeId }) => ({
     productId,
     amount,
-    ...(originalFridgeId && { originalFridgeId }),
+    ...(originalFridgeId && { originalFridgeId })
   }));
 
 /**
- * Add a new recipe or update an existing one.
- * If the recipe already has an id and is found in the recipes array, it is updated.
- * Otherwise, a new recipe is added with a generated unique id.
- * Ingredients are stored as minimal references: each ingredient should have:
- *    - productId (or id) : reference to the fridge product,
- *    - amount : quantity used in the recipe,
- * @param {string} userId - The ID of the user.
- * @param {object} recipe - The recipe object.
- * @returns {Promise<object>} An object with the updated recipes array.
+ * Fetch the user's recipes from the subcollection.
+ * If the user doc doesn't exist, initialize basket and fridge.
+ * @param {string} userId
+ * @returns {Promise<{ recipes: Array<object> }>}
+ */
+export const fetchUserRecipes = async (userId) => {
+  const userDocRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userDocRef);
+  // Ensure user document exists with basket & fridge
+  if (!userSnap.exists()) {
+    await setDoc(userDocRef, {
+      basket: { products: [] },
+      fridge: { products: [] }
+    });
+  }
+
+  const recipesRef = collection(db, "users", userId, "recipes");
+  const snapshot = await getDocs(recipesRef);
+  const recipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  return { recipes };
+};
+
+/**
+ * Add a new recipe or update an existing one in the subcollection.
+ * Handles image cleanup if imageUri changed.
+ * @param {string} userId
+ * @param {object} recipe
+ * @returns Promise<{ recipes: Array<object> }>
  */
 export const addOrUpdateRecipe = async (userId, recipe) => {
-  const userDocRef = doc(db, "users", userId);
+  const recipesRef = collection(db, "users", userId, "recipes");
   let oldImageUri = null;
-  let newImageUri = recipe.imageUri || null;
+  const newImageUri = recipe.imageUri || null;
+  let recipeId = recipe.id;
 
-  // Firestore transaction for recipe update
-  const result = await runTransaction(db, async (transaction) => {
-    let userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) {
-      const newUserData = {
-        basket: { products: [] },
-        fridge: { products: [] },
-        cooking: { recipes: [] },
-      };
-      await setDoc(userDocRef, newUserData);
-      userDoc = await transaction.get(userDocRef);
-    }
-
-    const userData = userDoc.data();
-    const cooking = userData.cooking || { recipes: [] };
-
-    // Clean the ingredients so only the references are saved.
-    if (recipe.mandatoryIngredients) {
-      recipe.mandatoryIngredients = cleanIngredients(recipe.mandatoryIngredients);
-    }
-    if (recipe.optionalIngredients) {
-      recipe.optionalIngredients = cleanIngredients(recipe.optionalIngredients);
-    }
-
-    if (recipe.id) {
-      const index = cooking.recipes.findIndex(r => r.id === recipe.id);
-      if (index !== -1) {
-        oldImageUri = cooking.recipes[index]?.imageUri;
-        cooking.recipes[index] = { ...cooking.recipes[index], ...recipe };
-      } else {
-        recipe.id = Date.now().toString();
-        cooking.recipes.push(recipe);
-      }
+  // If updating, fetch old to clean up image
+  if (recipeId) {
+    const existingRef = doc(recipesRef, recipeId);
+    const existingSnap = await getDoc(existingRef);
+    if (existingSnap.exists()) {
+      oldImageUri = existingSnap.data().imageUri;
     } else {
-      recipe.id = Date.now().toString();
-      cooking.recipes.push(recipe);
+      recipeId = Date.now().toString();
     }
+  } else {
+    recipeId = Date.now().toString();
+  }
 
-    transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
-    return { recipes: cooking.recipes };
-  });
+  const recipeRef = doc(db, "users", userId, "recipes", recipeId);
+  const cleanedRecipe = {
+    ...recipe,
+    id: recipeId,
+    mandatoryIngredients: cleanIngredients(
+      recipe.mandatoryIngredients || []
+    ),
+    optionalIngredients: cleanIngredients(
+      recipe.optionalIngredients || []
+    )
+  };
 
-  // Storage deletion (must happen outside the transaction)
-  if (
-    oldImageUri &&
-    newImageUri &&
-    oldImageUri !== newImageUri
-  ) {
-    const oldImgRef = storageRef(storage, oldImageUri);
+  await setDoc(recipeRef, cleanedRecipe);
+
+  // Delete old image if changed
+  if (oldImageUri && newImageUri && oldImageUri !== newImageUri) {
+    const oldRef = storageRef(storage, oldImageUri);
     try {
-      await deleteObject(oldImgRef);
+      await deleteObject(oldRef);
     } catch (err) {
       console.warn("Failed to delete old recipe image:", err);
     }
   }
 
-  return result;
+  return await fetchUserRecipes(userId);
 };
 
 /**
- * Update an existing recipe.
- * @param {string} userId - The ID of the user.
- * @param {string} recipeId - The id of the recipe to update.
- * @param {object} updatedRecipe - The updated recipe fields.
- * @returns {Promise<object>} An object with the updated recipes array.
+ * Update fields of an existing recipe.
+ * @param {string} userId
+ * @param {string} recipeId
+ * @param {object} updatedFields
+ * @returns Promise<{ recipes: Array<object> }>
  */
-export const updateRecipe = async (userId, recipeId, updatedRecipe) => {
-  const userDocRef = doc(db, "users", userId);
-  let oldImageUri = null;
-  let newImageUri = updatedRecipe.imageUri || null;
+export const updateRecipe = async (userId, recipeId, updatedFields) => {
+  const recipeRef = doc(db, "users", userId, "recipes", recipeId);
+  const snap = await getDoc(recipeRef);
+  if (!snap.exists()) throw new Error("Recipe not found");
 
-  const result = await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
+  const oldImageUri = snap.data().imageUri;
+  const newImageUri = updatedFields.imageUri || null;
 
-    const userData = userDoc.data();
-    const cooking = userData.cooking || { recipes: [] };
-    const index = cooking.recipes.findIndex(r => r.id === recipeId);
-    if (index === -1) throw new Error("Recipe not found");
+  await updateDoc(recipeRef, updatedFields);
 
-    oldImageUri = cooking.recipes[index]?.imageUri;
-    cooking.recipes[index] = { ...cooking.recipes[index], ...updatedRecipe };
-
-    transaction.update(userDocRef, { "cooking.recipes": cooking.recipes });
-    return { recipes: cooking.recipes };
-  });
-
-  // Delete old image from Storage if imagePath was changed
-  if (
-    oldImageUri &&
-    newImageUri &&
-    oldImageUri !== newImageUri
-  ) {
-    const oldImgRef = storageRef(storage, oldImageUri);
+  if (oldImageUri && newImageUri && oldImageUri !== newImageUri) {
+    const oldRef = storageRef(storage, oldImageUri);
     try {
-      await deleteObject(oldImgRef);
+      await deleteObject(oldRef);
     } catch (err) {
       console.warn("Failed to delete old recipe image:", err);
     }
   }
 
-  return result;
+  return await fetchUserRecipes(userId);
 };
 
 /**
- * Remove a recipe from the user's recipe book.
- * @param {string} userId - The ID of the user.
- * @param {string} recipeId - The id of the recipe to remove.
- * @returns {Promise<object>} An object with the updated recipes array.
+ * Remove a recipe by ID and delete its image.
+ * @param {string} userId
+ * @param {string} recipeId
+ * @returns Promise<{ recipes: Array<object> }>
  */
 export const removeRecipe = async (userId, recipeId) => {
-  const userDocRef = doc(db, "users", userId);
-  let imagePathToDelete = null;
+  const recipeRef = doc(db, "users", userId, "recipes", recipeId);
+  const snap = await getDoc(recipeRef);
+  if (!snap.exists()) throw new Error("Recipe not found");
 
-  const result = await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
+  const imageUri = snap.data().imageUri;
+  await deleteDoc(recipeRef);
 
-    const userData = userDoc.data();
-    const cooking = userData.cooking || { recipes: [] };
-
-    const recipeToDelete = cooking.recipes.find(r => r.id === recipeId);
-    if (!recipeToDelete) throw new Error("Recipe not found");
-
-    imagePathToDelete = recipeToDelete.imageUri || null;
-
-    const updatedRecipes = cooking.recipes.filter(r => r.id !== recipeId);
-    transaction.update(userDocRef, { "cooking.recipes": updatedRecipes });
-
-    return { recipes: updatedRecipes };
-  });
-
-  // 🔥 Delete associated image after transaction
-  if (imagePathToDelete) {
-    const imgRef = storageRef(storage, imagePathToDelete);
+  if (imageUri) {
+    const imgRef = storageRef(storage, imageUri);
     try {
       await deleteObject(imgRef);
     } catch (err) {
@@ -193,100 +148,77 @@ export const removeRecipe = async (userId, recipeId) => {
     }
   }
 
-  return result;
+  return await fetchUserRecipes(userId);
 };
 
 /**
- * Clear all recipes for a user.
- * @param {string} userId - The ID of the user.
- * @returns {Promise<object>} An object with an empty recipes array.
+ * Delete all recipes in the user's recipes subcollection.
+ * @param {string} userId
+ * @returns Promise<{ recipes: Array<object> }>
  */
 export const clearRecipes = async (userId) => {
-  const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
-    transaction.update(userDocRef, { "cooking.recipes": [] });
-    return { recipes: [] };
-  });
+  const recipesRef = collection(db, "users", userId, "recipes");
+  const snapshot = await getDocs(recipesRef);
+  await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)));
+  return { recipes: [] };
 };
 
 /**
- * Move specific recipes (by their ids) out of the user's recipe book.
- * This function removes the selected recipes from the recipes array.
- * @param {string} userId - The ID of the user.
- * @param {Array<string>} recipeIds - An array of recipe ids to move.
- * @returns {Promise<object>} An object with the updated recipes array and the moved recipes.
+ * Move specified recipes out (delete) and return moved + remaining.
+ * @param {string} userId
+ * @param {Array<string>} recipeIds
+ * @returns Promise<{ recipes: Array<object>, movedRecipes: Array<object> }>
  */
 export const moveRecipes = async (userId, recipeIds) => {
-  const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
-    const userData = userDoc.data();
-    const cooking = userData.cooking || { recipes: [] };
-    const movedRecipes = cooking.recipes.filter(recipe =>
-      recipeIds.includes(recipe.id)
-    );
-    const updatedRecipes = cooking.recipes.filter(recipe =>
-      !recipeIds.includes(recipe.id)
-    );
-    transaction.update(userDocRef, { "cooking.recipes": updatedRecipes });
-    return { recipes: updatedRecipes, movedRecipes };
-  });
+  const recipesRef = collection(db, "users", userId, "recipes");
+  const snapshot = await getDocs(recipesRef);
+
+  const movedRecipes = [];
+  const remaining = [];
+
+  await Promise.all(
+    snapshot.docs.map(async (d) => {
+      const data = { id: d.id, ...d.data() };
+      if (recipeIds.includes(d.id)) {
+        movedRecipes.push(data);
+        await deleteDoc(d.ref);
+      } else {
+        remaining.push(data);
+      }
+    })
+  );
+
+  return { recipes: remaining, movedRecipes };
 };
 
 /**
- * NEW: Fetch enriched recipes.
- * For each recipe, this function enriches each ingredient (in mandatoryIngredients and optionalIngredients)
- * by fetching the corresponding full product details (like name and imageUri) from the "products" container.
- * In the recipe, ingredients are stored as references (with productId, amount).
- * @param {string} userId - The ID of the user.
- * @returns {Promise<Array<object>>} An array of enriched recipes.
+ * Fetch recipes and enrich ingredients with full product data.
+ * @param {string} userId
+ * @returns Promise<Array<object>>
  */
 export const fetchEnrichedRecipes = async (userId) => {
-  const cooking = await fetchUserRecipes(userId);
-  const recipes = cooking.recipes || [];
-  const enrichedRecipes = await Promise.all(
+  const { recipes } = await fetchUserRecipes(userId);
+  const enriched = await Promise.all(
     recipes.map(async (recipe) => {
-      // Enrich mandatoryIngredients.
-      const enrichedMandatory = recipe.mandatoryIngredients
-        ? await Promise.all(
-            recipe.mandatoryIngredients.map(async (ingredient) => {
-              // Assume ingredient stores a product reference in productId.
-              const productId = ingredient.productId || ingredient.id;
-              const productDocRef = doc(db, "users", userId, "products", productId);
-              const productSnap = await getDoc(productDocRef);
-              if (productSnap.exists()) {
-                const productData = productSnap.data();
-                // Merge data so that ingredient's amount override productData.
-                return { ...productData, productId, amount: ingredient.amount};
-              }
-              return ingredient;
-            })
-          )
-        : [];
-      // Enrich optionalIngredients.
-      const enrichedOptional = recipe.optionalIngredients
-        ? await Promise.all(
-            recipe.optionalIngredients.map(async (ingredient) => {
-              const productId = ingredient.productId || ingredient.id;
-              const productDocRef = doc(db, "users", userId, "products", productId);
-              const productSnap = await getDoc(productDocRef);
-              if (productSnap.exists()) {
-                const productData = productSnap.data();
-                return { ...productData, productId, amount: ingredient.amount};
-              }
-              return ingredient;
-            })
-          )
-        : [];
+      const enrichList = async (list = []) =>
+        Promise.all(
+          list.map(async (ing) => {
+            const pid = ing.productId || ing.id;
+            const prodRef = doc(db, "users", userId, "products", pid);
+            const prodSnap = await getDoc(prodRef);
+            if (prodSnap.exists()) {
+              const pdata = prodSnap.data();
+              return { ...pdata, productId: pid, amount: ing.amount };
+            }
+            return ing;
+          })
+        );
       return {
         ...recipe,
-        mandatoryIngredients: enrichedMandatory,
-        optionalIngredients: enrichedOptional,
+        mandatoryIngredients: await enrichList(recipe.mandatoryIngredients),
+        optionalIngredients: await enrichList(recipe.optionalIngredients)
       };
     })
   );
-  return enrichedRecipes;
+  return enriched;
 };
