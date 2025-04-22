@@ -119,6 +119,19 @@ export default function MealPlannerPage({ navigation }) {
     setSearchQuery(text);
   };
 
+  const mergeMandatoryIngredients = () => {
+    const selectedRecipes = recipeBook.recipes.filter(r =>
+      plannedRecipeIds.includes(r.id)
+    );
+    const ingredientsSet = new Set();
+    selectedRecipes.forEach(recipe => {
+      if (Array.isArray(recipe.mandatoryIngredients)) {
+        recipe.mandatoryIngredients.forEach(ingredient => ingredientsSet.add(ingredient));
+      }
+    });
+    return Array.from(ingredientsSet);
+  };
+
   return (
     <View style={styles.MealPlannerPage}>
       <View style={styles.MealPlannerPage_ContentWrapper}>
@@ -151,6 +164,9 @@ export default function MealPlannerPage({ navigation }) {
 
         <View style={styles.missingIngredients}>
           <Text>List of required ingredients {formatDateDisplay(selectedDate)}</Text>
+          {mergeMandatoryIngredients().map((ingredient, index) => (
+            <Text key={index}>{ingredient.name}</Text>
+          ))}
         </View>
 
       </View>
