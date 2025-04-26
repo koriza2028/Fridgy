@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, View, Text, Pressable, FlatList, Image } from 'react-native';
+import { TextInput, View, Text, Pressable, FlatList, Image, Keyboard } from 'react-native';
 import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -7,7 +7,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import SearchInput from './Search';
 
 import { useFonts } from 'expo-font';
-import { MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
+import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 
 const SearchModal = ({
   isSearchModalVisible,
@@ -113,12 +113,12 @@ const SearchModal = ({
   return (
     <Modal
       isVisible={isSearchModalVisible}
-      onBackdropPress={closeSearchModal}
+      onBackdropPress={Keyboard.dismiss}
       onBackButtonPress={closeSearchModal}
       animationIn="fadeIn"
       animationOut="fadeOut"
       animationInTiming={1}
-      animationOutTiming={1}
+      animationOutTiming={300}
       style={styles.modal}
     >
       <Pressable onPress={closeSearchModal} style={styles.closeButton}>
@@ -126,19 +126,20 @@ const SearchModal = ({
       </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
-      {/* <TextInput
+      <TextInput
         style={styles.searchInput}
         placeholder="Find a product"
         value={searchQuery}
         onChangeText={handleSearch}
         ref={modalSearchRef}
-      /> */}
+      />
 
-      <SearchInput 
+      {/* <SearchInput 
         placeholder={'Find an ingredient'} 
         query={searchQuery} 
         onChangeText={handleSearch} 
-      />
+        style={styles.searchInput}
+      /> */}
 
       {isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
@@ -182,22 +183,25 @@ const styles = StyleSheet.create({
   modal: {
     margin: 0, // Full-screen modal
     justifyContent: 'flex-start',
-    backgroundColor: 'white',
+    backgroundColor: backgroundColor,
     paddingTop: 40,
   },
   modalContent: {
     padding: 10,
+    // width: '100%',
   },
   searchInput: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    width: '100%',
+    // borderWidth: 1,
+    // borderColor: '#C0C0C0',
+    width: '96%',
     height: 40,
     alignSelf: 'center',
-    padding: 8,
-    paddingHorizontal: 36,
+    paddingBottom: 4,
+    paddingHorizontal: 40,
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: 20,
     fontFamily: MainFont,
 
     shadowColor: "darkgrey", 
@@ -244,8 +248,8 @@ const styles = StyleSheet.create({
 
   closeButton: {
     position: 'absolute',
-    top: 54,
-    left: 2,
+    top: 60,
+    left: 10,
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 5,

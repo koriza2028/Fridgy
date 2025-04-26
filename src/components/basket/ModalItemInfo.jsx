@@ -53,15 +53,17 @@ useEffect(() => {
   return (
     <Modal 
       isVisible={isVisible} 
-      onSwipeComplete={onModalClose} 
-      swipeDirection="down"
+      // onSwipeComplete={onModalClose} 
+      // swipeDirection="down"
       backdropColor="black" backdropOpacity={0.5} onBackdropPress={onModalClose}
       style={styles.modal}
       // animationIn="slideInUp"
       // animationOut="slideOutDown"
       hideModalContentWhileAnimating={true}
       animationInTiming={400}
-      // animationOutTiming={300}
+      animationOutTiming={300}
+      useNativeDriver={true} 
+      useNativeDriverForBackdrop={true}
       // backdropTransitionInTiming={800}
       // backdropTransitionOutTiming={300}
     >
