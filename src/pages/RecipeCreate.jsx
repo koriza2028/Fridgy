@@ -12,6 +12,7 @@ import {
   Keyboard,
   Animated,
 } from "react-native";
+// import { InteractionManager } from 'react-native';
 import ImageWithUpload from "../components/ImageWithUpload";
 import { SwipeListView } from "react-native-swipe-list-view";
 const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);

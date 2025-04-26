@@ -17,7 +17,8 @@ import AutoBasketPage from './pages/AutoBasket';
 import MealPlannerPage from "./pages/MealPlanner";
 
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+// import {createStackNavigator} from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import 'react-native-gesture-handler'; 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -26,7 +27,10 @@ import useAuthStore from './store/authStore';
 
 
 
-const Stack = createStackNavigator();
+// const Stack = createStackNavigator();
+
+
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 
@@ -66,7 +70,12 @@ const CookingStack = () => (
     <Stack.Screen
         name="RecipeCreatePage"
         component={RecipeCreatePage}
-        options={{ title: '', headerShown: false }}
+        options={{ 
+          title: '', 
+          headerShown: false, 
+          detachPreviousScreen: false, 
+          gestureEnabled: false,
+        }}
       />
   </Stack.Navigator>
 );
