@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // marginVertical: 6,
         marginHorizontal: 10,
-        marginTop: -10,
+        // marginTop: 20,
+        
         // justifyContent: 'space-between',
         // width: '90%',
         // borderColor: '#C0C0C0',

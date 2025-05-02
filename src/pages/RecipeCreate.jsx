@@ -513,6 +513,7 @@ const styles = StyleSheet.create({
     minHeight: 70,
     justifyContent: "center",
     width: "100%",
+    marginTop: -10,
   },
   ingredientWrapper: {
     width: "90%",

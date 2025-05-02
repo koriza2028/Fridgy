@@ -11,15 +11,19 @@ import Tag from './Tag';
 
 const { width } = Dimensions.get('window');
 
-export default function MealCard({ navigation, recipe, isAvailable }) {
+export default function MealCard({ navigation, recipe, isAvailable, isMealPlanner }) {
 
     const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
+
+    const handlePress = !isMealPlanner
+    ? () => navigation.navigate('RecipeCreatePage', { recipe })
+    : undefined;
       
     return (
-        <Pressable style={styles.MealBody} onPress={() => { navigation.navigate('RecipeCreatePage', {recipe}) }}>
+        <Pressable style={styles.MealBody} onPress={handlePress} >
             
             <View>
                 {recipe.imageUri ? (
