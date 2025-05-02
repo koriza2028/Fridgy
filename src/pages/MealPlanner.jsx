@@ -31,7 +31,7 @@ export default function MealPlannerPage({ navigation }) {
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  console.log("🏗️ porender MealPlannerPage");
+  // console.log("🏗️ porender MealPlannerPage");
 
   const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -49,22 +49,37 @@ export default function MealPlannerPage({ navigation }) {
   const [filteredData, setFilteredData] = useState([]);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (userId) {
-        fetchEnrichedRecipes(userId)
-          .then(data => {
-            setRecipeBook({ recipes: data });
-            setFilteredData(data);
-          })
-          .catch(console.error);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (userId) {
+  //       fetchEnrichedRecipes(userId)
+  //         .then(data => {
+  //           setRecipeBook({ recipes: data });
+  //           setFilteredData(data);
+  //         })
+  //         .catch(console.error);
 
-        fetchAvailableProducts(userId)
-          .then(setFridgeProducts)
-          .catch(console.error);
-      }
-    }, [userId])
-  );
+  //       fetchAvailableProducts(userId)
+  //         .then(setFridgeProducts)
+  //         .catch(console.error);
+  //     }
+  //   }, [userId])
+  // );
+
+  useEffect(() => {
+    if (!userId) return;
+  
+    fetchEnrichedRecipes(userId)
+      .then(data => {
+        setRecipeBook({ recipes: data });
+        setFilteredData(data);
+      })
+      .catch(console.error);
+  
+    fetchAvailableProducts(userId)
+      .then(setFridgeProducts)
+      .catch(console.error);
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -203,73 +218,73 @@ export default function MealPlannerPage({ navigation }) {
       ),
       [handleRemoveRecipe]
     );
-    
-    const Header = useMemo(() => (
-      <>
-        <View style={styles.navigation}>
-          <Pressable onPress={() => changeDate(-1)}>
-            <Entypo name="arrow-long-left" size={30}/>
-          </Pressable>
-          <Text>{formatDateDisplay(selectedDate)}</Text>
-          <Pressable onPress={() => changeDate(1)}>
-            <Entypo name="arrow-long-right" size={30}/>
-          </Pressable>
-        </View>
-        <Pressable style={styles.addMore_Button} onPress={() => setIsSearchModalVisible(true)}>
-          <Text style={styles.addMore_Button_Text}>Add more +</Text>
-        </Pressable>
-      </>
-    ), [selectedDate, changeDate]);
-    
-    const Footer = useMemo(() => (
-      <View style={styles.requiredIngredients}>
-        <Text>List of required ingredients {formatDateDisplay(selectedDate)}</Text>
-        {mergeMandatoryIngredients().map((ing, i) => (
-          <IngredientItem
-            key={i}
-            ingredient={ing}
-            isAvailable={checkIngredientIsAvailable(ing.productId)}
-          />
-        ))}
-      </View>
-    ), [selectedDate, mealPlanCache]);
+  
 
     return (
       <View style={styles.MealPlannerPage}>
-        <SwipeListView
-          data={cards}
-          keyExtractor={item => item.id.toString()}
+        <View style={styles.MealPlannerPage_ContentWrapper}>
     
-          // memoized renderers:
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          ListHeaderComponent={Header}
-          ListFooterComponent={Footer}
+          {/* navigation bar */}
+          <View style={styles.navigation}>
+            <Pressable onPress={() => changeDate(-1)}>
+              <Entypo name="arrow-long-left" size={30} />
+            </Pressable>
+            <Text>{formatDateDisplay(selectedDate)}</Text>
+            <Pressable onPress={() => changeDate(1)}>
+              <Entypo name="arrow-long-right" size={30} />
+            </Pressable>
+          </View>
     
-          // swipe config:
-          rightOpenValue={-75}
-          disableRightSwipe={false}
-          disableScrollOnSwipe
-          nestedScrollEnabled
-          closeOnRowPress={false}
-          closeOnRowOpen={false}
+          {/* swipeable cards container */}
+          <View style={styles.dailyContent}>
+          <SwipeListView
+  data={cards}
+  keyExtractor={item => item.id.toString()}
+
+  // your existing swipe config
+  renderItem={renderItem}
+  renderHiddenItem={renderHiddenItem}
+  rightOpenValue={-75}
+  disableRightSwipe={false}
+  disableScrollOnSwipe
+  nestedScrollEnabled
+
+  // make rows stay open until you swipe them closed
+  closeOnRowOpen={false}
+  closeOnScroll={false}
+  closeOnRowPress={false}
+
+  // *** this is the magic ***
+  recalculateHiddenLayout={true}
+
+  // fixed‐height rows so it knows exactly where to open each one
+  getItemLayout={(_, index) => ({
+    length: ROW_HEIGHT,
+    offset: ROW_HEIGHT * index,
+    index,
+  })}
+
+  initialNumToRender={cards.length}
+  maxToRenderPerBatch={cards.length}
+  windowSize={cards.length + 2}
+
+  ListFooterComponent={() => (
+    <Pressable
+      style={styles.addMore_Button}
+      onPress={() => setIsSearchModalVisible(true)}
+    >
+      <Text style={styles.addMore_Button_Text}>Add more +</Text>
+    </Pressable>
+  )}
+
+  contentContainerStyle={{ paddingBottom: 0 }}
+/>
+
+          </View>
     
-          // fixed‐height rows so no extra measurement pass:
-          getItemLayout={(_, index) => ({
-            length: ROW_HEIGHT,
-            offset: ROW_HEIGHT * index,
-            index,
-          })}
+        </View>
     
-          // batch settings to force a single render pass:
-          initialNumToRender={cards.length}
-          maxToRenderPerBatch={cards.length}
-          windowSize={cards.length + 2}
-    
-          contentContainerStyle={{ paddingBottom: 140 }}
-        />
-    
-        {/* Floating calendar button */}
+        {/* floating calendar button */}
         <Pressable
           style={styles.openCalendar_Button}
           onPress={() => setIsCalendarVisible(v => !v)}
@@ -277,7 +292,7 @@ export default function MealPlannerPage({ navigation }) {
           <Text>C</Text>
         </Pressable>
     
-        {/* Calendar modal */}
+        {/* calendar modal */}
         <CalendarModal
           isVisible={isCalendarVisible}
           onClose={() => setIsCalendarVisible(false)}
@@ -285,7 +300,7 @@ export default function MealPlannerPage({ navigation }) {
           selectedDate={selectedDate}
         />
     
-        {/* Search modal */}
+        {/* search modal */}
         <SearchModal
           isSearchModalVisible={isSearchModalVisible}
           closeSearchModal={() => setIsSearchModalVisible(false)}
@@ -299,7 +314,6 @@ export default function MealPlannerPage({ navigation }) {
       </View>
     );
     
-  
    
 
   // return (
