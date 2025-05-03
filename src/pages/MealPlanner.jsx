@@ -186,7 +186,15 @@ export default function MealPlannerPage({ navigation }) {
       [fridgeProducts]
     );
 
+
+    const [openRowKey, setOpenRowKey] = useState(null);
     const ROW_HEIGHT = 120; // <-- whatever the true height of your MealCard + margin is
+    const [listKey, setListKey] = useState(Date.now());
+    useFocusEffect(
+      useCallback(() => {
+        setListKey(Date.now()); // force SwipeListView to remount
+      }, [])
+    );
 
     // at top of component, alongside your other hooks:
     const cards = useMemo(
@@ -202,11 +210,13 @@ export default function MealPlannerPage({ navigation }) {
             isAvailable
             isMealPlanner
             onLongPress={() => handleRemoveRecipe(item.id)}
+            swipeOpen={openRowKey === item.id} // optional, if MealCard needs to know
           />
         </View>
       ),
-      [handleRemoveRecipe]
+      [handleRemoveRecipe, openRowKey]
     );
+    
     
     const renderHiddenItem = useCallback(
       ({ item }) => (
@@ -218,7 +228,6 @@ export default function MealPlannerPage({ navigation }) {
       ),
       [handleRemoveRecipe]
     );
-  
 
     return (
       <View style={styles.MealPlannerPage}>
@@ -236,51 +245,36 @@ export default function MealPlannerPage({ navigation }) {
           </View>
     
           {/* swipeable cards container */}
-          <View style={styles.dailyContent}>
           <SwipeListView
-  data={cards}
-  keyExtractor={item => item.id.toString()}
-
-  // your existing swipe config
-  renderItem={renderItem}
-  renderHiddenItem={renderHiddenItem}
-  rightOpenValue={-75}
-  disableRightSwipe={false}
-  disableScrollOnSwipe
-  nestedScrollEnabled
-
-  // make rows stay open until you swipe them closed
-  closeOnRowOpen={false}
-  closeOnScroll={false}
-  closeOnRowPress={false}
-
-  // *** this is the magic ***
-  recalculateHiddenLayout={true}
-
-  // fixed‐height rows so it knows exactly where to open each one
-  getItemLayout={(_, index) => ({
-    length: ROW_HEIGHT,
-    offset: ROW_HEIGHT * index,
-    index,
-  })}
-
-  initialNumToRender={cards.length}
-  maxToRenderPerBatch={cards.length}
-  windowSize={cards.length + 2}
-
-  ListFooterComponent={() => (
-    <Pressable
-      style={styles.addMore_Button}
-      onPress={() => setIsSearchModalVisible(true)}
-    >
-      <Text style={styles.addMore_Button_Text}>Add more +</Text>
-    </Pressable>
-  )}
-
-  contentContainerStyle={{ paddingBottom: 0 }}
-/>
-
-          </View>
+            key={listKey}
+            data={cards}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderItem}
+            renderHiddenItem={renderHiddenItem}
+            rightOpenValue={-75}
+            disableRightSwipe={false}
+            disableScrollOnSwipe
+            contentContainerStyle={{ flexGrow: 1 }}
+            recalculateHiddenLayout
+            closeOnRowOpen={false}
+            closeOnScroll={false}
+            closeOnRowPress={false}
+            onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
+            onRowClose={() => setOpenRowKey(null)}
+            getItemLayout={(_, index) => ({
+              length: ROW_HEIGHT,
+              offset: ROW_HEIGHT * index,
+              index,
+            })}
+            ListFooterComponent={() => (
+              <Pressable
+                style={styles.addMore_Button}
+                onPress={() => setIsSearchModalVisible(true)}
+              >
+                <Text style={styles.addMore_Button_Text}>Add more +</Text>
+              </Pressable>
+            )}
+          />
     
         </View>
     
@@ -402,6 +396,7 @@ const styles = StyleSheet.create({
     width: width,
     height: height,
     paddingHorizontal: 10,
+    flex: 1,
   },
   navigation: {
     flexDirection: 'row',
@@ -417,6 +412,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     marginTop: 20,
+
     // paddingHorizontal: 8,
     // borderWidth: 2,
     // borderRadius: 8,
@@ -437,14 +433,16 @@ const styles = StyleSheet.create({
   },
   rowFront: {
     backgroundColor: backgroundColor,
-    marginVertical: 5,      // match any MealCard spacing
+    // marginVertical: 5,     
   },
   rowBack: {
     position: 'absolute',
-    top: 0, bottom: 0, right: 0,
+    top: "30%", 
+    bottom: 0, 
+    right: 0,
     width: 75,
-    height: width / 4.2,
-    marginTop: 20,
+    height: width / 6,
+    // marginTop: 20,
     backgroundColor: 'red',
     alignItems: 'center',
     justifyContent: 'center',

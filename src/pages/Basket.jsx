@@ -72,6 +72,7 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+
   useFocusEffect(
     React.useCallback(() => {
       async function refreshData() {
@@ -221,14 +222,20 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  const [listKey, setListKey] = useState(Date.now());
+
+useFocusEffect(
+  React.useCallback(() => {
+    setListKey(Date.now()); // triggers SwipeListView remount
+    refreshBasket();
+  }, [userId])
+);
+
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.BasketPage}>
         <View style={styles.BasketPage_ContentWrapper}>
-
-          {/* <Pressable onPress={() => navigation.navigate('AutoBasketPage')} style={styles.tempButton}>
-            <Text style={styles.tempButtonText}>AutoBasket</Text>
-          </Pressable> */}
 
           <Pressable onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>Logout</Text>
@@ -249,6 +256,7 @@ export default function BasketPage({ navigation }) {
         <View style={styles.BasketPage_ListOfBasketItems}>
 
         <SwipeListView
+          key={listKey}
           data={combinedData}
           keyExtractor={(item) => item.basketId.toString()}
           renderHiddenItem={renderHiddenItem}
@@ -297,6 +305,8 @@ export default function BasketPage({ navigation }) {
     </View>
     </TouchableWithoutFeedback>
   );
+  
+  
 }
 
 const styles = StyleSheet.create({
@@ -304,17 +314,17 @@ const styles = StyleSheet.create({
     backgroundColor: backgroundColor,
   },
   rowBack: {
-    alignItems: 'center',
+    alignItems: 'flex-end',
     backgroundColor: 'red',
     justifyContent: 'center',
-    width: 75,        // Fixed width matching rightOpenValue
+    width: 75,        
     position: 'absolute',
-    right: 0,
+    right: -10,
     top: 0,
     bottom: 0,
   },
   deleteButton: {
-    // paddingHorizontal: 20,
+    paddingRight: 20,
     // paddingVertical: 10,
   },
   deleteButtonText: {

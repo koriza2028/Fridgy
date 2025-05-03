@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, View, Text, Pressable, FlatList, Image, Keyboard } from 'react-native';
+import { TextInput, View, Text, Pressable, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Image } from 'expo-image';
 import { StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -113,7 +114,8 @@ const SearchModal = ({
   return (
     <Modal
       isVisible={isSearchModalVisible}
-      onBackdropPress={Keyboard.dismiss}
+      // onBackdropPress={Keyboard.dismiss}
+      // avoidKeyboard={true}
       onBackButtonPress={closeSearchModal}
       animationIn="fadeIn"
       animationOut="fadeOut"
@@ -133,13 +135,7 @@ const SearchModal = ({
         onChangeText={handleSearch}
         ref={modalSearchRef}
       />
-
-      {/* <SearchInput 
-        placeholder={'Find an ingredient'} 
-        query={searchQuery} 
-        onChangeText={handleSearch} 
-        style={styles.searchInput}
-      /> */}
+      
 
       {isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>

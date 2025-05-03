@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import { View, StyleSheet, Text, TextInput, Pressable, Image } from 'react-native';
+import { View, StyleSheet, Text, TextInput, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 

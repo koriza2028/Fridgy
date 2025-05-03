@@ -636,6 +636,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 10,
     paddingHorizontal: 10,
+    paddingTop: 10,
     backgroundColor: "white",
     width: "90%",
     marginHorizontal: "auto",
