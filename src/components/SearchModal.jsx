@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextInput, View, Text, Pressable, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, TextInput, View, Text, Pressable, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
+
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-import SearchInput from './Search';
+// import SearchInput from './Search';
+import Tag from './cooking/Tag';
 
 import { useFonts } from 'expo-font';
 import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
@@ -20,6 +21,7 @@ const SearchModal = ({
   isMandatory,
   isRecipeCreate,
   isBasket,
+  isMealPlanner
 }) => {
 
   const [fontsLoaded] = useFonts({
@@ -91,6 +93,19 @@ const SearchModal = ({
           </View>
       </Pressable>
     );
+  } else if (isMealPlanner) {
+    renderItem = ({ item }) => (
+      <Pressable style={styles.mealItem} onPress={() => addProduct(item, isMandatory)}>
+        <Image
+          source={getImageSource(item)}
+          style={styles.searchItem_Image}
+        />
+        <View style={styles.NameAndHint}>
+          <Text style={styles.searchItem_Text}>{item.title}</Text>
+          <Tag style={styles.ItemCategoryTag}>{item.category ? item.category.tagName : "a"}</Tag>
+        </View>
+      </Pressable>
+    );
   } else {
     renderItem = ({ item }) => (
       <Pressable style={styles.fridgeItem} onPress={() => addProduct(item.id)}>
@@ -100,7 +115,7 @@ const SearchModal = ({
         />
         <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.title}</Text>
-          </View>
+        </View>
       </Pressable>
     );
   }
@@ -144,6 +159,7 @@ const SearchModal = ({
               data={modifiedData}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
               style={styles.flatList}
             />
           )}
@@ -156,6 +172,7 @@ const SearchModal = ({
             data={filteredData}
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
             style={styles.flatList}
           />
         </View>
@@ -167,6 +184,7 @@ const SearchModal = ({
             data={filteredData}
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
             style={styles.flatList}
           />
         </View>
@@ -222,6 +240,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+  },
+  mealItem: {
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    flexDirection: 'row',
+    // backgroundColor: '#fff',
+    // alignItems: 'center',
+  },
+  ItemCategoryTag: {
+    height: 20,
   },
   searchItem_Image: {
     width: 50,
