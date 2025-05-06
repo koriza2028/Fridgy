@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Animated,
+  Easing
 } from "react-native";
 // import { InteractionManager } from 'react-native';
 import ImageWithUpload from "../components/ImageWithUpload";
@@ -374,6 +375,32 @@ export default function RecipeCreatePage({ navigation, route }) {
     ],
   }), [scrollA]);
 
+  const keyboardHeight = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', e => {
+      Animated.timing(keyboardHeight, {
+        toValue: e.endCoordinates.height,
+        duration: 400,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+    });
+    const keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', e => {
+      Animated.timing(keyboardHeight, {
+        toValue: 0,
+        duration: 350,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+    });
+
+    return () => {
+      keyboardWillShowSub.remove();
+      keyboardWillHideSub.remove();
+    };
+  }, []);
+
   // Memoize the header that contains the image and text inputs.
   const RenderedHeader = useMemo(() => {
     return (
@@ -459,28 +486,7 @@ export default function RecipeCreatePage({ navigation, route }) {
             textAlignVertical="top"
           />
         </View>
-      </View>
-    );
-  }, [description]);
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.RecipeCreatePage}>
-        <AnimatedSwipeListView
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollA } } }], { useNativeDriver: true })}
-          data={combinedData}
-          keyExtractor={(item) => item.key}
-          ListHeaderComponent={RenderedHeader}
-          ListFooterComponent={ListFooter}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-75}
-          disableRightSwipe
-          disableScrollOnSwipe
-          nestedScrollEnabled
-          contentContainerStyle={{ paddingBottom: 100 }}
-          swipeRowDisabled={({ item }) => item.type === "header"}
-        />
         <View style={styles.buttonPanel}>
           {!isCreatingNew && (
             <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
@@ -501,8 +507,56 @@ export default function RecipeCreatePage({ navigation, route }) {
             <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
           </Pressable>
         </View>
-        <ButtonGoBack navigation={navigation} />
       </View>
+    );
+  }, [description]);
+
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <Animated.View
+  style={{ flex: 1, transform: [{ translateY: Animated.multiply(keyboardHeight, -0.6) }] }}
+>
+      <View style={styles.RecipeCreatePage}>
+        <AnimatedSwipeListView
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollA } } }], { useNativeDriver: true })}
+          data={combinedData}
+          keyExtractor={(item) => item.key}
+          ListHeaderComponent={RenderedHeader}
+          ListFooterComponent={ListFooter}
+          renderItem={renderItem}
+          renderHiddenItem={renderHiddenItem}
+          rightOpenValue={-75}
+          disableRightSwipe
+          disableScrollOnSwipe
+          nestedScrollEnabled
+          contentContainerStyle={{ paddingBottom: 40 }}
+          swipeRowDisabled={({ item }) => item.type === "header"}
+        />
+        {/* <View style={styles.buttonPanel}>
+          {!isCreatingNew && (
+            <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
+              <Text style={styles.Button_SaveRecipe_Text}>
+                <Entypo name="trash" size={28} />
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            style={[
+              styles.Button_SaveRecipe,
+              isSaveDisabled && styles.Button_SaveRecipeDisabled,
+              isCreatingNew && styles.Button_SaveRecipeAlone,
+            ]}
+            onPress={saveOrUpdateRecipe}
+            disabled={isSaveDisabled}
+          >
+            <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
+          </Pressable>
+        </View> */}
+
+        <ButtonGoBack navigation={navigation} />
+
+      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 }
@@ -549,9 +603,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
+
+
   RecipeCreatePage: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: "white",
   },
   RecipeCreatePage_ContentWrapper: {
     alignItems: "center",
@@ -667,9 +723,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 10,
-    marginBottom: 20,
+    // marginBottom: 20,
     paddingHorizontal: 10,
-    position: "absolute",
+    // position: "absolute",
+    marginTop: 20,
     bottom: 2,
   },
   Button_SaveRecipe: {
