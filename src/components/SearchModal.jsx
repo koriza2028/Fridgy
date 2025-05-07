@@ -54,6 +54,7 @@ const SearchModal = ({
     // }
     return require('../../assets/ProductImages/banana_test.png');
   };
+  
 
   if (isBasket) {
     renderItem = ({ item, index }) => {
@@ -95,14 +96,23 @@ const SearchModal = ({
     );
   } else if (isMealPlanner) {
     renderItem = ({ item }) => (
-      <Pressable style={styles.mealItem} onPress={() => addProduct(item, isMandatory)}>
+      <Pressable style={styles.mealItem} onPress={() => addProduct(item.id)}>
         <Image
           source={getImageSource(item)}
           style={styles.searchItem_Image}
         />
         <View style={styles.NameAndHint}>
           <Text style={styles.searchItem_Text}>{item.title}</Text>
-          <Tag style={styles.ItemCategoryTag}>{item.category ? item.category.tagName : "a"}</Tag>
+          {
+              item.categories && item.categories.length > 0 ? (
+                item.categories.map((category, index) => { 
+                  return <Text style={styles.ItemCategoryHint}>{category ? category.tagIcon : ""}</Text>
+                }
+              )
+              ) : (
+                <Text style={styles.ItemCategoryHint}>{toString(item.title)}</Text>
+              )
+            }
         </View>
       </Pressable>
     );
@@ -138,7 +148,8 @@ const SearchModal = ({
       animationOutTiming={300}
       style={styles.modal}
     >
-      <Pressable onPress={closeSearchModal} style={styles.closeButton}>
+      <Pressable onPress={() => {  Keyboard.dismiss(); closeSearchModal()}} 
+        style={styles.closeButton}>
         <Entypo name="chevron-left" size={28} />
       </Pressable>
 

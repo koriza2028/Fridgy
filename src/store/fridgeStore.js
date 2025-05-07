@@ -101,7 +101,8 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
         const newImageUri = productData.imageUri;
 
         // Compare paths and delete old image if it has changed
-        if (oldImageUri && newImageUri && oldImageUri !== newImageUri) {
+        // Delete old image if it was removed or changed
+        if (oldImageUri && (!newImageUri || oldImageUri !== newImageUri)) {
           const oldImgRef = storageRef(storage, oldImageUri);
           try {
             await deleteObject(oldImgRef);
@@ -109,6 +110,7 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
             console.warn("⚠️ Failed to delete old image:", err);
           }
         }
+
       }
 
       await updateDoc(productDocRef, productData);
@@ -203,8 +205,13 @@ export const deleteProduct = async (userId, productId) => {
     // Delete image from Firebase Storage (if it exists)
     if (imagePath) {
       const imgRef = storageRef(storage, imagePath);
-      await deleteObject(imgRef);
+      try {
+        await deleteObject(imgRef);
+      } catch (error) {
+        console.warn("⚠️ Failed to delete image on product delete:", error);
+      }
     }
+    
     
     return fetchAvailableProducts(userId);
   } catch (error) {

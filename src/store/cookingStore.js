@@ -159,7 +159,19 @@ export const removeRecipe = async (userId, recipeId) => {
 export const clearRecipes = async (userId) => {
   const recipesRef = collection(db, "users", userId, "recipes");
   const snapshot = await getDocs(recipesRef);
-  await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)));
+  await Promise.all(snapshot.docs.map(async (d) => {
+    const data = d.data();
+    if (data.imageUri) {
+      const imgRef = storageRef(storage, data.imageUri);
+      try {
+        await deleteObject(imgRef);
+      } catch (err) {
+        console.warn("Failed to delete recipe image:", err);
+      }
+    }
+    await deleteDoc(d.ref);
+  }));
+  
   return { recipes: [] };
 };
 
@@ -181,7 +193,15 @@ export const moveRecipes = async (userId, recipeIds) => {
       const data = { id: d.id, ...d.data() };
       if (recipeIds.includes(d.id)) {
         movedRecipes.push(data);
-        await deleteDoc(d.ref);
+        if (data.imageUri) {
+          const imgRef = storageRef(storage, data.imageUri);
+          try {
+            await deleteObject(imgRef);
+          } catch (err) {
+            console.warn("Failed to delete moved recipe image:", err);
+          }
+        }
+        await deleteDoc(d.ref);      
       } else {
         remaining.push(data);
       }
