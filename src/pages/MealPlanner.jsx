@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'absolute',
     bottom: 20,
-    right: 10,
+    right: 20,
     width: 50,
     height: 50,
     padding: 15,

@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     Button_AddProduct: {
           position: 'absolute',
           bottom: 20,
-          right: 10,
+          right: 20,
         //   flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
           height: 50,
         //   paddingVertical: 15,
         //   paddingHorizontal: 15,
-          marginHorizontal: 10,
           backgroundColor: '#FFF',
           borderRadius: 60,
           borderColor: addButtonColor,
@@ -37,7 +36,7 @@ const styles = StyleSheet.create({
     
         Button_AddProduct_Text: {
             fontFamily: MainFont_Bold,
-            fontSize: 28,
+            fontSize: 32,
             textAlign: 'center',
             marginBottom: 4,
             // marginRight: 1,

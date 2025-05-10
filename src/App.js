@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome6';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -15,6 +15,7 @@ import RecipeCreatePage from './pages/RecipeCreate';
 import LoginPage from './pages/Login';
 import AutoBasketPage from './pages/AutoBasket';
 import MealPlannerPage from "./pages/MealPlanner";
+import TopNavigationButtons from "./components/TopNavigationButtons";
 
 import {NavigationContainer} from '@react-navigation/native';
 // import {createStackNavigator} from '@react-navigation/stack';
@@ -47,6 +48,9 @@ const FridgeStack = () => (
           shadowColor: 'transparent',
           elevation: 0, 
         },
+        headerRight: () => (
+          <TopNavigationButtons />
+        )
       }}
     />
   </Stack.Navigator>

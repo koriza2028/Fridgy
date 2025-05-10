@@ -131,27 +131,27 @@ export default function BasketPage({ navigation }) {
   };
 
 
-const handleRemoveProductFromBasket = async (basketItemId) => {
-  let prevBasket = null;
-  try {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  const handleRemoveProductFromBasket = async (basketItemId) => {
+    let prevBasket = null;
+    try {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-    setBasket((prev) => {
-      prevBasket = prev;
-      return prev.filter(item => item.basketId !== basketItemId);
-    });
+      setBasket((prev) => {
+        prevBasket = prev;
+        return prev.filter(item => item.basketId !== basketItemId);
+      });
 
-    await removeProductFromBasket(userId, basketItemId);
-    // await refreshBasket(); // Optional
-  } catch (err) {
-    console.error("Failed to remove product from basket:", err);
-    if (prevBasket) {
-      setBasket(prevBasket);
-    } else {
-      await refreshBasket();
+      await removeProductFromBasket(userId, basketItemId);
+      // await refreshBasket(); // Optional
+    } catch (err) {
+      console.error("Failed to remove product from basket:", err);
+      if (prevBasket) {
+        setBasket(prevBasket);
+      } else {
+        await refreshBasket();
+      }
     }
-  }
-};
+  };
 
   
 
@@ -239,14 +239,11 @@ const handleRemoveProductFromBasket = async (basketItemId) => {
     }
   };
 
-  // const [listKey, setListKey] = useState(Date.now());
-
-useFocusEffect(
-  React.useCallback(() => {
-    // setListKey(Date.now()); // triggers SwipeListView remount
-    refreshBasket();
-  }, [userId])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshBasket();
+    }, [userId])
+  );
 
 
   return (
@@ -273,7 +270,6 @@ useFocusEffect(
         <View style={styles.BasketPage_ListOfBasketItems}>
 
         <SwipeListView
-          // key={listKey}
           data={combinedData}
           keyExtractor={(item) => item.basketId.toString()}
           renderHiddenItem={renderHiddenItem}
