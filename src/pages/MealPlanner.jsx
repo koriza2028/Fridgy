@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, Alert, 
-  Animated, TouchableWithoutFeedback, Keyboard
+  Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation
  } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
@@ -152,6 +152,13 @@ export default function MealPlannerPage({ navigation }) {
   };
 
   const handleRemoveRecipe = async (recipeId) => {
+    const prevIds = plannedRecipeIds;
+  
+    // Optimistic update
+    const newIds = plannedRecipeIds.filter(id => id !== recipeId);
+    setPlannedRecipeIds(newIds);
+    setMealPlanCache(prev => ({ ...prev, [selectedDate]: newIds }));
+  
     try {
       const updatedIds = await removeRecipeFromDate(userId, selectedDate, recipeId);
       setPlannedRecipeIds(updatedIds);
@@ -159,8 +166,13 @@ export default function MealPlannerPage({ navigation }) {
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Could not remove recipe');
+  
+      // Rollback
+      setPlannedRecipeIds(prevIds);
+      setMealPlanCache(prev => ({ ...prev, [selectedDate]: prevIds }));
     }
   };
+  
 
   const handleSearch = (text) => {
     setSearchQuery(text);

@@ -106,11 +106,11 @@ const SearchModal = ({
           {
               item.categories && item.categories.length > 0 ? (
                 item.categories.map((category, index) => { 
-                  return <Text style={styles.ItemCategoryHint}>{category ? category.tagIcon : ""}</Text>
+                  return <Text style={styles.ItemCategoryHint}>{category ? category.tagIcon : "No tag"}</Text>
                 }
               )
               ) : (
-                <Text style={styles.ItemCategoryHint}>{toString(item.title)}</Text>
+                <Text style={styles.ItemCategoryHint}>No tag</Text>
               )
             }
         </View>

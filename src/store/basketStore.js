@@ -151,8 +151,21 @@ export const updateProductAmountInBasket = async (userId, basketItemId, newAmoun
  * @returns {Promise<object>} The updated user data.
  */
 export const removeProductFromBasket = async (userId, basketItemId) => {
-  return updateProductAmountInBasket(userId, basketItemId, 0);  // Calls to set amount to 0
+  const userDocRef = doc(db, "users", userId);
+  return await runTransaction(db, async (transaction) => {
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
+    }
+    const userData = userDoc.data();
+    const basket = userData.basket || { products: [] };
+    const updatedProducts = basket.products.filter(p => p.basketId !== basketItemId);
+
+    transaction.update(userDocRef, { "basket.products": updatedProducts });
+    return { id: userDoc.id, ...userData, basket: { products: updatedProducts } };
+  });
 };
+
 
 /**
  * Fetch enriched basket items with full product details (like name and imageUri)

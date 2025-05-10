@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
-import { Image } from 'expo-image';
+import AppImage from "../../components/image/AppImage";
 
 import { buttonColor, addButtonColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -42,26 +42,16 @@ export default function ProductCard(props) {
         props.onMoveToBasket();
     };
 
-    const getImageSource = (product) => {
-        if (product.imageUri) return { uri: product.imageUri };
-        // if (product.staticImagePath) return product.staticImagePath.uri;
-        return require('../../../assets/ProductImages/banana_test.png');
-    };
-
-    const memoizedSource = useMemo(() => {
-        return props.product.imageUri
-    ? { uri: props.product.imageUri }
-    : require('../../../assets/ProductImages/banana_test.png');
-}, [props.product.imageUri]);
-
     return (         
         <Pressable style={styles.ProductCard} onPress={() => props.onOpenModal(props.product)}>
-            <Image
+            <AppImage
+                imageUri={props.product.imageUri}
+                staticImagePath={props.product.staticImagePath}
                 style={styles.ProductPicture}
-                source={memoizedSource}
                 contentFit="cover"
-      cachePolicy="disk"
+                cachePolicy="disk"
             />
+
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            

@@ -1,28 +1,26 @@
-import React, { useState, useEffect, useRef, } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
   Text,
   TextInput,
-  // Image,
   Pressable,
   Alert,
   Platform,
   Keyboard,
-  KeyboardAvoidingView,
   Dimensions,
-  Animated, Easing
+  Animated,
+  Easing,
 } from "react-native";
 
 import ImageWithUpload from "../../components/ImageWithUpload";
-
 import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import ModalProductCategoryPicker from "./ModalProductCategoryPicker";
-import useAuthStore from '../../store/authStore';  // Correct path to your auth store
+import useAuthStore from '../../store/authStore';
 import { addOrUpdateProduct, deleteProduct } from "../../store/fridgeStore";
 
 import {
@@ -45,11 +43,6 @@ import { useFonts } from "expo-font";
 const { width, height } = Dimensions.get("window");
 const isSmallScreen = height < 700;
 const defaultCategory = { tagName: "Other", tagIcon: "❓", tagType: 1 };
-const staticImages = [
-  require("../../../assets/ProductImages/apple_test.png"),
-  require("../../../assets/ProductImages/banana_test.png"),
-  require("../../../assets/ProductImages/milk_test.png")
-];
 
 export default function ModalCreateProduct({
   isVisible,
@@ -69,7 +62,7 @@ export default function ModalCreateProduct({
   const [imageUri, setImageUri] = useState(null);
   const [staticImagePath, setStaticImagePath] = useState(null);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
-  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [shouldRenderContent, setShouldRenderContent] = useState(true);
 
   useEffect(() => {
     if (product && product.id !== undefined) {
@@ -97,24 +90,14 @@ export default function ModalCreateProduct({
     setIsCreatingNew(true);
   };
 
-  const shouldResetOnClose = useRef(false);
-  const [shouldRenderContent, setShouldRenderContent] = useState(true);
-
   const handleClose = () => {
-    onClose(); // Trigger modal exit
+    onClose();
     setShouldRenderContent(false);
-    // Reset form data after a delay
     setTimeout(() => {
       resetForm();
-      setShouldRenderContent(true); // ready for next time the modal opens
+      setShouldRenderContent(true);
     }, 350);
   };
-
-  // const handleStaticImageSelect = (path) => {
-  //   setStaticImagePath(path);
-  //   setImageUri(null);
-  //   setIsImageModalVisible(false);
-  // };
 
   const handleCategorySelect = (selectedTag) => {
     setCategory(selectedTag);
@@ -122,42 +105,34 @@ export default function ModalCreateProduct({
 
   const confirmDelete = (id) => {
     if (usedIngredients.includes(id)) {
-      if (Platform.OS === "web") {
-        window.alert("This product is used in a recipe or in the basket and cannot be deleted.");
-      } else {
-        Alert.alert(
-          "This product is used in a recipe or in the basket and cannot be deleted.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "OK", style: "destructive" },
-          ],
-          { cancelable: true }
-        );
-      }
+      Alert.alert(
+        "This product is used in a recipe or in the basket and cannot be deleted."
+      );
     } else {
-      if (Platform.OS === "web") {
-        if (window.confirm("Are you sure you want to delete this item?")) {
-          removeProduct(id);
-        }
-      } else {
-        Alert.alert(
-          "Confirm Deletion",
-          "Are you sure you want to delete this item?",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Delete", onPress: () => removeProduct(id), style: "destructive" },
-          ],
-          { cancelable: true }
-        );
-      }
+      Alert.alert(
+        "Confirm Deletion",
+        "Are you sure you want to delete this item?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", onPress: () => removeProduct(id), style: "destructive" },
+        ],
+        { cancelable: true }
+      );
     }
   };
 
   const createOrUpdateProduct = async () => {
-    const productData = { name, category, amount, isArchived: false, notes, imageUri, staticImagePath };
+    const productData = {
+      name,
+      category,
+      amount,
+      isArchived: false,
+      notes,
+      imageUri,
+      staticImagePath,
+    };
     try {
-      await addOrUpdateProduct(userId, productDataId = id, productData);
-  
+      await addOrUpdateProduct(userId, id, productData);
       onClose();
       resetForm();
       onChange();
@@ -178,31 +153,13 @@ export default function ModalCreateProduct({
     }
   };
 
-  const openCategoryModal = () => {
-    setIsCategoryModalVisible(true);
-  };
-
-  const closeCategoryModal = () => {
-    setIsCategoryModalVisible(false);
-  };
-
   const isSaveDisabled = name.trim() === "" || amount === "" || isNaN(parseInt(amount, 10));
 
-  const renderProductImage = () => {
-    return <ImageWithUpload
-        imageUri={imageUri}
-        setImageUri={setImageUri}
-        imageStyle={styles.ProductCreatePicture_Image}
-        containerStyle={styles.ProductCreatePicture_Image}
-        />
-  };
-
-  
   const keyboardHeight = useRef(new Animated.Value(0)).current;
   const [isNotesFocused, setIsNotesFocused] = useState(false);
 
   useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (e) => {
+    const keyboardWillShow = Keyboard.addListener("keyboardWillShow", (e) => {
       if (isNotesFocused) {
         Animated.timing(keyboardHeight, {
           toValue: e.endCoordinates.height,
@@ -212,132 +169,145 @@ export default function ModalCreateProduct({
         }).start();
       }
     });
-  
-    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+
+    const keyboardWillHide = Keyboard.addListener("keyboardWillHide", () => {
       Animated.timing(keyboardHeight, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
     });
-  
+
     return () => {
       keyboardWillShow.remove();
       keyboardWillHide.remove();
     };
   }, [isNotesFocused]);
 
+  const renderProductImage = () => {
+    return (
+      <ImageWithUpload
+        imageUri={imageUri}
+        staticImagePath={staticImagePath}
+        setImageUri={setImageUri}
+        setStaticImagePath={setStaticImagePath}
+        imageStyle={styles.ProductCreatePicture_Image}
+        containerStyle={styles.ProductCreatePicture_Image}
+      />
+    );
+  };
 
   return (
-    <Modal isVisible={isVisible} style={styles.modal} 
-        animationIn="slideInUp" animationOut="slideOutDown" animationInTiming={500}
-        useNativeDriver={true}
-        backdropColor="black" backdropOpacity={0.5} 
-        onModalHide={() => {
-          setTimeout(() => {
-            resetForm();
-          }, 50);
-        }} hideModalContentWhileAnimating={true}>
+    <Modal
+      isVisible={isVisible}
+      style={styles.modal}
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      animationInTiming={500}
+      useNativeDriver={true}
+      backdropColor="black"
+      backdropOpacity={0.5}
+      onModalHide={() => setTimeout(() => resetForm(), 50)}
+      hideModalContentWhileAnimating={true}
+    >
       <BlurView intensity={0} style={styles.blurContainer}>
-        
-      {shouldRenderContent && (
-        
-        <Animated.View style={[styles.modalContent, { transform: [{ translateY: Animated.multiply(keyboardHeight, -0.5) }] }]}>
-          <Pressable onPress={handleClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>X</Text>
-          </Pressable>
+        {shouldRenderContent && (
+          <Animated.View
+            style={[
+              styles.modalContent,
+              { transform: [{ translateY: Animated.multiply(keyboardHeight, -0.5) }] },
+            ]}
+          >
+            <Pressable onPress={handleClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>X</Text>
+            </Pressable>
 
-          <View style={styles.CreateProduct_ContentWrapper}>
-            <View style={styles.ProductInfo}>
-              <View style={{ width: '90%' }}>
-                <Text style={styles.IntroText}>
-                  {/* {isCreatingNew ? "Create a new product" : "Edit the product"} */}
-                </Text>
-              </View>
+            <View style={styles.CreateProduct_ContentWrapper}>
+              <View style={styles.ProductInfo}>
+                <View style={{ width: '90%' }}>
+                  <Text style={styles.IntroText}></Text>
+                </View>
 
-              <View style={styles.ProductCreatePicture}>
-                <Pressable onPress={() => setIsImageModalVisible(true)} style={styles.ProductCreatePicture}>
+                <View style={styles.ProductCreatePicture}>
                   {renderProductImage()}
-                </Pressable>
-              </View>
-
-              <View style={styles.productDataEntry_Wrapper}>
-                <View style={[styles.productDataEntry, styles.nameAndAmountWrapper]}>
-                  <TextInput
-                    style={[styles.productName, styles.productDataEntryInput]}
-                    autoCapitalize="sentences"
-                    value={name || ''}
-                    onChangeText={text => setName(text)}
-                    placeholder='Name of a product...'
-                    placeholderTextColor={'#9e9e9e'}
-                  />
                 </View>
-                
-                <Pressable style={[styles.productDataEntry, styles.productCategory]} onPress={openCategoryModal}>
-                  <Text style={styles.productCategory_Text}>
-                    Category:</Text>
-                  <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
+
+                <View style={styles.productDataEntry_Wrapper}>
+                  <View style={[styles.productDataEntry, styles.nameAndAmountWrapper]}>
+                    <TextInput
+                      style={[styles.productName, styles.productDataEntryInput]}
+                      autoCapitalize="sentences"
+                      value={name || ''}
+                      onChangeText={text => setName(text)}
+                      placeholder='Name of a product...'
+                      placeholderTextColor={'#9e9e9e'}
+                    />
+                  </View>
+
+                  <Pressable style={[styles.productDataEntry, styles.productCategory]} onPress={() => setIsCategoryModalVisible(true)}>
+                    <Text style={styles.productCategory_Text}>Category:</Text>
+                    <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
                       {category?.tagName || defaultCategory.name}
-                  </Text> 
+                    </Text>
 
-                  <ModalProductCategoryPicker
-                    isCategoryModalVisible={isCategoryModalVisible}
-                    setIsCategoryModalVisible={setIsCategoryModalVisible}
-                    onClose={closeCategoryModal}
-                    onCategorySelect={handleCategorySelect}
-                    categories={categories}
-                    alreadySelectedCategory={category}
-                  />
-                </Pressable>
-               
-                <View style={[styles.productDataEntry, styles.productAmountWrapper]}>
-                  <TextInput
-                    style={styles.productAmount}
-                    selectTextOnFocus={true}
-                    keyboardType="numeric"
-                    value={amount !== undefined && amount !== null ? String(amount) : ""}
-                    onChangeText={text => setAmount(text)}
-                    placeholder='Amount...'
-                    placeholderTextColor={'#9e9e9e'}
-                  />
-                </View>
-
-                <TextInput
-                  style={[styles.productDataEntry, styles.productNotes]}
-                  onChangeText={text => setNotes(text)}
-                  autoCapitalize="sentences"
-                  placeholder='Product details...'
-                  placeholderTextColor={'#9e9e9e'}
-                  value={notes || ''}
-                  multiline={true}
-                  textAlignVertical="top"
-                  onFocus={() => setIsNotesFocused(true)}
-                  onBlur={() => setIsNotesFocused(false)}
-                />
-
-                <View style={styles.buttonPanel}>
-                  {!isCreatingNew && (
-                    <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
-                      <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
-                    </Pressable>
-                  )}
-
-                  <Pressable 
-                    style={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
-                    onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
-                    <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
+                    <ModalProductCategoryPicker
+                      isCategoryModalVisible={isCategoryModalVisible}
+                      setIsCategoryModalVisible={setIsCategoryModalVisible}
+                      onClose={() => setIsCategoryModalVisible(false)}
+                      onCategorySelect={handleCategorySelect}
+                      categories={categories}
+                      alreadySelectedCategory={category}
+                    />
                   </Pressable>
 
+                  <View style={[styles.productDataEntry, styles.productAmountWrapper]}>
+                    <TextInput
+                      style={styles.productAmount}
+                      selectTextOnFocus={true}
+                      keyboardType="numeric"
+                      value={amount !== undefined && amount !== null ? String(amount) : ""}
+                      onChangeText={text => setAmount(text)}
+                      placeholder='Amount...'
+                      placeholderTextColor={'#9e9e9e'}
+                    />
+                  </View>
+
+                  <TextInput
+                    style={[styles.productDataEntry, styles.productNotes]}
+                    onChangeText={text => setNotes(text)}
+                    autoCapitalize="sentences"
+                    placeholder='Product details...'
+                    placeholderTextColor={'#9e9e9e'}
+                    value={notes || ''}
+                    multiline={true}
+                    textAlignVertical="top"
+                    onFocus={() => setIsNotesFocused(true)}
+                    onBlur={() => setIsNotesFocused(false)}
+                  />
+
+                  <View style={styles.buttonPanel}>
+                    {!isCreatingNew && (
+                      <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
+                        <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
+                      </Pressable>
+                    )}
+
+                    <Pressable 
+                      style={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
+                      onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
+                      <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
+                    </Pressable>
+                  </View>
                 </View>
               </View>
-            </View> 
-          </View>
-        </Animated.View>  
-      )}
-      </BlurView>    
+            </View>
+          </Animated.View>
+        )}
+      </BlurView>
     </Modal>
   );
 }
+
 
 const styles = StyleSheet.create({
   modal: {

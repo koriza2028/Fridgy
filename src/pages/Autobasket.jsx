@@ -1,6 +1,6 @@
 // AutoBasketPage.js
 import React, { useState, useRef, useCallback } from 'react';
-import { View, ScrollView, Dimensions, StyleSheet, Pressable, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { View, ScrollView, Dimensions, StyleSheet, Pressable, TouchableWithoutFeedback, Keyboard, Text, LayoutAnimation } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
@@ -10,6 +10,7 @@ import {
   fetchAutoBasketProducts,
   addProductToAutoBasket,
   updateProductAmountInAutoBasket,
+  removeProductFromAutoBasket
 } from '../store/autoBasketStore';
 
 import ModalItemInfo from '../components/basket/ModalItemInfo';
@@ -101,15 +102,32 @@ export default function AutoBasketPage() {
     }
   };
 
-  const handleDecrementProductAmount = async (autoBasketItemId, currentAmount) => {
-    try {
-      await updateProductAmountInAutoBasket(userId, autoBasketItemId, currentAmount - 1);
+const handleRemoveAutoBasketProduct = async (autoBasketItemId) => {
+  let prevAutoBasket = null;
+
+  try {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+    setAutoBasket((prev) => {
+      prevAutoBasket = prev;
+      return prev.filter(item => item.autoBasketId !== autoBasketItemId);
+    });
+
+    await removeProductFromAutoBasket(userId, autoBasketItemId);
+
+    await refreshAutoBasket(); // Optional but keeps UI in sync
+  } catch (err) {
+    console.error("Failed to remove auto basket product:", err);
+
+    // Rollback
+    if (prevAutoBasket) {
+      setAutoBasket(prevAutoBasket);
+    } else {
       await refreshAutoBasket();
-    } catch (err) {
-      console.error("Failed to decrement product quantity:", err);
     }
-    };
-  
+  }
+};
+
   const [openRowKey, setOpenRowKey] = useState(null);
 
   // Render the hidden row with a delete button
@@ -117,7 +135,7 @@ export default function AutoBasketPage() {
     <View style={styles.rowBack}>
       <Pressable
         style={styles.deleteButton}
-        onPress={() => handleDecrementProductAmount(item.autoBasketId, item.amount)}
+        onPress={() => handleRemoveAutoBasketProduct(item.autoBasketId)}
       >
         <Text style={styles.deleteButtonText}>Delete</Text>
       </Pressable>
@@ -161,7 +179,7 @@ export default function AutoBasketPage() {
                 <View style={styles.rowFront}>
                   <BasketItem
                     product={item}
-                    onDecrement={() => handleDecrementProductAmount(item.autoBasketId, item.amount)}
+                    onDecrement={() => handleRemoveAutoBasketProduct(item.autoBasketId)}
                     onAdd={() => handleIncrementProductAmount(item.autoBasketId, item.amount)}
                     onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.autoBasketId, isChecked)}
                     openInfoModal={() => handleItemPress(item)}

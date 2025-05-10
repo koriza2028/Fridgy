@@ -94,10 +94,32 @@ export const updateProductAmountInAutoBasket = async (userId, autoBasketItemId, 
   });
 };
 
-// Remove product from autoBasket
+/**
+ * Remove a product completely from the auto basket.
+ * @param {string} userId
+ * @param {string} autoBasketItemId - The product's unique id in auto basket.
+ * @returns {Promise<object>} The updated user data.
+ */
 export const removeProductFromAutoBasket = async (userId, autoBasketItemId) => {
-  return updateProductAmountInAutoBasket(userId, autoBasketItemId, 0);
+  const userDocRef = doc(db, "users", userId);
+  return await runTransaction(db, async (transaction) => {
+    const userDoc = await transaction.get(userDocRef);
+    if (!userDoc.exists()) {
+      throw new Error("User document does not exist");
+    }
+
+    const userData = userDoc.data();
+    const autoBasket = userData.autoBasket || { products: [] };
+
+    const updatedProducts = autoBasket.products.filter(
+      p => p.autoBasketId !== autoBasketItemId
+    );
+
+    transaction.update(userDocRef, { "autoBasket.products": updatedProducts });
+    return { id: userDoc.id, ...userData, autoBasket: { products: updatedProducts } };
+  });
 };
+
 
 // Update name of a product in autoBasket (only for custom items)
 export const updateAutoBasketItemName = async (userId, autoBasketItemId, newName) => {

@@ -409,7 +409,9 @@ export default function RecipeCreatePage({ navigation, route }) {
           imageUri={imageUri}
           animatedStyle={memoizedImageStyle}
           setImageUri={setImageUri}
+          enableStaticImages={false} // <-- Disable static images
         />
+
         <View style={styles.productDataEntry_Wrapper}>
           <View style={styles.productDataEntry}>
             <TextInput

@@ -1,6 +1,6 @@
 import React, { useState, useRef, } from 'react';
 import { View, ScrollView, Pressable, Text, 
-  Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert } from 'react-native';
+  Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert, LayoutAnimation } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 // import { GestureHandlerRootView } from 'react-native-gesture-handler';
 // import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
@@ -21,6 +21,7 @@ import {
   moveProductsFromBasketToFridge,
   updateBasketItemName,
   addAutoBasketProductsToBasket,
+  removeProductFromBasket
 } from '../store/basketStore';
 
 import { fetchAllProducts } from '../store/fridgeStore';
@@ -129,14 +130,30 @@ export default function BasketPage({ navigation }) {
     }
   };
 
-  const handleDecrementProductAmount = async (basketItemId, currentAmount) => {
-    try {
-      await updateProductAmountInBasket(userId, basketItemId, currentAmount - 1);
+
+const handleRemoveProductFromBasket = async (basketItemId) => {
+  let prevBasket = null;
+  try {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+    setBasket((prev) => {
+      prevBasket = prev;
+      return prev.filter(item => item.basketId !== basketItemId);
+    });
+
+    await removeProductFromBasket(userId, basketItemId);
+    // await refreshBasket(); // Optional
+  } catch (err) {
+    console.error("Failed to remove product from basket:", err);
+    if (prevBasket) {
+      setBasket(prevBasket);
+    } else {
       await refreshBasket();
-    } catch (err) {
-      console.error("Failed to decrement product quantity:", err);
     }
-  };
+  }
+};
+
+  
 
   const handleUpdateName = async (basketItemId, newName) => {
     await updateBasketItemName(userId, basketItemId, newName);
@@ -205,7 +222,7 @@ export default function BasketPage({ navigation }) {
     <View style={styles.rowBack}>
       <Pressable
         style={styles.deleteButton}
-        onPress={() => handleDecrementProductAmount(item.basketId, item.amount)}
+        onPress={() => handleRemoveProductFromBasket(item.basketId)}
       >
         <Text style={styles.deleteButtonText}>Delete</Text>
       </Pressable>
@@ -222,11 +239,11 @@ export default function BasketPage({ navigation }) {
     }
   };
 
-  const [listKey, setListKey] = useState(Date.now());
+  // const [listKey, setListKey] = useState(Date.now());
 
 useFocusEffect(
   React.useCallback(() => {
-    setListKey(Date.now()); // triggers SwipeListView remount
+    // setListKey(Date.now()); // triggers SwipeListView remount
     refreshBasket();
   }, [userId])
 );
@@ -256,7 +273,7 @@ useFocusEffect(
         <View style={styles.BasketPage_ListOfBasketItems}>
 
         <SwipeListView
-          key={listKey}
+          // key={listKey}
           data={combinedData}
           keyExtractor={(item) => item.basketId.toString()}
           renderHiddenItem={renderHiddenItem}
@@ -270,7 +287,7 @@ useFocusEffect(
                 <BasketItem
                   product={item}
                   isChecked={!!checkedItems[item.basketId]}
-                  onDecrement={() => handleDecrementProductAmount(item.basketId, item.amount)}
+                  onDecrement={() => handleRemoveProductFromBasket(item.basketId)}
                   onAdd={() => handleIncrementProductAmount(item.basketId, item.amount)}
                   onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.basketId, isChecked)}
                   openInfoModal={() => handleItemPress(item)}
