@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, Pressable, Alert,
   Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation
  } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 import CalendarModal from '../components/mealplanner.jsx/ModalCalendar.jsx';
 import MealCard from '../components/cooking/MealCard.jsx';
@@ -17,11 +17,10 @@ import useAuthStore from '../store/authStore';
 import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
 import {
-  fetchMealPlanForDate
-  , addRecipeToDate
-  , removeRecipeFromDate
+  fetchMealPlanForDate,
+  addRecipeToDate,
+  removeRecipeFromDate
 } from '../store/mealPlannerStore';
-
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,8 +29,6 @@ export default function MealPlannerPage({ navigation }) {
     'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
-
-  // console.log("🏗️ porender MealPlannerPage");
 
   const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -49,33 +46,16 @@ export default function MealPlannerPage({ navigation }) {
   const [filteredData, setFilteredData] = useState([]);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (userId) {
-  //       fetchEnrichedRecipes(userId)
-  //         .then(data => {
-  //           setRecipeBook({ recipes: data });
-  //           setFilteredData(data);
-  //         })
-  //         .catch(console.error);
-
-  //       fetchAvailableProducts(userId)
-  //         .then(setFridgeProducts)
-  //         .catch(console.error);
-  //     }
-  //   }, [userId])
-  // );
-
   useEffect(() => {
     if (!userId) return;
-  
+
     fetchEnrichedRecipes(userId)
       .then(data => {
         setRecipeBook({ recipes: data });
         setFilteredData(data);
       })
       .catch(console.error);
-  
+
     fetchAvailableProducts(userId)
       .then(setFridgeProducts)
       .catch(console.error);
@@ -96,7 +76,7 @@ export default function MealPlannerPage({ navigation }) {
           ? Promise.resolve({ date, ids: mealPlanCache[date] })
           : fetchMealPlanForDate(userId, date).then(({ recipes }) => ({
               date,
-              ids: recipes.map(r => r.id)
+              ids: recipes.map(r => `${r.id}_${date}`)
             }))
       )
     )
@@ -112,7 +92,7 @@ export default function MealPlannerPage({ navigation }) {
   }, [userId, selectedDate]);
 
   useEffect(() => {
-    const base = recipeBook.recipes.filter(r => !plannedRecipeIds.includes(r.id));
+    const base = recipeBook.recipes.filter(r => !plannedRecipeIds.some(id => id.startsWith(r.id)));
     if (searchQuery.trim()) {
       setFilteredData(
         base.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -141,8 +121,9 @@ export default function MealPlannerPage({ navigation }) {
   const handleAddRecipe = async (recipeId) => {
     try {
       const updatedIds = await addRecipeToDate(userId, selectedDate, recipeId);
-      setPlannedRecipeIds(updatedIds);
-      setMealPlanCache(prev => ({ ...prev, [selectedDate]: updatedIds }));
+      const modified = updatedIds.map(id => `${id}_${selectedDate}`);
+      setPlannedRecipeIds(modified);
+      setMealPlanCache(prev => ({ ...prev, [selectedDate]: modified }));
       setIsSearchModalVisible(false);
       setSearchQuery('');
     } catch (err) {
@@ -151,175 +132,129 @@ export default function MealPlannerPage({ navigation }) {
     }
   };
 
-  const handleRemoveRecipe = async (recipeId) => {
+  const handleRemoveRecipe = async (recipeIdDateKey) => {
+    const recipeId = recipeIdDateKey.split('_')[0];
     const prevIds = plannedRecipeIds;
-  
-    // Optimistic update
-    const newIds = plannedRecipeIds.filter(id => id !== recipeId);
+
+    const newIds = plannedRecipeIds.filter(id => id !== recipeIdDateKey);
     setPlannedRecipeIds(newIds);
     setMealPlanCache(prev => ({ ...prev, [selectedDate]: newIds }));
-  
+
     try {
       const updatedIds = await removeRecipeFromDate(userId, selectedDate, recipeId);
-      setPlannedRecipeIds(updatedIds);
-      setMealPlanCache(prev => ({ ...prev, [selectedDate]: updatedIds }));
+      const modified = updatedIds.map(id => `${id}_${selectedDate}`);
+      setPlannedRecipeIds(modified);
+      setMealPlanCache(prev => ({ ...prev, [selectedDate]: modified }));
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Could not remove recipe');
-  
-      // Rollback
       setPlannedRecipeIds(prevIds);
       setMealPlanCache(prev => ({ ...prev, [selectedDate]: prevIds }));
     }
   };
-  
 
   const handleSearch = (text) => {
     setSearchQuery(text);
   };
 
-  const mergeMandatoryIngredients = () => {
-    const selectedRecipes = recipeBook.recipes.filter(r =>
-      plannedRecipeIds.includes(r.id)
-    );
-    const ingredientsSet = new Set();
-    selectedRecipes.forEach(recipe => {
-      if (Array.isArray(recipe.mandatoryIngredients)) {
-        recipe.mandatoryIngredients.forEach(ingredient => ingredientsSet.add(ingredient));
-      }
-    });
-    return Array.from(ingredientsSet);
-  };
+  const cards = useMemo(
+    () => recipeBook.recipes.filter(r => plannedRecipeIds.includes(`${r.id}_${selectedDate}`)),
+    [recipeBook.recipes, plannedRecipeIds, selectedDate]
+  );
 
-  const checkIngredientIsAvailable = useCallback(
-      (originalFridgeId) => {
-        return fridgeProducts.some((product) => product.id === originalFridgeId);
-      },
-      [fridgeProducts]
-    );
-
-
-    const [openRowKey, setOpenRowKey] = useState(null);
-    const ROW_HEIGHT = 120; // <-- whatever the true height of your MealCard + margin is
-    const [listKey, setListKey] = useState(Date.now());
-    useFocusEffect(
-      useCallback(() => {
-        setListKey(Date.now()); // force SwipeListView to remount
-      }, [])
-    );
-
-    // at top of component, alongside your other hooks:
-    const cards = useMemo(
-      () => recipeBook.recipes.filter(r => plannedRecipeIds.includes(r.id)),
-      [recipeBook.recipes, plannedRecipeIds]
-    );
-    
-    const renderItem = useCallback(
-      ({ item }) => (
-        <View style={styles.rowFront}>
-          <MealCard
-            recipe={item}
-            isAvailable
-            isMealPlanner
-            onLongPress={() => handleRemoveRecipe(item.id)}
-            swipeOpen={openRowKey === item.id} // optional, if MealCard needs to know
-          />
-        </View>
-      ),
-      [handleRemoveRecipe, openRowKey]
-    );
-    
-    
-    const renderHiddenItem = useCallback(
-      ({ item }) => (
-        <View style={styles.rowBack}>
-          <Pressable onPress={() => handleRemoveRecipe(item.id)}>
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </Pressable>
-        </View>
-      ),
-      [handleRemoveRecipe]
-    );
-
-    return (
-      <View style={styles.MealPlannerPage}>
-        <View style={styles.MealPlannerPage_ContentWrapper}>
-    
-          {/* navigation bar */}
-          <View style={styles.navigation}>
-            <Pressable onPress={() => changeDate(-1)}>
-              <Entypo name="arrow-long-left" size={30} />
-            </Pressable>
-            <Text>{formatDateDisplay(selectedDate)}</Text>
-            <Pressable onPress={() => changeDate(1)}>
-              <Entypo name="arrow-long-right" size={30} />
-            </Pressable>
-          </View>
-    
-          {/* swipeable cards container */}
-          <SwipeListView
-            key={listKey}
-            data={cards}
-            keyExtractor={item => item.id.toString()}
-            renderItem={renderItem}
-            renderHiddenItem={renderHiddenItem}
-            rightOpenValue={-75}
-            disableRightSwipe={false}
-            disableScrollOnSwipe
-            contentContainerStyle={{ flexGrow: 1 }}
-            recalculateHiddenLayout
-            closeOnRowOpen={false}
-            closeOnScroll={false}
-            closeOnRowPress={false}
-            onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
-            onRowClose={() => setOpenRowKey(null)}
-            getItemLayout={(_, index) => ({
-              length: ROW_HEIGHT,
-              offset: ROW_HEIGHT * index,
-              index,
-            })}
-            ListFooterComponent={() => (
-              <Pressable
-                style={styles.addMore_Button}
-                onPress={() => setIsSearchModalVisible(true)}
-              >
-                <Text style={styles.addMore_Button_Text}>Add more +</Text>
-              </Pressable>
-            )}
-          />
-    
-        </View>
-    
-        {/* floating calendar button */}
-        <Pressable
-          style={styles.openCalendar_Button}
-          onPress={() => setIsCalendarVisible(v => !v)}
-        >
-          <Text>C</Text>
-        </Pressable>
-    
-        {/* calendar modal */}
-        <CalendarModal
-          isVisible={isCalendarVisible}
-          onClose={() => setIsCalendarVisible(false)}
-          onDaySelect={date => setSelectedDate(date)}
-          selectedDate={selectedDate}
-        />
-    
-        {/* search modal */}
-        <SearchModal
-          isSearchModalVisible={isSearchModalVisible}
-          closeSearchModal={() => setIsSearchModalVisible(false)}
-          handleSearch={handleSearch}
-          searchQuery={searchQuery}
-          filteredData={filteredData}
-          isRecipeCreate={false}
-          addProduct={handleAddRecipe}
-          isMealPlanner={true}
+  const renderItem = useCallback(
+    ({ item }) => (
+      <View style={styles.rowFront}>
+        <MealCard
+          recipe={item}
+          isAvailable
+          isMealPlanner
+          onLongPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}
         />
       </View>
-    );
-    
+    ),
+    [handleRemoveRecipe, selectedDate]
+  );
+
+  const renderHiddenItem = useCallback(
+    ({ item }) => (
+      <View style={styles.rowBack}>
+        <Pressable onPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}>
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
+      </View>
+    ),
+    [handleRemoveRecipe, selectedDate]
+  );
+
+  return (
+    <View style={styles.MealPlannerPage}>
+      <View style={styles.MealPlannerPage_ContentWrapper}>
+        <View style={styles.navigation}>
+          <Pressable onPress={() => changeDate(-1)}>
+            <Entypo name="arrow-long-left" size={30} />
+          </Pressable>
+          <Text>{formatDateDisplay(selectedDate)}</Text>
+          <Pressable onPress={() => changeDate(1)}>
+            <Entypo name="arrow-long-right" size={30} />
+          </Pressable>
+        </View>
+
+        <SwipeListView
+          data={cards}
+          keyExtractor={(item) => `${item.id}_${selectedDate}`}
+          renderItem={renderItem}
+          renderHiddenItem={renderHiddenItem}
+          rightOpenValue={-75}
+          disableRightSwipe={false}
+          disableScrollOnSwipe
+          contentContainerStyle={{ flexGrow: 1 }}
+          recalculateHiddenLayout
+          closeOnRowOpen={false}
+          closeOnScroll={false}
+          closeOnRowPress={false}
+          getItemLayout={(_, index) => ({
+            length: 120,
+            offset: 120 * index,
+            index,
+          })}
+          ListFooterComponent={() => (
+            <Pressable
+              style={styles.addMore_Button}
+              onPress={() => setIsSearchModalVisible(true)}
+            >
+              <Text style={styles.addMore_Button_Text}>Add more +</Text>
+            </Pressable>
+          )}
+        />
+      </View>
+
+      <Pressable
+        style={styles.openCalendar_Button}
+        onPress={() => setIsCalendarVisible(v => !v)}
+      >
+        <Text>C</Text>
+      </Pressable>
+
+      <CalendarModal
+        isVisible={isCalendarVisible}
+        onClose={() => setIsCalendarVisible(false)}
+        onDaySelect={date => setSelectedDate(date)}
+        selectedDate={selectedDate}
+      />
+
+      <SearchModal
+        isSearchModalVisible={isSearchModalVisible}
+        closeSearchModal={() => setIsSearchModalVisible(false)}
+        handleSearch={handleSearch}
+        searchQuery={searchQuery}
+        filteredData={filteredData}
+        isRecipeCreate={false}
+        addProduct={handleAddRecipe}
+        isMealPlanner={true}
+      />
+    </View>
+  );
    
 
   // return (

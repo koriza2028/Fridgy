@@ -1,9 +1,7 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TextInput, Pressable } from 'react-native';
-import { Image } from 'expo-image';
-
+import AppImage from '../image/AppImage';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-
 import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
@@ -14,7 +12,6 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  // Use basketId for all operations
   const decrementProduct = () => {
     onDecrement(product.basketId, product.amount);
   };
@@ -28,73 +25,55 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
   };
 
   const [title, setTitle] = useState(product.name || "");
-  
-    useEffect(() => {
-      setTitle(product.name || "");
-    }, [product.name]);
-  
-    onModalClose = () => { 
-      setTitle(product.name);
-      onClose();
-    }
 
-  const getImageSource = (product) => {
-    if (product.imageUri) return { uri: product.imageUri } ;
-    // if (product.staticImagePath) return product.staticImagePath;
-    return require('../../../assets/ProductImages/banana_test.png');
-  };
+  useEffect(() => {
+    setTitle(product.name || "");
+  }, [product.name]);
 
+  const onModalClose = () => { 
+    setTitle(product.name);
+    onClose();
+  }
 
   return (
-    
-        <View style={styles.BasketItem}>
-          {/* <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-            <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
-          </Pressable> */}
+    <View style={styles.BasketItem}>
+      {!autobasket && 
+        <BouncyCheckbox style={styles.BasketItem_Checkbox}
+            size={24}
+            fillColor='black'
+            unfillColor="#FFFFFF"
+            innerIconStyle={{ borderWidth: 2, borderRadius: 8 }}
+            onPress={handleToggle}
+        />}        
 
-            {!autobasket && 
-            <BouncyCheckbox style={styles.BasketItem_Checkbox}
-                size={24}
-                fillColor='black'
-                unfillColor="#FFFFFF"
-                // iconStyle={{ borderColor: "red" }}
-                innerIconStyle={{
-                  borderWidth: 2,
-                  borderRadius: 8, 
-                }}
-                // textStyle={{ fontFamily: "JosefinSans-Regular" }}
-                onPress={handleToggle}
-            />}        
+      <View style={styles.BasketItem_Name}>
+        <AppImage 
+          style={styles.ProductPicture}
+          imageUri={product.imageUri}
+          staticImagePath={product.staticImagePath}
+        />
+        <Pressable style={styles.BasketItem_Name_Button} onPress={() => openInfoModal(product)}>
+          <Text 
+            style={styles.BasketItem_Text} numberOfLines={2} ellipsizeMode="tail">
+            {product.name}
+          </Text>  
+        </Pressable>
+      </View>
 
-          <View style={styles.BasketItem_Name}>
-            <Image 
-              style={styles.ProductPicture}
-              source={getImageSource(product)}
-            />
-            <Pressable style={styles.BasketItem_Name_Button} onPress={() => openInfoModal(product)}>
-              <Text 
-                style={styles.BasketItem_Text} numberOfLines={2} ellipsizeMode="tail">
-                {product.name}
-              </Text>  
-            </Pressable>
-          </View>
+      {/* <View style={styles.BasketItem_AmountAndButtons}>
+        <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
+          <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
+        </Pressable>
 
-          {/* <View style={styles.BasketItem_AmountAndButtons}>
-            <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
-              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-            </Pressable>
+        <Text style={styles.BasketItem_Text}>{product.amount}</Text>
 
-            <Text style={styles.BasketItem_Text}>{product.amount}</Text>
+        <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
+          <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
+        </Pressable>
+      </View> */}
 
-            <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
-              <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-            </Pressable>
-          </View> */}
-
-        </View>
-
+    </View>
   )
-
   
   // return (
   //   product.isFromFridge ? (

@@ -1,10 +1,44 @@
 import React from 'react';
-import { View, StyleSheet, Text, Pressable } from 'react-native';
+import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+import useAuthStore from '../store/authStore';
 
-const UserOptionsModal = ({ isVisible, onClose, onViewProfile, onLogout }) => {
+const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
+    const logout = useAuthStore((state) => state.logout);
+
+    const handleLogout = () => {
+      Alert.alert(
+        'Confirm Logout',
+        'Are you sure you want to log out?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut(auth);
+                logout();
+                // onLogout();
+                navigation.navigate('Login');
+              } catch (error) {
+                console.error('Error logging out:', error);
+              }
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    };
+
+
     return (
       <Modal
         isVisible={isVisible}
@@ -25,7 +59,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile, onLogout }) => {
             <Text style={styles.menuText}>Placeholder</Text>
           </Pressable>
   
-          <Pressable style={styles.menuItem} onPress={onLogout}>
+          <Pressable style={styles.menuItem} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} style={styles.icon} />
             <Text style={styles.menuText}>Logout</Text>
           </Pressable>

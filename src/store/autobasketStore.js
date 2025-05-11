@@ -1,85 +1,75 @@
 import {
   doc,
   getDoc,
-  runTransaction
+  setDoc,
+  updateDoc,
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import useProductStore from './productStore';
+
+const normalizeProduct = (product) => {
+  return typeof product === 'string'
+    ? { id: product, name: product, amount: 1, isFromFridge: false }
+    : { id: product.id, name: product.name, amount: 1, isFromFridge: true };
+};
+
+// --- AUTO BASKET LOGIC ---
 
 export const addProductToAutoBasket = async (userId, productInput) => {
-  let product;
-
-  // If the product is from the fridge, we will store just a reference (productId, name, amount)
-  product = {
-    autoBasketId: Date.now().toString(), // unique basket id
-    productId: productInput.id,       // reference to the fridge product id
-    amount: 1,  // Default amount, can be updated later
+  const product = {
+    autoBasketId: Date.now().toString(),
+    productId: productInput.id,
+    amount: 1,
     isFromFridge: true,
   };
 
-  const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) {
-      throw new Error("User document does not exist");
-    }
-    const userData = userDoc.data();
-    const autoBasket = userData.autoBasket || { products: [] };
+  const ref = doc(db, "users", userId);
+  return await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error("User not found");
+    const user = snap.data();
+    const autoBasket = user.autoBasket || { products: [] };
 
-    // Find an existing basket entry.
-    const index = autoBasket.products.findIndex((p) => {
-      return p.productId === product.productId;
-    });
-
-    // If it exists, update the amount, else push a new product to the basket
+    const index = autoBasket.products.findIndex(p => p.productId === product.productId);
     if (index !== -1) {
-      autoBasket.products[index].amount += 1;  // Increment amount
+      autoBasket.products[index].amount += 1;
     } else {
-      autoBasket.products.push(product);  // Add the new product reference
+      autoBasket.products.push(product);
     }
 
-    transaction.update(userDocRef, { "autoBasket.products": autoBasket.products });
-    return { id: userDoc.id, ...userData, autoBasket };
+    tx.update(ref, { "autoBasket.products": autoBasket.products });
+    return { id: snap.id, ...user, autoBasket };
   });
 };
 
-// Fetch enriched autoBasket items with full product details
 export const fetchAutoBasketProducts = async (userId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return [];
+    const ref = doc(db, "users", userId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return [];
 
-    const autoBasketRefs = userSnap.data().autoBasket?.products || [];
+    const autoBasketItems = snap.data().autoBasket?.products || [];
+    const { available, archived } = useProductStore.getState();
+    const allProducts = [...available, ...archived];
 
-    const enriched = await Promise.all(
-      autoBasketRefs.map(async (item) => {
-        const productDocRef = doc(db, "users", userId, "products", item.productId);
-        const productSnap = await getDoc(productDocRef);
-        if (productSnap.exists()) {
-          const productData = productSnap.data();
-          return { ...productData, ...item };
-        }
-        return item;
-      })
-    );
-
-    return enriched;
-  } catch (error) {
-    console.error("Error fetching autoBasket products:", error);
+    return autoBasketItems.map(item => {
+      const prod = allProducts.find(p => p.id === item.productId);
+      return prod ? { ...prod, ...item } : item;
+    });
+  } catch (err) {
+    console.error("Failed to fetch autoBasket items:", err);
     return [];
   }
 };
 
-// Update product amount in autoBasket
 export const updateProductAmountInAutoBasket = async (userId, autoBasketItemId, newAmount) => {
-  const userDocRef = doc(db, "users", userId);
-
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
-
-    const userData = userDoc.data();
-    const autoBasket = userData.autoBasket || { products: [] };
+  const ref = doc(db, "users", userId);
+  return await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error("User not found");
+    const user = snap.data();
+    const autoBasket = user.autoBasket || { products: [] };
     const index = autoBasket.products.findIndex(p => p.autoBasketId === autoBasketItemId);
     if (index === -1) throw new Error("Product not found in autoBasket");
 
@@ -89,55 +79,37 @@ export const updateProductAmountInAutoBasket = async (userId, autoBasketItemId, 
       autoBasket.products[index].amount = newAmount;
     }
 
-    transaction.update(userDocRef, { "autoBasket.products": autoBasket.products });
-    return { id: userDoc.id, ...userData, autoBasket };
+    tx.update(ref, { "autoBasket.products": autoBasket.products });
+    return { id: snap.id, ...user, autoBasket };
   });
 };
 
-/**
- * Remove a product completely from the auto basket.
- * @param {string} userId
- * @param {string} autoBasketItemId - The product's unique id in auto basket.
- * @returns {Promise<object>} The updated user data.
- */
 export const removeProductFromAutoBasket = async (userId, autoBasketItemId) => {
-  const userDocRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) {
-      throw new Error("User document does not exist");
-    }
+  const ref = doc(db, "users", userId);
+  return await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error("User not found");
+    const user = snap.data();
+    const autoBasket = user.autoBasket || { products: [] };
+    const products = autoBasket.products.filter(p => p.autoBasketId !== autoBasketItemId);
 
-    const userData = userDoc.data();
-    const autoBasket = userData.autoBasket || { products: [] };
-
-    const updatedProducts = autoBasket.products.filter(
-      p => p.autoBasketId !== autoBasketItemId
-    );
-
-    transaction.update(userDocRef, { "autoBasket.products": updatedProducts });
-    return { id: userDoc.id, ...userData, autoBasket: { products: updatedProducts } };
+    tx.update(ref, { "autoBasket.products": products });
+    return { id: snap.id, ...user, autoBasket: { products } };
   });
 };
 
-
-// Update name of a product in autoBasket (only for custom items)
 export const updateAutoBasketItemName = async (userId, autoBasketItemId, newName) => {
-  const userDocRef = doc(db, "users", userId);
-
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userDocRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
-
-    const userData = userDoc.data();
-    const autoBasket = userData.autoBasket || { products: [] };
-
-    const index = autoBasket.products.findIndex(item => item.autoBasketId === autoBasketItemId);
-    if (index === -1) throw new Error("AutoBasket item not found");
+  const ref = doc(db, "users", userId);
+  return await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error("User not found");
+    const user = snap.data();
+    const autoBasket = user.autoBasket || { products: [] };
+    const index = autoBasket.products.findIndex(p => p.autoBasketId === autoBasketItemId);
+    if (index === -1) throw new Error("Item not found in autoBasket");
 
     autoBasket.products[index].name = newName;
-
-    transaction.update(userDocRef, { "autoBasket.products": autoBasket.products });
-    return { id: userDoc.id, ...userData, autoBasket };
+    tx.update(ref, { "autoBasket.products": autoBasket.products });
+    return { id: snap.id, ...user, autoBasket };
   });
 };

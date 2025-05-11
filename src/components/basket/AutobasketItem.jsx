@@ -43,12 +43,10 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
           </Pressable> */}
 
           <View style={styles.BasketItem_Name}>
-            <Image 
+            <AppImage 
               style={styles.ProductPicture}
-              source={ product.imageUri 
-                        ? { uri: product.imageUri } 
-                        : require('../../../assets/ProductImages/banana_test.png')
-                    }
+              imageUri={product.imageUri}
+              staticImagePath={product.staticImagePath}
             />
             <Text 
               style={styles.BasketItem_Text}

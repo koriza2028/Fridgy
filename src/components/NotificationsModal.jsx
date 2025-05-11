@@ -3,7 +3,12 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Modal from 'react-native-modal';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import useNotificationsStore from '../store/notificationsStore';
+import IngredientItem from '../components/cooking/IngredientCard';
+
 const NotificationsModal = ({ isVisible, onClose }) => {
+  const { groupedMissingIngredients, loading: isLoading } = useNotificationsStore();
+
   return (
     <Modal
       isVisible={isVisible}
@@ -20,11 +25,38 @@ const NotificationsModal = ({ isVisible, onClose }) => {
         </Pressable>
 
         {/* Title */}
-        <Text style={styles.title}>Notifications</Text>
+        <Text style={styles.title}>Missing Ingredients (3 Days)</Text>
 
-        {/* Content placeholder */}
-        <View style={styles.content}>
-          <Text style={styles.placeholder}>No new notifications.</Text>
+        {/* Ingredient List */}
+        <View style={styles.requiredIngredients}>
+          {isLoading ? (
+            <Text>Loading...</Text>
+          ) : (
+            Object.entries(groupedMissingIngredients).map(([date, recipeMap]) => {
+              const recipesWithMissing = Object.entries(recipeMap);
+              if (recipesWithMissing.length === 0) return null;
+
+              return (
+                <View key={date} style={{ marginBottom: 20 }}>
+                  <Text style={styles.dateHeader}>
+                    {new Date(date).toLocaleDateString('de-DE')}:
+                  </Text>
+                  {recipesWithMissing.map(([recipeId, { title, ingredients }]) => (
+                    <View key={recipeId} style={styles.recipeBlock}>
+                      <Text style={styles.recipeTitle}>{title}</Text>
+                      {ingredients.map((ingredient, index) => (
+                        <IngredientItem
+                          key={`${recipeId}-${ingredient.productId}-${index}`}
+                          ingredient={ingredient}
+                          isAvailable={false}
+                        />
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     </Modal>
@@ -33,7 +65,7 @@ const NotificationsModal = ({ isVisible, onClose }) => {
 
 const styles = StyleSheet.create({
   modal: {
-    margin: 0, // full screen
+    margin: 0,
     justifyContent: 'flex-start',
   },
   container: {
@@ -48,20 +80,27 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholder: {
-    fontSize: 16,
-    color: '#777',
-  },
   closeButton: {
     position: 'absolute',
     top: 60,
     right: 10,
     zIndex: 10,
+  },
+  requiredIngredients: {
+    marginTop: 20,
+  },
+  dateHeader: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  recipeBlock: {
+    marginLeft: 10,
+    marginBottom: 10,
+  },
+  recipeTitle: {
+    fontWeight: '600',
+    marginBottom: 4,
   },
 });
 
