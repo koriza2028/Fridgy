@@ -142,7 +142,7 @@ export default function CookingPage({ navigation }) {
   return (
     <View style={styles.CookingPage}>
       {/* <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}> */}
-      <ScrollView >
+      <ScrollView>
         <View style={styles.CookingPage_ContentWrapper}>
           <SearchInput 
             placeholder={'Find a recipe'} 
