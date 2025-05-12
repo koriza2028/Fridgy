@@ -47,7 +47,7 @@ const UserSlots = () => {
 const styles = StyleSheet.create({
   container: {
     // padding: 16,
-    gap: 12,
+    gap: 10,
     marginTop: 10,
   },
   userBox: {

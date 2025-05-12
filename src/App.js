@@ -36,7 +36,7 @@ const FridgeStack = () => (
       component={FridgePage}
       options={{
         headerShown: true,
-        headerTitle: "Your fridge",
+        headerTitle: "Fridge",
         headerStyle: {
           backgroundColor: backgroundColor,
           shadowColor: 'transparent',
@@ -49,8 +49,8 @@ const FridgeStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: '',
-        headerShown: false,
+        title: 'User settings',
+        headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
       }}
@@ -88,8 +88,8 @@ const CookingStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: '',
-        headerShown: false,
+        title: 'User settings',
+        headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
       }}
@@ -117,8 +117,8 @@ const MealPlannerStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: '',
-        headerShown: false,
+        title: 'User settings',
+        headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
       }}
@@ -154,8 +154,8 @@ const BasketStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: '',
-        headerShown: false,
+        title: 'User settings',
+        headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
       }}
@@ -216,7 +216,7 @@ const App = () => {
               tabBarStyle: {
                 borderTopWidth: 0,
                 elevation: 0,
-                height: 84,
+                height: 82,
                 borderTopRightRadius: 20,
                 borderTopLeftRadius: 20,
                 marginBottom: -14,
