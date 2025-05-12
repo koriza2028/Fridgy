@@ -25,7 +25,7 @@ const NotificationsModal = ({ isVisible, onClose }) => {
         </Pressable>
 
         {/* Title */}
-        <Text style={styles.title}>Missing Ingredients (3 Days)</Text>
+        <Text style={styles.title}>Notifications</Text>
 
         {/* Ingredient List */}
         <View style={styles.requiredIngredients}>

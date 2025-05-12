@@ -12,6 +12,7 @@ import CookingPage from './pages/Cooking';
 import BasketPage from './pages/Basket';
 import RecipeCreatePage from './pages/RecipeCreate';
 import LoginPage from './pages/Login';
+import UserSettingsPage from './pages/UserSettings';
 import AutoBasketPage from './pages/AutoBasket';
 import MealPlannerPage from "./pages/MealPlanner";
 import TopNavigationButtons from "./components/TopNavigationButtons";
@@ -44,6 +45,16 @@ const FridgeStack = () => (
         headerRight: () => <TopNavigationButtons />,
       }}
     />
+    <Stack.Screen
+      name="UserSettingsPage"
+      component={UserSettingsPage}
+      options={{
+        title: '',
+        headerShown: false,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -60,11 +71,22 @@ const CookingStack = () => (
           shadowColor: 'transparent',
           elevation: 0,
         },
+        headerRight: () => <TopNavigationButtons />,
       }}
     />
     <Stack.Screen
       name="RecipeCreatePage"
       component={RecipeCreatePage}
+      options={{
+        title: '',
+        headerShown: false,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
+    <Stack.Screen
+      name="UserSettingsPage"
+      component={UserSettingsPage}
       options={{
         title: '',
         headerShown: false,
@@ -88,6 +110,17 @@ const MealPlannerStack = () => (
           shadowColor: 'transparent',
           elevation: 0,
         },
+        headerRight: () => <TopNavigationButtons />,
+      }}
+    />
+    <Stack.Screen
+      name="UserSettingsPage"
+      component={UserSettingsPage}
+      options={{
+        title: '',
+        headerShown: false,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
       }}
     />
   </Stack.Navigator>
@@ -106,6 +139,7 @@ const BasketStack = () => (
           shadowColor: 'transparent',
           elevation: 0,
         },
+        headerRight: () => <TopNavigationButtons />,
       }}
     />
     <Stack.Screen
@@ -114,6 +148,16 @@ const BasketStack = () => (
       options={{
         headerShown: true,
         headerTitle: 'Fast basket',
+      }}
+    />
+    <Stack.Screen
+      name="UserSettingsPage"
+      component={UserSettingsPage}
+      options={{
+        title: '',
+        headerShown: false,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
       }}
     />
   </Stack.Navigator>

@@ -7,10 +7,12 @@ import NotificationsModal from './NotificationsModal';
 
 import useAuthStore from '../store/authStore';
 import useNotificationsStore from '../store/notificationsStore';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 const TopNavigationButtons = () => {
+  const navigation = useNavigation();
+
   const [showUserOptions, setShowUserOptions] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -49,8 +51,9 @@ const TopNavigationButtons = () => {
         onClose={() => setShowUserOptions(false)}
         onViewProfile={() => {
           setShowUserOptions(false);
-          // navigate to profile
+          navigation.navigate('UserSettingsPage');
         }}
+        navigation={navigation}
       />
       <NotificationsModal
         isVisible={showNotifications}

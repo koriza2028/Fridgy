@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
 import Modal from 'react-native-modal';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { signOut } from 'firebase/auth';
@@ -8,35 +9,37 @@ import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 
 const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
-    const logout = useAuthStore((state) => state.logout);
+  const navigation = useNavigation();
 
-    const handleLogout = () => {
-      Alert.alert(
-        'Confirm Logout',
-        'Are you sure you want to log out?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              logout();
+              // onLogout();
+              navigation.navigate('Login');
+            } catch (error) {
+              console.error('Error logging out:', error);
+            }
           },
-          {
-            text: 'Logout',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await signOut(auth);
-                logout();
-                // onLogout();
-                navigation.navigate('Login');
-              } catch (error) {
-                console.error('Error logging out:', error);
-              }
-            },
-          },
-        ],
-        { cancelable: true }
-      );
-    };
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
 
     return (
@@ -49,14 +52,13 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
         style={styles.modal}
       >
         <View style={styles.menuContainer}>
-          <Pressable style={styles.menuItem} onPress={onViewProfile}>
+          <Pressable style={styles.menuItem} 
+            onPress={() => {
+              onClose(); // close modal first
+              navigation.navigate('UserSettingsPage');
+            }}>
             <MaterialIcons name="person-outline" size={20} style={styles.icon} />
             <Text style={styles.menuText}>View Profile</Text>
-          </Pressable>
-  
-          <Pressable style={styles.menuItem} onPress={() => {}}>
-            <MaterialIcons name="info-outline" size={20} style={styles.icon} />
-            <Text style={styles.menuText}>Placeholder</Text>
           </Pressable>
   
           <Pressable style={styles.menuItem} onPress={handleLogout}>
