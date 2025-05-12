@@ -31,7 +31,7 @@ const UserSettingsPage = ({ navigation }) => {
       <ScrollView >
         <View style={styles.UserSettingsPage_ContentWrapper}>
 
-          <Text style={styles.SectionHeader}>You wanna change your name?</Text>
+          {/* <Text style={styles.SectionHeader}>You wanna change your name?</Text>
 
           <View style={styles.userName_InputContainer}>
             <TextInput
@@ -50,14 +50,22 @@ const UserSettingsPage = ({ navigation }) => {
                 color="black"
               />
             </Pressable>
-          </View>
+          </View> */}
 
-          <Text style={styles.SectionHeader}>Invite your whole family!</Text>
+          {/* <Text style={styles.SectionHeader}>Invite your whole family!</Text> */}
+          <Text style={[styles.SectionHeader, styles.PremiumHeader]}>Features offered by premium:</Text>
+          <Text style={styles.PremiumSubHeader}>Get all this for just 3.21/month or 24.6/year</Text>
+
+          <View style={styles.PremiumFeature}>
+            <FontAwesome6 name="people-pulling" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Share your content with other users</Text>
+          </View>
+          
           <UserSlots />
 
           <View style={styles.listOfPremiumFeatures}>
-            <Text style={[styles.SectionHeader, styles.PremiumHeader]}>Features offered by premium:</Text>
-            <Text style={styles.PremiumSubHeader}>3.21/month or 24.6/year</Text>
+            {/* <Text style={[styles.SectionHeader, styles.PremiumHeader]}>Features offered by premium:</Text>
+            <Text style={styles.PremiumSubHeader}>3.21/month or 24.6/year</Text> */}
 
             <View style={styles.PremiumFeature}>
               <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
@@ -117,37 +125,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
   },
-  userName_InputContainer: {
-    flexDirection: 'row',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  userName_Input: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 8,
-  },
-  editButton: {
-    padding: 8,
-  },
+  // userName_InputContainer: {
+  //   flexDirection: 'row',
+  //   borderColor: '#ccc',
+  //   borderWidth: 1,
+  //   borderRadius: 8,
+  //   alignItems: 'center',
+  //   paddingHorizontal: 12,
+  //   // paddingVertical: 4,
+  // },
+  // userName_Input: {
+  //   flex: 1,
+  //   fontSize: 16,
+  //   // paddingVertical: 8,
+  // },
+  // editButton: {
+  //   padding: 8,
+  // },
   listOfPremiumFeatures: {
     marginTop: 20,
   },
   PremiumHeader: {
     marginVertical: 0,
+    marginTop: 10,
   },
   PremiumSubHeader: {
     fontSize: 12,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   PremiumFeature: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginTop: 10,
   },
   PremiumFeature_Icon: {
     marginRight: 8,
@@ -161,10 +170,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     backgroundColor: buttonColor,
-    height: 30,
+    height: 36,
     borderRadius: 8,
     borderColor: '#ccc',
     borderWidth: 1,
+    paddingHorizontal: 10,
   },
 });
 
