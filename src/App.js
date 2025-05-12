@@ -49,7 +49,7 @@ const FridgeStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: 'User settings',
+        title: 'Premium Features',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
@@ -88,7 +88,7 @@ const CookingStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: 'User settings',
+        title: 'Premium Features',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
@@ -117,7 +117,7 @@ const MealPlannerStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: 'User settings',
+        title: 'Premium Features',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
@@ -154,7 +154,7 @@ const BasketStack = () => (
       name="UserSettingsPage"
       component={UserSettingsPage}
       options={{
-        title: 'User settings',
+        title: 'Premium Features',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,

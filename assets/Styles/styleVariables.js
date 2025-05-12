@@ -4,7 +4,9 @@ export const buttonColor = '#87CEEB';
 export const addButtonColor = '#0056b3'; 
 export const deleteButtonColor = '#e0364c';
 // export const deleteButtonColor = '#E40C38';
-export const backgroundColor = '#f0f4f6';
+// export const backgroundColor = '#f0f4f6';
+export const backgroundColor = '#f9fafb';
+
 
 export const whiteTextColor = '#f2f2f2';
 export const darkerWhiteTextColor = '#cacaca';

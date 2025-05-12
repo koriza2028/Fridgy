@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import { View, TextInput, Pressable, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome6';
+import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 
 import ButtonGoBack from '../components/ButtonGoBack';
 import UserSlots from '../components/usersettings/UserSlots';
 
-import { addButtonColor, backgroundColor, buttonColor } from '../../assets/Styles/styleVariables';
+import { useFonts } from 'expo-font';
+import { addButtonColor, backgroundColor, buttonColor, greyTextColor, greyTextColor2, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, TextFontSize } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
-const UserSettingsPage = ({ navigation }) => {
+const UserSettingsPage = () => {
+  const [fontsLoaded] = useFonts({
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+  });
+
   const [text, setText] = useState("John Doe"); // default value
   const [isEditable, setIsEditable] = useState(false);
 
@@ -31,29 +36,7 @@ const UserSettingsPage = ({ navigation }) => {
       <ScrollView >
         <View style={styles.UserSettingsPage_ContentWrapper}>
 
-          {/* <Text style={styles.SectionHeader}>You wanna change your name?</Text>
-
-          <View style={styles.userName_InputContainer}>
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              editable={isEditable}
-              style={[
-                styles.userName_Input,
-                { color: isEditable ? 'black' : 'grey' },
-              ]}
-            />
-            <Pressable onPress={handleIconPress} style={styles.editButton}>
-              <MaterialIcons
-                name={isEditable ? 'check' : 'edit'}
-                size={24}
-                color="black"
-              />
-            </Pressable>
-          </View> */}
-
-          {/* <Text style={styles.SectionHeader}>Invite your whole family!</Text> */}
-          <Text style={[styles.SectionHeader, styles.PremiumHeader]}>Features offered by premium:</Text>
+          <Text style={[styles.SectionHeader]}>Features offered by premium:</Text>
           <Text style={styles.PremiumSubHeader}>Get all this for just 3.21/month or 24.6/year</Text>
 
           <View style={styles.PremiumFeature}>
@@ -64,17 +47,10 @@ const UserSettingsPage = ({ navigation }) => {
           <UserSlots />
 
           <View style={styles.listOfPremiumFeatures}>
-            {/* <Text style={[styles.SectionHeader, styles.PremiumHeader]}>Features offered by premium:</Text>
-            <Text style={styles.PremiumSubHeader}>3.21/month or 24.6/year</Text> */}
 
             <View style={styles.PremiumFeature}>
               <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
               <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <FontAwesome6 name="people-pulling" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Share your content with other users</Text>
             </View>
 
             <View style={styles.PremiumFeature}>
@@ -91,12 +67,13 @@ const UserSettingsPage = ({ navigation }) => {
               <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
               <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
             </View>
-{/* 
-            <Text>Why aren't these features free?</Text>
-            Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
+
+            <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text>
+            {/* Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
             <Pressable style={styles.upgradeButton}>
-              <MaterialIcons name="arrow-upward" size={14} style={styles.PremiumFeature_Icon}/>
+              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
               <Text style={styles.upgradeText}>Upgrade to Premium</Text>
+              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
             </Pressable>
           </View>
 
@@ -121,60 +98,63 @@ const styles = StyleSheet.create({
     // paddingTop: 100,
   },
   SectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-  // userName_InputContainer: {
-  //   flexDirection: 'row',
-  //   borderColor: '#ccc',
-  //   borderWidth: 1,
-  //   borderRadius: 8,
-  //   alignItems: 'center',
-  //   paddingHorizontal: 12,
-  //   // paddingVertical: 4,
-  // },
-  // userName_Input: {
-  //   flex: 1,
-  //   fontSize: 16,
-  //   // paddingVertical: 8,
-  // },
-  // editButton: {
-  //   padding: 8,
-  // },
-  listOfPremiumFeatures: {
-    marginTop: 20,
-  },
-  PremiumHeader: {
-    marginVertical: 0,
+    fontSize: SecondTitleFontSize + 2,
+    fontWeight: SecondTitleFontWeight,
     marginTop: 10,
+    fontFamily: MainFont_Bold
   },
   PremiumSubHeader: {
-    fontSize: 12,
-    // marginBottom: 10,
+    fontSize: 14,
+    fontFamily: MainFont,
+    color: greyTextColor2,
+  },
+  listOfPremiumFeatures: {
+    marginTop: 10,
   },
   PremiumFeature: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 16,
   },
   PremiumFeature_Icon: {
-    marginRight: 8,
+    marginRight: 10,
+    fontSize: 16,
+    color: addButtonColor,
   },
   PremiumFeature_Text: {
     flexWrap: 'wrap',
     flexShrink: 1,
+    fontFamily: MainFont_Bold,
+    fontSize: TextFontSize + 4,
+    // color: "#1f2937",
+  },
+  explanationHint: {
+    marginTop: 10,
+    fontSize: TextFontSize,
+    fontFamily: MainFont,
+    color: greyTextColor2,
   },
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
-    backgroundColor: buttonColor,
-    height: 36,
-    borderRadius: 8,
+    backgroundColor: addButtonColor,
+    height: 42,
+    borderRadius: 20,
     borderColor: '#ccc',
     borderWidth: 1,
     paddingHorizontal: 10,
+  },
+  upgradeText: {
+    fontSize: TextFontSize + 2,
+    fontFamily: MainFont_Bold,
+    color: 'white',
+  },
+  upgradeIcon: {
+    color: 'white',
+    marginHorizontal: 10,
+    fontSize: TextFontSize + 10,
   },
 });
 

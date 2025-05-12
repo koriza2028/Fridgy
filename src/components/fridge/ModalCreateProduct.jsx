@@ -62,22 +62,26 @@ export default function ModalCreateProduct({
   const [imageUri, setImageUri] = useState(null);
   const [staticImagePath, setStaticImagePath] = useState(null);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
-  const [shouldRenderContent, setShouldRenderContent] = useState(true);
+  // const [shouldRenderContent, setShouldRenderContent] = useState(true);
 
   useEffect(() => {
-    if (product && product.id !== undefined) {
-      setName(product.name || "");
-      setCategory(product.category || defaultCategory);
-      setNotes(product.notes || "");
-      setAmount(product.amount || 0);
-      setImageUri(product.imageUri || null);
-      setStaticImagePath(product.staticImagePath || null);
-      setId(product.id || "");
-      setIsCreatingNew(false);
-    } else {
-      resetForm();
-    }
-  }, [product]);
+  if (product && product.id !== undefined) {
+    setName(product.name || "");
+    setCategory(product.category || defaultCategory);
+    setNotes(product.notes || "");
+    setAmount(product.amount || 0);
+    setImageUri(product.imageUri || null);
+    setStaticImagePath(product.staticImagePath || null);
+    setId(product.id || "");
+    setIsCreatingNew(false);
+  }
+}, [product]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     resetForm();
+  //   };
+  // }, []);
 
   const resetForm = () => {
     setName("");
@@ -92,11 +96,6 @@ export default function ModalCreateProduct({
 
   const handleClose = () => {
     onClose();
-    setShouldRenderContent(false);
-    setTimeout(() => {
-      resetForm();
-      setShouldRenderContent(true);
-    }, 350);
   };
 
   const handleCategorySelect = (selectedTag) => {
@@ -131,10 +130,11 @@ export default function ModalCreateProduct({
       imageUri,
       staticImagePath,
     };
+    onClose()
     try {
       await addOrUpdateProduct(userId, id, productData);
-      onClose();
-      resetForm();
+      ;
+      // resetForm();
       onChange();
     } catch (error) {
       console.error("Error saving product:", error);
@@ -202,16 +202,16 @@ export default function ModalCreateProduct({
       isVisible={isVisible}
       style={styles.modal}
       animationIn="slideInUp"
-      animationOut="slideOutDown"
+      animationOut="fadeOut"
       animationInTiming={500}
+      animationOutTiming={350}
       useNativeDriver={true}
       backdropColor="black"
       backdropOpacity={0.5}
-      onModalHide={() => setTimeout(() => resetForm(), 50)}
+      onModalHide={() => resetForm()}
       hideModalContentWhileAnimating={true}
     >
       <BlurView intensity={0} style={styles.blurContainer}>
-        {shouldRenderContent && (
           <Animated.View
             style={[
               styles.modalContent,
@@ -302,7 +302,6 @@ export default function ModalCreateProduct({
               </View>
             </View>
           </Animated.View>
-        )}
       </BlurView>
     </Modal>
   );

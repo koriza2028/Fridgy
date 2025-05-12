@@ -138,16 +138,20 @@ export default function FridgePage({ navigation }) {
             )}
           </CollapsibleSection>
 
-          <ModalCreateProduct
-            isVisible={isModalVisible}
-            onClose={closeModal}
-            onChange={() => refreshProducts(userId)}
-            product={selectedProduct ? {
-              ...selectedProduct,
-              category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" }
-            } : null}
-            usedIngredients={usedIngredients}
-          />
+          {/* {isModalVisible && ( */}
+            <ModalCreateProduct
+              isVisible={isModalVisible}
+              onClose={closeModal}
+              onChange={() => refreshProducts(userId)}
+              product={selectedProduct ? {
+                ...selectedProduct,
+                category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" }
+              } : null}
+              usedIngredients={usedIngredients}
+            />
+          {/* )} */}
+
+
         </View>
       </ScrollView>
 

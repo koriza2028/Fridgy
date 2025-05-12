@@ -6,15 +6,25 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useNotificationsStore from '../store/notificationsStore';
 import IngredientItem from '../components/cooking/IngredientCard';
 
+import { useFonts } from 'expo-font';
+import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
+
 const NotificationsModal = ({ isVisible, onClose }) => {
+  const [fontsLoaded] = useFonts({
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+  });
+  
   const { groupedMissingIngredients, loading: isLoading } = useNotificationsStore();
 
   return (
     <Modal
       isVisible={isVisible}
       onBackdropPress={onClose}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
+      animationIn="slideInDown"
+      animationOut="slideOutUp"
+      animationInTiming={300}
+      animationOutTiming={300}
       style={styles.modal}
       backdropOpacity={0.4}
     >
@@ -76,7 +86,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: MainFont_Bold,
     marginBottom: 20,
     textAlign: 'center',
   },

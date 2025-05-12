@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-na
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
-import { addButtonColor, buttonColor } from '../../../assets/Styles/styleVariables';
+import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 
 const currentUser = {
   id: 'user-1',
@@ -13,10 +13,12 @@ const currentUser = {
 };
 
 const invitedUsers = [
-  { id: 'user-2', name: 'Alice', color: '#f59e0b', namePosition: 'start' }, // orange
-  { id: 'user-3', name: 'Bob', color: '#10b981', namePosition: 'start' },   // green
-  null, // empty slot
-  null, // empty slot
+  { id: 'user-2', name: 'Alice', color: '#f59e0b', namePosition: 'start' },
+  // { id: 'user-3', name: 'Bob', color: '#10b981', namePosition: 'start' },   
+  null, 
+  null, 
+  null,
+  // null,
 ];
 
 const MAX_SLOTS = 5;
@@ -37,7 +39,7 @@ const UserSlot = ({ user, isCurrentUser }) => {
   if (!user) {
     return (
       <Pressable style={[styles.userBox, styles.emptyBox]}>
-        <Text style={styles.plusSign}>+ Add members</Text>
+        <Text style={styles.plusSign}>+ Add member</Text>
       </Pressable>
     );
   }
@@ -50,13 +52,13 @@ const UserSlot = ({ user, isCurrentUser }) => {
     <View style={[styles.userBox, { backgroundColor: user.color, justifyContent: user.namePosition }]}>
       {isCurrentUser ? (
         <>
+          <Text style={styles.staticPrefix}>You, </Text>
           <TextInput
             value={text}
             onChangeText={setText}
             editable={isEditable}
             style={[
               styles.userName_Input,
-              { color: isEditable ? 'white' : 'rgba(255,255,255,0.7)' },
             ]}
           />
           <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
@@ -87,10 +89,17 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 10,
   },
+  staticPrefix: {
+    fontFamily: MainFont,
+    color: 'white',
+    fontSize: 16,
+  },
   userName_Input: {
     flex: 1,
     fontSize: 16,
     flexDirection: 'row',
+    fontFamily: MainFont,
+    color: 'white',
     // paddingVertical: 8,
   },
   editButton: {
@@ -112,15 +121,14 @@ const styles = StyleSheet.create({
     justifyContent: 'start',
   },
   plusSign: {
-    fontSize: 20,
-    color: '#999',
-    fontWeight: 'bold',
-    // alignSelf: 'start',
+    fontSize: 16,
+    color: greyTextColor,
+    fontFamily: MainFont,
   },
   userText: {
-    fontSize: 18,
+    fontSize: 16,
     color: 'white',
-    fontWeight: '600',
+    fontFamily: MainFont,
   },
 });
 

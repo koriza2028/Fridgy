@@ -8,7 +8,15 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 
+import { useFonts } from 'expo-font';
+import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
+
 const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
+  const [fontsLoaded] = useFonts({
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+  });
+  
   const navigation = useNavigation();
 
   const logout = useAuthStore((state) => state.logout);
@@ -58,7 +66,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
               navigation.navigate('UserSettingsPage');
             }}>
             <MaterialIcons name="person-outline" size={20} style={styles.icon} />
-            <Text style={styles.menuText}>View Profile</Text>
+            <Text style={styles.menuText}>Premium Features</Text>
           </Pressable>
   
           <Pressable style={styles.menuItem} onPress={handleLogout}>
@@ -82,7 +90,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
       backgroundColor: '#fff',
       borderRadius: 8,
       paddingVertical: 6,
-      width: 220,
+      width: 200,
       shadowColor: '#000',
       shadowOpacity: 0.2,
       shadowOffset: { width: 0, height: 2 },
@@ -92,15 +100,17 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
     menuItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 14,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
     },
     menuText: {
-      fontSize: 16,
-      marginLeft: 10,
+      fontSize: TextFontSize,
+      fontFamily: MainFont,
+      marginLeft: 8,
     },
     icon: {
       color: '#333',
+      fontSize: 24,
     },
   });
   
