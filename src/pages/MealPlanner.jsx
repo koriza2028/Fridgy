@@ -164,14 +164,14 @@ export default function MealPlannerPage({ navigation }) {
 
   const renderItem = useCallback(
     ({ item }) => (
-      <View style={styles.rowFront}>
+      // <View style={styles.rowFront}>
         <MealCard
           recipe={item}
           isAvailable
           isMealPlanner
           onLongPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}
         />
-      </View>
+      // </View>
     ),
     [handleRemoveRecipe, selectedDate]
   );
@@ -185,6 +185,13 @@ export default function MealPlannerPage({ navigation }) {
       </View>
     ),
     [handleRemoveRecipe, selectedDate]
+  );
+
+  const [listKey, setListKey] = useState(Date.now());
+    useFocusEffect(
+      useCallback(() => {
+        setListKey(Date.now()); // force SwipeListView to remount
+      }, [])
   );
 
   return (
@@ -203,6 +210,7 @@ export default function MealPlannerPage({ navigation }) {
         <SwipeListView
           data={cards}
           keyExtractor={(item) => `${item.id}_${selectedDate}`}
+          key={listKey}
           renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}
           rightOpenValue={-75}
@@ -379,7 +387,11 @@ const styles = StyleSheet.create({
     // height: 300,
   },
   rowFront: {
-    backgroundColor: backgroundColor,
+    // backgroundColor: backgroundColor,
+    backgroundColor: addButtonColor,
+    borderRadius: 8,
+    height: width / 4,
+    // paddingBottom: 10,
     // marginVertical: 5,     
   },
   rowBack: {
@@ -389,6 +401,7 @@ const styles = StyleSheet.create({
     right: 0,
     width: 75,
     height: width / 6,
+    borderRadius: 8,
     // marginTop: 20,
     backgroundColor: 'red',
     alignItems: 'center',

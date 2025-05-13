@@ -144,7 +144,7 @@ const SearchModal = ({
       onBackButtonPress={closeSearchModal}
       animationIn="fadeIn"
       animationOut="fadeOut"
-      animationInTiming={1}
+      animationInTiming={250}
       animationOutTiming={300}
       style={styles.modal}
     >

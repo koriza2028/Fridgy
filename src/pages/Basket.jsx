@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { View, ScrollView, Pressable, Text, 
   Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert, LayoutAnimation } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -155,6 +155,13 @@ export default function BasketPage({ navigation }) {
     }
   };
 
+  const [listKey, setListKey] = useState(Date.now());
+    useFocusEffect(
+      useCallback(() => {
+        setListKey(Date.now()); // force SwipeListView to remount
+      }, [])
+  );
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.BasketPage}>
@@ -176,6 +183,7 @@ export default function BasketPage({ navigation }) {
             <SwipeListView
               data={basket}
               keyExtractor={item => item.basketId.toString()}
+              key={listKey}
               renderHiddenItem={renderHiddenItem}
               rightOpenValue={-75}
               disableRightSwipe
