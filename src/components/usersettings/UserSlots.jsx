@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-
 import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 
 const currentUser = {
@@ -34,7 +33,6 @@ const UserSlot = ({ user, isCurrentUser }) => {
       }
       setIsEditable(!isEditable);
     };
-
 
   if (!user) {
     return (

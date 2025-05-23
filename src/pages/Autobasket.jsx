@@ -22,7 +22,12 @@ import { backgroundColor } from '../../assets/Styles/styleVariables';
 const { width } = Dimensions.get('window');
 
 export default function AutoBasketPage() {
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
@@ -36,14 +41,14 @@ export default function AutoBasketPage() {
   useFocusEffect(
     useCallback(() => {
       refreshAutoBasket();
-    }, [userId])
+    }, [ctx.userId, ctx.familyId])
   );
 
   const refreshAutoBasket = async () => {
       try {
-        if (userId) {
-          const autoBasketItems = await fetchAutoBasketProducts(userId);
-          const fridgeProducts = await fetchAllProducts(userId);
+        if (ctx) {
+          const autoBasketItems = await fetchAutoBasketProducts(ctx);
+          const fridgeProducts = await fetchAllProducts(ctx);
           setAutoBasket(autoBasketItems);
           setProducts(fridgeProducts);
         }
@@ -84,7 +89,7 @@ export default function AutoBasketPage() {
 
   const addProduct = async (item) => {
     try {
-      await addProductToAutoBasket(userId, item);
+      await addProductToAutoBasket(ctx, item);
       closeSearchModal();
       await refreshAutoBasket();
     } catch (err) {
@@ -95,7 +100,7 @@ export default function AutoBasketPage() {
   
   const handleIncrementProductAmount = async (autoBasketItemId, currentAmount) => {
     try {
-      await updateProductAmountInAutoBasket(userId, autoBasketItemId, currentAmount + 1);
+      await updateProductAmountInAutoBasket(ctx, autoBasketItemId, currentAmount + 1);
       await refreshAutoBasket();
     } catch (err) {
       console.error("Failed to increment product quantity:", err);
@@ -113,7 +118,7 @@ const handleRemoveAutoBasketProduct = async (autoBasketItemId) => {
       return prev.filter(item => item.autoBasketId !== autoBasketItemId);
     });
 
-    await removeProductFromAutoBasket(userId, autoBasketItemId);
+    await removeProductFromAutoBasket(ctx, autoBasketItemId);
 
     await refreshAutoBasket(); // Optional but keeps UI in sync
   } catch (err) {

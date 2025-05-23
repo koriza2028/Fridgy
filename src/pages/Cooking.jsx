@@ -25,7 +25,12 @@ export default function CookingPage({ navigation }) {
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
 
   // recipeBook stores the full list of enriched recipes.
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });
@@ -42,8 +47,8 @@ export default function CookingPage({ navigation }) {
   // Fetch enriched recipes and available fridge products.
   useFocusEffect(
     useCallback(() => {
-      if (userId) {
-        fetchEnrichedRecipes(userId)
+      if (ctx) {
+        fetchEnrichedRecipes(ctx)
           .then(enrichedData => {
             setRecipeBook({ recipes: enrichedData });
             setFilteredData(enrichedData || []);
@@ -51,7 +56,7 @@ export default function CookingPage({ navigation }) {
           .catch(error => {
             console.error("Failed to fetch recipes", error);
           });
-        fetchAvailableProducts(userId)
+        fetchAvailableProducts(ctx)
           .then(products => {
             setFridgeProducts(products);
           })
@@ -59,7 +64,7 @@ export default function CookingPage({ navigation }) {
             console.error("Failed to fetch available products", error);
           });
       }
-    }, [userId])
+    }, [ctx.userId, ctx.familyId])
   );
 
   // Debounce search input.
@@ -108,8 +113,8 @@ export default function CookingPage({ navigation }) {
 
   // const onRefresh = useCallback(() => {
   //   setRefreshing(true);
-  //   if (userId) {
-  //     fetchEnrichedRecipes(userId)
+  //   if (ctx) {
+  //     fetchEnrichedRecipes(ctx)
   //       .then(enrichedData => {
   //         setRecipeBook({ recipes: enrichedData });
   //         setFilteredData(enrichedData || []);
@@ -120,7 +125,7 @@ export default function CookingPage({ navigation }) {
   //         setRefreshing(false);
   //       });
   //   }
-  // }, [userId]);
+  // }, [ctx.userId, ctx.familyId]);
 
   // Check if an ingredient (by its reference) is available in the fridge.
   const checkIngredientIsAvailable = (ingredient) => {
@@ -210,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: SecondTitleFontSize + 2,
     fontWeight: SecondTitleFontWeight,
     fontFamily: MainFont_Bold,
-    marginTop: 20,
+    marginVertical: 14,
   },
   MealList_Wrapper: {
     // width: '100%',
@@ -219,8 +224,10 @@ const styles = StyleSheet.create({
   },
   AvailableMeals_Section: {
     marginBottom: 0,
+    gap: 14,
   },
   UnavailableMeals_Section: {
-    marginTop: 20,
+    // marginTop: 20,
+    gap: 14,
   },
 });

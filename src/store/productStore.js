@@ -5,13 +5,14 @@ const useProductStore = create((set) => ({
   available: [],
   archived: [],
   loading: false,
-  refreshProducts: async (userId) => {
-    if (!userId) return;
+
+  refreshProducts: async (ctx) => {
+    if (!ctx?.userId) return;
     set({ loading: true });
     try {
       const [available, archived] = await Promise.all([
-        fetchAvailableProducts(userId),
-        fetchArchivedProducts(userId),
+        fetchAvailableProducts(ctx),
+        fetchArchivedProducts(ctx),
       ]);
       set({ available, archived });
     } catch (err) {
@@ -21,4 +22,5 @@ const useProductStore = create((set) => ({
     }
   },
 }));
+
 export default useProductStore;

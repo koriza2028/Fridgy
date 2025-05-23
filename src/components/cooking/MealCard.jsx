@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
       },
 
     MealBody: {
-        marginTop: 14,
+        // marginTop: 14,
         // width: '90%',
         backgroundColor: 'white',
         // add8e6 

@@ -51,7 +51,12 @@ export default function ModalCreateProduct({
   onChange,
   usedIngredients,
 }) {
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState(defaultCategory);
@@ -132,7 +137,7 @@ export default function ModalCreateProduct({
     };
     onClose()
     try {
-      await addOrUpdateProduct(userId, id, productData);
+      await addOrUpdateProduct(ctx, id, productData);
       ;
       // resetForm();
       onChange();
@@ -144,7 +149,7 @@ export default function ModalCreateProduct({
 
   const removeProduct = async () => {
     try {
-      await deleteProduct(userId, id);
+      await deleteProduct(ctx, id);
       onClose();
       onChange();
     } catch (error) {

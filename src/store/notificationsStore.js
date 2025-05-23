@@ -8,27 +8,29 @@ const useNotificationsStore = create((set, get) => ({
   totalMissingCount: 0,
   loading: false,
 
-  fetchNotifications: async (userId) => {
-    if (!userId) return;
+  fetchNotifications: async (ctx) => {
+    if (!ctx?.userId) return;
 
     set({ loading: true });
+
     try {
       const [recipes, fridge] = await Promise.all([
-        fetchEnrichedRecipes(userId),
-        fetchAvailableProducts(userId),
+        fetchEnrichedRecipes(ctx),
+        fetchAvailableProducts(ctx),
       ]);
 
       const fridgeProductIds = new Set(fridge.map((p) => p.id));
       const today = new Date();
+
       const dates = Array.from({ length: 30 }, (_, i) => {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
-        return d.toISOString().split('T')[0];
+        return d.toISOString().split('T')[0]; // YYYY-MM-DD
       });
 
       const plans = await Promise.all(
         dates.map((date) =>
-          fetchMealPlanForDate(userId, date).then((res) => ({ date, res }))
+          fetchMealPlanForDate(ctx, date).then((res) => ({ date, res }))
         )
       );
 

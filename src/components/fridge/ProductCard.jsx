@@ -19,7 +19,12 @@ const productCardHeight = productCardWidth*1.34;
 
 
 export default function ProductCard(props) {
-    const userId = useAuthStore((state) => state.user?.uid);
+    const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
 
     const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
@@ -27,17 +32,17 @@ export default function ProductCard(props) {
     });
 
     const handleDecrement = async (id) => {
-        await decrementProductAmount(userId, id);
+        await decrementProductAmount(ctx, id);
         props.onChange();
     };
 
     const handleIncrement = async (id) => {
-        await incrementProductAmount(userId, id);
+        await incrementProductAmount(ctx, id);
         props.onChange();
     };
 
     const handleMoveToBasket = async (id) => {
-        await moveProductToBasket(userId, id);
+        await moveProductToBasket(ctx, id);
         props.onChange();
         props.onMoveToBasket();
     };

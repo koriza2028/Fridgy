@@ -33,7 +33,12 @@ export default function MealPlannerPage({ navigation }) {
   const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });
   const [fridgeProducts, setFridgeProducts] = useState([]);
 
@@ -47,22 +52,22 @@ export default function MealPlannerPage({ navigation }) {
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!ctx.userId) return;
 
-    fetchEnrichedRecipes(userId)
+    fetchEnrichedRecipes(ctx)
       .then(data => {
         setRecipeBook({ recipes: data });
         setFilteredData(data);
       })
       .catch(console.error);
 
-    fetchAvailableProducts(userId)
+    fetchAvailableProducts(ctx)
       .then(setFridgeProducts)
       .catch(console.error);
-  }, [userId]);
+  }, [ctx.userId, ctx.familyId]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!ctx.userId) return;
     const startDate = new Date(selectedDate);
     const datesToFetch = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startDate);
@@ -74,7 +79,7 @@ export default function MealPlannerPage({ navigation }) {
       datesToFetch.map(date =>
         mealPlanCache[date]
           ? Promise.resolve({ date, ids: mealPlanCache[date] })
-          : fetchMealPlanForDate(userId, date).then(({ recipes }) => ({
+          : fetchMealPlanForDate(ctx, date).then(({ recipes }) => ({
               date,
               ids: recipes.map(r => `${r.id}_${date}`)
             }))
@@ -89,7 +94,7 @@ export default function MealPlannerPage({ navigation }) {
         setPlannedRecipeIds(updatedCache[selectedDate] || []);
       })
       .catch(console.error);
-  }, [userId, selectedDate]);
+  }, [ctx.userId, selectedDate]);
 
   useEffect(() => {
     const base = recipeBook.recipes.filter(r => !plannedRecipeIds.some(id => id.startsWith(r.id)));
@@ -120,7 +125,7 @@ export default function MealPlannerPage({ navigation }) {
 
   const handleAddRecipe = async (recipeId) => {
     try {
-      const updatedIds = await addRecipeToDate(userId, selectedDate, recipeId);
+      const updatedIds = await addRecipeToDate(ctx, selectedDate, recipeId);
       const modified = updatedIds.map(id => `${id}_${selectedDate}`);
       setPlannedRecipeIds(modified);
       setMealPlanCache(prev => ({ ...prev, [selectedDate]: modified }));
@@ -141,7 +146,7 @@ export default function MealPlannerPage({ navigation }) {
     setMealPlanCache(prev => ({ ...prev, [selectedDate]: newIds }));
 
     try {
-      const updatedIds = await removeRecipeFromDate(userId, selectedDate, recipeId);
+      const updatedIds = await removeRecipeFromDate(ctx, selectedDate, recipeId);
       const modified = updatedIds.map(id => `${id}_${selectedDate}`);
       setPlannedRecipeIds(modified);
       setMealPlanCache(prev => ({ ...prev, [selectedDate]: modified }));
@@ -216,7 +221,7 @@ export default function MealPlannerPage({ navigation }) {
           rightOpenValue={-75}
           disableRightSwipe={false}
           disableScrollOnSwipe
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, gap: 14, paddingHorizontal: 10, }}
           recalculateHiddenLayout
           closeOnRowOpen={false}
           closeOnScroll={false}
@@ -350,7 +355,7 @@ const styles = StyleSheet.create({
   MealPlannerPage_ContentWrapper: {
     width: width,
     height: height,
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     flex: 1,
   },
   navigation: {
@@ -361,6 +366,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     marginTop: 10,
+    marginBottom: 20,
   },
   dailyContent: {
     minHeight: width / 4,
@@ -374,7 +380,7 @@ const styles = StyleSheet.create({
     // borderColor: '#000',
   },
   addMore_Button: {
-    marginVertical: 20,
+    // marginVertical: 20,
   },
   addMore_Button_Text: {
     fontSize: 18,
@@ -396,19 +402,19 @@ const styles = StyleSheet.create({
   },
   rowBack: {
     position: 'absolute',
-    top: "30%", 
+    top: "15%", 
     bottom: 0, 
     right: 0,
     width: 75,
     height: width / 6,
     borderRadius: 8,
     // marginTop: 20,
-    backgroundColor: 'red',
+    // backgroundColor: 'red',
     alignItems: 'center',
     justifyContent: 'center',
   },
   deleteText: {
-    color: '#fff',
+    color: 'black',
     fontWeight: 'bold',
   },
   openCalendar_Button: {

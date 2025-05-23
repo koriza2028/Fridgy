@@ -34,7 +34,12 @@ export default function BasketPage({ navigation }) {
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
   const { available, archived } = useProductStore();
 
   const [basket, setBasket] = useState([]);
@@ -47,8 +52,8 @@ export default function BasketPage({ navigation }) {
   const isAnyChecked = Object.values(checkedItems).some(Boolean);
 
   const refreshBasket = async () => {
-    if (userId) {
-      const items = await fetchBasketProducts(userId);
+    if (ctx) {
+      const items = await fetchBasketProducts(ctx);
       setBasket(items);
     }
   };
@@ -56,7 +61,7 @@ export default function BasketPage({ navigation }) {
   useFocusEffect(
     React.useCallback(() => {
       refreshBasket();
-    }, [userId])
+    }, [ctx.userId, ctx.familyId])
   );
 
   const handleSearch = (text) => {
@@ -87,13 +92,13 @@ export default function BasketPage({ navigation }) {
   };
 
   const addProduct = async (item, isFromFridge) => {
-    await addProductToBasket(userId, item, isFromFridge);
+    await addProductToBasket(ctx, item, isFromFridge);
     closeSearchModal();
     await refreshBasket();
   };
 
   const handleIncrementProductAmount = async (basketItemId, currentAmount) => {
-    await updateProductAmountInBasket(userId, basketItemId, currentAmount + 1);
+    await updateProductAmountInBasket(ctx, basketItemId, currentAmount + 1);
     await refreshBasket();
   };
 
@@ -102,7 +107,7 @@ export default function BasketPage({ navigation }) {
     const prev = basket;
     setBasket(prev.filter(item => item.basketId !== basketItemId));
     try {
-      await removeProductFromBasket(userId, basketItemId);
+      await removeProductFromBasket(ctx, basketItemId);
     } catch (err) {
       console.error(err);
       setBasket(prev);
@@ -110,7 +115,7 @@ export default function BasketPage({ navigation }) {
   };
 
   const handleUpdateName = async (basketItemId, newName) => {
-    await updateBasketItemName(userId, basketItemId, newName);
+    await updateBasketItemName(ctx, basketItemId, newName);
     await refreshBasket();
   };
 
@@ -121,7 +126,7 @@ export default function BasketPage({ navigation }) {
   const handleDisplayCheckedItems = async () => {
     const checked = basket.filter(p => checkedItems[p.basketId]);
     if (checked.length > 0) {
-      await moveProductsFromBasketToFridge(userId, checked.map(p => p.basketId));
+      await moveProductsFromBasketToFridge(ctx, checked.map(p => p.basketId));
       setCheckedItems({});
       await refreshBasket();
     }
@@ -147,7 +152,7 @@ export default function BasketPage({ navigation }) {
 
   const handleAddAutoBasketToBasket = async () => {
     try {
-      const result = await addAutoBasketProductsToBasket(userId);
+      const result = await addAutoBasketProductsToBasket(ctx);
       setBasket(result);
     } catch (error) {
       console.error(error);

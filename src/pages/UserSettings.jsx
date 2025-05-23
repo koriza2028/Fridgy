@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Pressable, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, TextInput, Pressable, Text, StyleSheet, ScrollView, Dimensions, Button, Alert } from 'react-native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -9,12 +9,25 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import ButtonGoBack from '../components/ButtonGoBack';
 import UserSlots from '../components/usersettings/UserSlots';
 
+import useAuthStore from '../store/authStore';
+import { toggleUserMode } from '../store/userAccountStore';
+
 import { useFonts } from 'expo-font';
 import { addButtonColor, backgroundColor, buttonColor, greyTextColor, greyTextColor2, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, TextFontSize } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
-const UserSettingsPage = () => {
+export default function  UserSettingsPage() {
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : 'personal';
+    return { userId, familyId };
+  });
+
+  const lastUsedMode = useAuthStore((state) => state.lastUsedMode);
+  const setFamilyId = useAuthStore((state) => state.setFamilyId);
+  const setLastUsedMode = useAuthStore((state) => state.setLastUsedMode);
+
   const [fontsLoaded] = useFonts({
     'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
     'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -31,10 +44,43 @@ const UserSettingsPage = () => {
     setIsEditable(!isEditable);
   };
 
+  const handleToggle = async () => {
+    // grab these from your Zustand store
+    const userId = useAuthStore.getState().user?.uid;
+    const lastUsedMode = useAuthStore.getState().lastUsedMode;
+
+    if (!userId) {
+      Alert.alert("Not logged in");
+      return;
+    }
+
+    try {
+      const result = await toggleUserMode({ userId, currentMode: lastUsedMode });
+      // sync local Zustand
+      setFamilyId(result.familyId);
+      setLastUsedMode(result.mode);
+      Alert.alert(
+        "Success",
+        result.mode === "family"
+          ? `Switched to Family ID: ${result.familyId}`
+          : "Switched to Personal Mode"
+      );
+    } catch (err) {
+      console.error("Toggle failed:", err);
+      Alert.alert("Error", err.message);
+    }
+  };
+
+
+  const nextMode = lastUsedMode === "family" ? "Switch to Personal Mode" : "Switch to Family Mode";
+
   return (
     <View style={styles.UserSettingsPage}>
       <ScrollView >
         <View style={styles.UserSettingsPage_ContentWrapper}>
+          <View style={{ marginVertical: 16 }}>
+            <Button title={nextMode} onPress={handleToggle} />
+          </View>
 
           <Text style={[styles.SectionHeader]}>Features offered by premium:</Text>
           <Text style={styles.PremiumSubHeader}>Get all this for just 3.21/month or 24.6/year</Text>
@@ -157,5 +203,3 @@ const styles = StyleSheet.create({
     fontSize: TextFontSize + 10,
   },
 });
-
-export default UserSettingsPage;

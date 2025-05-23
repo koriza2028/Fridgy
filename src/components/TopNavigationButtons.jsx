@@ -16,16 +16,21 @@ const TopNavigationButtons = () => {
   const [showUserOptions, setShowUserOptions] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
   const { fetchNotifications, totalMissingCount } = useNotificationsStore();
 
   // Fetch notifications when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      if (userId) {
-        fetchNotifications(userId);
+      if (ctx) {
+        fetchNotifications(ctx);
       }
-    }, [userId])
+    }, [ctx.userId, ctx.familyId])
   );
 
   return (

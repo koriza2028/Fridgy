@@ -16,7 +16,13 @@ import { fetchUserData } from "../store/basketStore";
 const { width } = Dimensions.get('window');
 
 export default function FridgePage({ navigation }) {
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    console.log(state)
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
   const { available, archived, refreshProducts } = useProductStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,9 +46,9 @@ export default function FridgePage({ navigation }) {
   };
 
   const refreshUsedIngredients = async () => {
-    if (userId) {
+    if (ctx) {
       try {
-        const userData = await fetchUserData(userId);
+        const userData = await fetchUserData(ctx);
         const recipeIngredientIds = (userData.cooking?.recipes || [])
           .flatMap(recipe => [...(recipe.mandatoryIngredients || []), ...(recipe.optionalIngredients || [])])
           .map(ingredient => ingredient.id);
@@ -57,11 +63,11 @@ export default function FridgePage({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      if (userId) {
-        refreshProducts(userId);
+      if (ctx) {
+        refreshProducts(ctx);
         refreshUsedIngredients();
       }
-    }, [userId])
+    }, [ctx.userId, ctx.familyId])
   );
 
   const filteredAvailable = useMemo(() => {
@@ -112,7 +118,7 @@ export default function FridgePage({ navigation }) {
                   onOpenModal={openModal}
                   product={product}
                   navigation={navigation}
-                  onChange={() => refreshProducts(userId)}
+                  onChange={() => refreshProducts(ctx)}
                   onMoveToBasket={refreshUsedIngredients}
                 />
               ))
@@ -129,7 +135,7 @@ export default function FridgePage({ navigation }) {
                   onOpenModal={openModal}
                   product={product}
                   navigation={navigation}
-                  onChange={() => refreshProducts(userId)}
+                  onChange={() => refreshProducts(ctx)}
                   onMoveToBasket={refreshUsedIngredients}
                 />
               ))
@@ -142,7 +148,7 @@ export default function FridgePage({ navigation }) {
             <ModalCreateProduct
               isVisible={isModalVisible}
               onClose={closeModal}
-              onChange={() => refreshProducts(userId)}
+              onChange={() => refreshProducts(ctx)}
               product={selectedProduct ? {
                 ...selectedProduct,
                 category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" }

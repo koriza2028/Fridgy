@@ -1,21 +1,24 @@
 import {
-  doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
-  runTransaction,
   deleteDoc,
-  getDocs,
-  collection
+  runTransaction,
 } from "firebase/firestore";
 import { deleteObject, ref as storageRef } from "firebase/storage";
-import { db, storage } from "../firebaseConfig";
+import { storage } from "../firebaseConfig";
 import useNotificationsStore from './notificationsStore';
 import useProductStore from './productStore';
+import {
+  getProductDocRef,
+  getFridgeCollectionRef,
+  getDataRef
+} from "./utilsStore";
 
-export const fetchAllProducts = async (userId) => {
+export const fetchAllProducts = async ({ userId, familyId }) => {
   try {
-    const productsColRef = collection(db, "users", userId, "products");
+    const productsColRef = getFridgeCollectionRef({ userId, familyId });
     const querySnapshot = await getDocs(productsColRef);
     return querySnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
   } catch (error) {
@@ -24,20 +27,20 @@ export const fetchAllProducts = async (userId) => {
   }
 };
 
-export const fetchAvailableProducts = async (userId) => {
-  const all = await fetchAllProducts(userId);
+export const fetchAvailableProducts = async (ctx) => {
+  const all = await fetchAllProducts(ctx);
   return all.filter(p => p.isArchived === false);
 };
 
-export const fetchArchivedProducts = async (userId) => {
-  const all = await fetchAllProducts(userId);
+export const fetchArchivedProducts = async (ctx) => {
+  const all = await fetchAllProducts(ctx);
   return all.filter(p => p.isArchived === true);
 };
 
-export const addOrUpdateProduct = async (userId, productDataId, productData) => {
+export const addOrUpdateProduct = async (ctx, productDataId, productData) => {
   try {
     const productId = productDataId || Date.now().toString();
-    const productDocRef = doc(db, "users", userId, "products", productId);
+    const productDocRef = getProductDocRef(ctx, productId);
 
     if (productDataId) {
       const productSnap = await getDoc(productDocRef);
@@ -45,7 +48,7 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
         const oldUri = productSnap.data().imageUri;
         const newUri = productData.imageUri;
         if (oldUri && (!newUri || oldUri !== newUri)) {
-          try { await deleteObject(storageRef(storage, oldUri)); } 
+          try { await deleteObject(storageRef(storage, oldUri)); }
           catch (err) { console.warn("⚠️ Failed to delete old image:", err); }
         }
       }
@@ -54,7 +57,7 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
       await setDoc(productDocRef, productData);
     }
 
-    const updated = await fetchAvailableProducts(userId);
+    const updated = await fetchAvailableProducts(ctx);
     useProductStore.setState({ available: updated });
     return updated;
   } catch (error) {
@@ -63,11 +66,12 @@ export const addOrUpdateProduct = async (userId, productDataId, productData) => 
   }
 };
 
-export const decrementProductAmount = async (userId, productId) => {
+export const decrementProductAmount = async (ctx, productId) => {
   try {
-    const ref = doc(db, "users", userId, "products", productId);
+    const ref = getProductDocRef(ctx, productId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
+
     const data = snap.data();
     const updatedAmount = Math.max((data.amount || 0) - 1, 0);
     const isArchived = updatedAmount === 0;
@@ -80,17 +84,18 @@ export const decrementProductAmount = async (userId, productId) => {
       )
     }));
 
-    useNotificationsStore.getState().fetchNotifications(userId);
+    useNotificationsStore.getState().fetchNotifications(ctx.userId);
   } catch (error) {
     console.error("Error decrementing product amount:", error);
   }
 };
 
-export const incrementProductAmount = async (userId, productId) => {
+export const incrementProductAmount = async (ctx, productId) => {
   try {
-    const ref = doc(db, "users", userId, "products", productId);
+    const ref = getProductDocRef(ctx, productId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
+
     const data = snap.data();
     const updatedAmount = (data.amount || 0) + 1;
 
@@ -102,40 +107,43 @@ export const incrementProductAmount = async (userId, productId) => {
       )
     }));
 
-    useNotificationsStore.getState().fetchNotifications(userId);
+    useNotificationsStore.getState().fetchNotifications(ctx.userId);
   } catch (error) {
     console.error("Error incrementing product amount:", error);
   }
 };
 
-export const deleteProduct = async (userId, productId) => {
+export const deleteProduct = async (ctx, productId) => {
   try {
-    const userDocRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return;
+    const rootRef = getDataRef(ctx);
+    const rootSnap = await getDoc(rootRef);
+    if (!rootSnap.exists()) return;
 
-    const userData = userSnap.data();
+    const userData = rootSnap.data();
     const recipes = userData.recipes || [];
     const basketRefs = userData.basket?.products || [];
 
-    const usedInRecipes = recipes.some(r => [...(r.mandatoryIngredients || []), ...(r.optionalIngredients || [])].some(i => i.id === productId));
+    const usedInRecipes = recipes.some(r =>
+      [...(r.mandatoryIngredients || []), ...(r.optionalIngredients || [])].some(i => i.id === productId)
+    );
+
     const usedInBasket = basketRefs.some(p => p.productId === productId);
 
     if (usedInRecipes || usedInBasket) {
       throw new Error("This product is used in a recipe or basket and cannot be deleted.");
     }
 
-    const ref = doc(db, "users", userId, "products", productId);
+    const ref = getProductDocRef(ctx, productId);
     const snap = await getDoc(ref);
     const imgPath = snap.exists() ? snap.data()?.imageUri : null;
 
     await deleteDoc(ref);
     if (imgPath) {
-      try { await deleteObject(storageRef(storage, imgPath)); } 
+      try { await deleteObject(storageRef(storage, imgPath)); }
       catch (err) { console.warn("⚠️ Failed to delete image:", err); }
     }
 
-    const updated = await fetchAvailableProducts(userId);
+    const updated = await fetchAvailableProducts(ctx);
     useProductStore.setState({ available: updated });
     return updated;
   } catch (error) {
@@ -144,17 +152,18 @@ export const deleteProduct = async (userId, productId) => {
   }
 };
 
-export const addOrMoveProductToBasket = async (userId, productInput) => {
-  const userRef = doc(db, "users", userId);
-  return await runTransaction(db, async (transaction) => {
-    const userDoc = await transaction.get(userRef);
-    if (!userDoc.exists()) throw new Error("User document does not exist");
+export const addOrMoveProductToBasket = async (ctx, productInput) => {
+  const rootRef = getDataRef(ctx);
 
-    const userData = userDoc.data();
-    let basketRefs = userData.basket?.products || [];
+  return await runTransaction(rootRef.firestore, async (tx) => {
+    const rootDoc = await tx.get(rootRef);
+    if (!rootDoc.exists()) throw new Error("User/family doc does not exist");
+
+    const rootData = rootDoc.data();
+    let basketRefs = rootData.basket?.products || [];
 
     const productId = productInput.productId || productInput.id;
-    const index = basketRefs.findIndex((p) => p.productId === productId);
+    const index = basketRefs.findIndex(p => p.productId === productId);
 
     if (index !== -1) {
       basketRefs[index].amount += 1;
@@ -167,15 +176,15 @@ export const addOrMoveProductToBasket = async (userId, productInput) => {
       });
     }
 
-    transaction.update(userRef, { "basket.products": basketRefs });
-    return { id: userDoc.id, ...userData, basket: { products: basketRefs } };
+    tx.update(rootRef, { "basket.products": basketRefs });
+    return { id: rootDoc.id, ...rootData, basket: { products: basketRefs } };
   });
 };
 
-export const moveProductToBasket = async (userId, productId) => {
-  const ref = doc(db, "users", userId, "products", productId);
+export const moveProductToBasket = async (ctx, productId) => {
+  const ref = getProductDocRef(ctx, productId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) throw new Error("Product not found in the centralized store");
+  if (!snap.exists()) throw new Error("Product not found in the store");
   const data = snap.data();
-  return await addOrMoveProductToBasket(userId, { ...data, id: productId });
+  return await addOrMoveProductToBasket(ctx, { ...data, id: productId });
 };

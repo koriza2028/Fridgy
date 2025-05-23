@@ -56,13 +56,18 @@ const { width } = Dimensions.get("window");
   --- Main Component: RecipeCreatePage ---
 */
 export default function RecipeCreatePage({ navigation, route }) {
-  const userId = useAuthStore((state) => state.user?.uid);
+  const ctx = useAuthStore((state) => {
+    const userId = state.user?.uid;
+    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
+    return { userId, familyId };
+  });
+
 
   // Confirm deletion
   const confirmDelete = useCallback((id) => {
     if (Platform.OS === "web") {
       if (window.confirm("Are you sure you want to delete this recipe?")) {
-        removeRecipe(userId, id)
+        removeRecipe(ctx, id)
           .then(() => navigation.navigate("CookingPage"))
           .catch((error) => console.error("Error deleting recipe:", error));
       }
@@ -75,7 +80,7 @@ export default function RecipeCreatePage({ navigation, route }) {
           {
             text: "Delete",
             onPress: () =>
-              removeRecipe(userId, id)
+              removeRecipe(ctx, id)
                 .then(() => navigation.navigate("CookingPage"))
                 .catch((error) => console.error("Error deleting recipe:", error)),
             style: "destructive",
@@ -84,7 +89,7 @@ export default function RecipeCreatePage({ navigation, route }) {
         { cancelable: true }
       );
     }
-  }, [userId, navigation]);
+  }, [ctx.userId, navigation]);
 
   const [fontsLoaded] = useFonts({
     "Inter": require("../../assets/fonts/Inter/Inter_18pt-Regular.ttf"),
@@ -148,8 +153,8 @@ export default function RecipeCreatePage({ navigation, route }) {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      fetchAllProducts(userId)
+    if (ctx) {
+      fetchAllProducts(ctx)
         .then((fetchedProducts) => {
           const allProducts = fetchedProducts.sort((a, b) =>
             a.name.localeCompare(b.name)
@@ -162,10 +167,10 @@ export default function RecipeCreatePage({ navigation, route }) {
           console.error("Failed to fetch fridge products:", error);
         });
     }
-  }, [userId]);
+  }, [ctx.userId, ctx.familyId]);
 
   const saveOrUpdateRecipe = useCallback(() => {
-    addOrUpdateRecipe(userId, {
+    addOrUpdateRecipe(ctx, {
       id: id ? id : null,
       title,
       categories,
