@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, Pressable } from 'react-native';
-import { Image } from 'expo-image';
+import AppImage from '../image/AppImage';
 
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
@@ -8,25 +8,15 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
     onRemove(ingredient._id, isMandatory);
   };
 
-  const getImageSource = (ingredient) => {
-    if (ingredient.imageUri) {
-        return { uri: ingredient.imageUri };
-    }
-    // if (ingredient.staticImagePath) {
-    //     return ingredient.staticImagePath;
-    // }
-    return require('../../../assets/ProductImages/banana_test.png');
-  };
-
-
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
         <View style={[styles.IngredientItem, { borderColor: borderColor }, !isAvailable && { borderWidth: 1 }]}>
-                     
-            <Image 
-              style={styles.IngredientItem_Picture} 
-              source={getImageSource(ingredient)}
+
+             <AppImage 
+              style={styles.IngredientItem_Picture}
+              imageUri={ingredient.imageUri}
+              staticImagePath={ingredient.staticImagePath}
             />
 
             <View style={[styles.IngredientItem_NameAndInstructions, !isMandatory && styles.IngredientItem_OnlyName]}>

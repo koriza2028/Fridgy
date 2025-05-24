@@ -186,7 +186,7 @@ export default function RecipeCreatePage({ navigation, route }) {
         console.error("Failed to save recipe:", error);
         setError("Failed to save recipe. Please try again.");
       });
-  }, [id, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri, userId, navigation]);
+  }, [id, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri, ctx.userId, navigation]);
 
   const handleSearchInput = useCallback(
     (text) => {

@@ -10,6 +10,7 @@ import Tag from './cooking/Tag';
 
 import { useFonts } from 'expo-font';
 import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
+import AppImage from './image/AppImage';
 
 const SearchModal = ({
   isSearchModalVisible,
@@ -45,17 +46,6 @@ const SearchModal = ({
   // Declare renderItem locally so that it’s defined based on the passed props.
   let renderItem = () => null;
 
-  const getImageSource = (item) => {
-    if (item.imageUri) {
-        return { uri: item.imageUri };
-    }
-    // if (item.staticImagePath) {
-    //     return item.staticImagePath;
-    // }
-    return require('../../assets/ProductImages/banana_test.png');
-  };
-  
-
   if (isBasket) {
     renderItem = ({ item, index }) => {
       // If the item is a string, then it represents a new item option.
@@ -70,9 +60,10 @@ const SearchModal = ({
       // Otherwise, it's an object from the fridge products.
       return (
         <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
-          <Image
-            source={getImageSource(item)}
+          <AppImage 
             style={styles.searchItem_Image}
+            imageUri={item.imageUri}
+            staticImagePath={item.staticImagePath}
           />
           <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.name}</Text>
@@ -84,9 +75,10 @@ const SearchModal = ({
   } else if (isRecipeCreate) {
     renderItem = ({ item }) => (
       <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
-        <Image
-          source={getImageSource(item)}
+        <AppImage 
           style={styles.searchItem_Image}
+          imageUri={item.imageUri}
+          staticImagePath={item.staticImagePath}
         />
         <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.name}</Text>
@@ -97,9 +89,10 @@ const SearchModal = ({
   } else if (isMealPlanner) {
     renderItem = ({ item }) => (
       <Pressable style={styles.mealItem} onPress={() => addProduct(item.id)}>
-        <Image
-          source={getImageSource(item)}
+        <AppImage 
           style={styles.searchItem_Image}
+          imageUri={item.imageUri}
+          staticImagePath={item.staticImagePath}
         />
         <View style={styles.NameAndHint}>
           <Text style={styles.searchItem_Text}>{item.title}</Text>
@@ -119,9 +112,10 @@ const SearchModal = ({
   } else {
     renderItem = ({ item }) => (
       <Pressable style={styles.fridgeItem} onPress={() => addProduct(item.id)}>
-        <Image
-          source={getImageSource(item)}
+        <AppImage 
           style={styles.searchItem_Image}
+          imageUri={item.imageUri}
+          staticImagePath={item.staticImagePath}
         />
         <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.title}</Text>

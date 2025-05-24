@@ -208,7 +208,7 @@ export default function ModalCreateProduct({
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="fadeOut"
-      animationInTiming={500}
+      animationInTiming={400}
       animationOutTiming={350}
       useNativeDriver={true}
       backdropColor="black"

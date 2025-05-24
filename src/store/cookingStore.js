@@ -18,6 +18,13 @@ import {
 import { ref as storageRef, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebaseConfig";
 
+const cleanIngredients = (ingredients = []) =>
+  ingredients.map(({ productId, amount, originalFridgeId }) => ({
+    productId,
+    amount,
+    ...(originalFridgeId && { originalFridgeId })
+  }));
+
 export const fetchUserRecipes = async ({ userId, familyId }) => {
   const docRef = getDataRef({ userId, familyId });
   const docSnap = await getDoc(docRef);

@@ -1,5 +1,6 @@
+// App.js
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Alert, StyleSheet } from 'react-native';
 
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome6';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -25,6 +26,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import useAuthStore from './store/authStore';
 import useProductStore from './store/productStore';
+
+// ── NEW: imports for deep‐link invite support ─────────────────────────────────
+import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { acceptInvite } from './store/inviteStore';
+// ──────────────────────────────────────────────────────────────────────────────
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -57,6 +64,8 @@ const FridgeStack = () => (
     />
   </Stack.Navigator>
 );
+
+// ... CookingStack, MealPlannerStack, BasketStack unchanged ...
 
 const CookingStack = () => (
   <Stack.Navigator>
@@ -166,12 +175,52 @@ const BasketStack = () => (
 const App = () => {
   const user = useAuthStore((state) => state.user);
   const refreshProducts = useProductStore((state) => state.refreshProducts);
+  // ── NEW: get setters to update familyId/mode ────────────────────────────
+  const setFamilyId = useAuthStore((state) => state.setFamilyId);
+  const setLastUsedMode = useAuthStore((state) => state.setLastUsedMode);
+  // ─────────────────────────────────────────────────────────────────────────
 
+  // Refresh fridge products on login
   useEffect(() => {
     if (user?.uid) {
       refreshProducts(user.uid);
     }
   }, [user]);
+
+  // ── NEW: capture invite code from deep‐link ──────────────────────────────
+  const PENDING_INVITE_KEY = 'pendingInviteCode';
+  useEffect(() => {
+    const handleUrl = ({ url }) => {
+      if (!url) return;
+      const { path, queryParams } = Linking.parse(url);
+      if (path === 'invite' && queryParams?.code) {
+        AsyncStorage.setItem(PENDING_INVITE_KEY, queryParams.code);
+      }
+    };
+    Linking.getInitialURL().then((u) => u && handleUrl({ url: u }));
+    const sub = Linking.addEventListener('url', handleUrl);
+    return () => sub.remove();
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── NEW: consume invite after login ────────────────────────────────────
+  useEffect(() => {
+    if (!user?.uid) return;
+    (async () => {
+      const code = await AsyncStorage.getItem(PENDING_INVITE_KEY);
+      if (!code) return;
+      try {
+        const familyId = await acceptInvite({ userId: user.uid }, code);
+        setFamilyId(familyId);
+        setLastUsedMode('family');
+        await AsyncStorage.removeItem(PENDING_INVITE_KEY);
+      } catch (err) {
+        console.error('Invite accept failed', err);
+        Alert.alert('Invite Error', err.message);
+      }
+    })();
+  }, [user?.uid]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   if (user === null) {
     return (
@@ -193,21 +242,15 @@ const App = () => {
               headerShown: false,
               tabBarLabelStyle: { fontFamily: MainFont, fontSize: 10 },
               tabBarIcon: ({ focused, color }) => {
-                let iconName;
-                let size = focused ? 28 : 24;
-                if (route.name === 'Fridge') {
-                  iconName = 'fridge';
-                  return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
-                } else if (route.name === 'Cooking') {
-                  iconName = 'kitchen-set';
-                  return <FontAwesomeIcons name={iconName} size={size} color={color} />;
-                } else if (route.name === 'Basket') {
-                  iconName = 'shopping-basket';
-                  return <MaterialIcons name={iconName} size={size} color={color} />;
-                } else if (route.name === 'MealPlanner') {
-                  iconName = 'restaurant';
-                  return <MaterialIcons name={iconName} size={size} color={color} />;
-                }
+                const size = focused ? 28 : 24;
+                if (route.name === 'Fridge')
+                  return <MaterialCommunityIcons name="fridge" size={size} color={color} />;
+                if (route.name === 'Cooking')
+                  return <FontAwesomeIcons name="kitchen-set" size={size} color={color} />;
+                if (route.name === 'Basket')
+                  return <MaterialIcons name="shopping-basket" size={size} color={color} />;
+                if (route.name === 'MealPlanner')
+                  return <MaterialIcons name="restaurant" size={size} color={color} />;
               },
               tabBarActiveTintColor: '#0056b3',
               tabBarInactiveTintColor: 'black',
@@ -238,10 +281,6 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  navigationContainer: {
-    flex: 1,
-    backgroundColor: backgroundColor,
   },
 });
 
