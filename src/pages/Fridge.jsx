@@ -18,7 +18,6 @@ const { width } = Dimensions.get('window');
 export default function FridgePage({ navigation }) {
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    console.log(state)
     const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
     return { userId, familyId };
   });

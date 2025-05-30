@@ -27,11 +27,27 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useAuthStore from './store/authStore';
 import useProductStore from './store/productStore';
 
-// ── NEW: imports for deep‐link invite support ─────────────────────────────────
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptInvite } from './store/inviteStore';
-// ──────────────────────────────────────────────────────────────────────────────
+
+const linking = {
+  prefixes: ['com.anonymous.Fridgy://'],
+  config: {
+    screens: {
+      Invite: {
+        path: 'invite',
+        parse: {
+          code: (code) => `${code}`,
+        },
+      },
+      Fridge: 'fridge',
+      Cooking: 'cooking',
+      Basket: 'basket',
+      MealPlanner: 'mealplanner',
+    },
+  },
+};
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,8 +80,6 @@ const FridgeStack = () => (
     />
   </Stack.Navigator>
 );
-
-// ... CookingStack, MealPlannerStack, BasketStack unchanged ...
 
 const CookingStack = () => (
   <Stack.Navigator>
@@ -175,10 +189,8 @@ const BasketStack = () => (
 const App = () => {
   const user = useAuthStore((state) => state.user);
   const refreshProducts = useProductStore((state) => state.refreshProducts);
-  // ── NEW: get setters to update familyId/mode ────────────────────────────
   const setFamilyId = useAuthStore((state) => state.setFamilyId);
   const setLastUsedMode = useAuthStore((state) => state.setLastUsedMode);
-  // ─────────────────────────────────────────────────────────────────────────
 
   // Refresh fridge products on login
   useEffect(() => {
@@ -187,23 +199,27 @@ const App = () => {
     }
   }, [user]);
 
-  // ── NEW: capture invite code from deep‐link ──────────────────────────────
   const PENDING_INVITE_KEY = 'pendingInviteCode';
+
+  // Unified invite capture: works for cold and warm starts
   useEffect(() => {
-    const handleUrl = ({ url }) => {
+    const handleUrl = async ({ url }) => {
       if (!url) return;
-      const { path, queryParams } = Linking.parse(url);
-      if (path === 'invite' && queryParams?.code) {
-        AsyncStorage.setItem(PENDING_INVITE_KEY, queryParams.code);
+      const parsed = Linking.parse(url);
+      if (parsed.path === 'invite' || parsed.hostname === 'invite' && parsed.queryParams?.code) {
+        await AsyncStorage.setItem(PENDING_INVITE_KEY, parsed.queryParams.code);
       }
     };
-    Linking.getInitialURL().then((u) => u && handleUrl({ url: u }));
+
     const sub = Linking.addEventListener('url', handleUrl);
+    Linking.getInitialURL().then((url) => {
+      if (url) handleUrl({ url });
+    });
+
     return () => sub.remove();
   }, []);
-  // ─────────────────────────────────────────────────────────────────────────
 
-  // ── NEW: consume invite after login ────────────────────────────────────
+  // Consume invite code after login
   useEffect(() => {
     if (!user?.uid) return;
     (async () => {
@@ -220,12 +236,11 @@ const App = () => {
       }
     })();
   }, [user?.uid]);
-  // ─────────────────────────────────────────────────────────────────────────
 
   if (user === null) {
     return (
       <GestureHandlerRootView style={styles.container}>
-        <NavigationContainer>
+        <NavigationContainer linking={linking}>
           <LoginPage />
         </NavigationContainer>
       </GestureHandlerRootView>
@@ -234,7 +249,7 @@ const App = () => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <View style={{ backgroundColor: backgroundColor, flex: 1 }}>
           <Tab.Navigator
             initialRouteName="Fridge"

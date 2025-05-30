@@ -1,27 +1,24 @@
+// pages/UserSettingsPage.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  TextInput,
-  Pressable,
   Text,
-  StyleSheet,
   ScrollView,
-  Dimensions,
-  Button,
-  Alert,
   FlatList,
+  Button,
+  Pressable,
   Share,
+  Alert,
+  StyleSheet,
+  Dimensions,
 } from 'react-native';
 import * as Linking from 'expo-linking';
+import { Linking as RNLinking } from 'react-native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
-import Entypo from 'react-native-vector-icons/Entypo';
 
-import ButtonGoBack from '../components/ButtonGoBack';
 import UserSlots from '../components/usersettings/UserSlots';
-
 import useAuthStore from '../store/authStore';
 import { toggleUserMode } from '../store/userAccountStore';
 
@@ -31,43 +28,61 @@ import {
   revokeInvite,
 } from '../store/inviteStore';
 
+import {
+  exitFamilyMembership,
+  removeFamilyMember,
+} from '../store/familyStore';
+
+import useFamilyStore from '../store/familyStore';
+
 import { useFonts } from 'expo-font';
 import {
   addButtonColor,
   backgroundColor,
   greyTextColor,
-  greyTextColor2,
   MainFont,
   MainFont_Bold,
-  SecondTitleFontSize,
-  SecondTitleFontWeight,
-  TextFontSize,
 } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
 export default function UserSettingsPage() {
-  // auth context
-  const ctx = useAuthStore((state) => {
-    const userId = state.user?.uid;
-    // if not family mode, familyId is undefined
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
-  });
-  const lastUsedMode = useAuthStore((state) => state.lastUsedMode);
-  const setFamilyId = useAuthStore((state) => state.setFamilyId);
-  const setLastUsedMode = useAuthStore((state) => state.setLastUsedMode);
+  // ── auth context ──────────────────────────────────────────────────────
+  const { userId, familyId } = useAuthStore((s) => ({
+    userId: s.user?.uid,
+    familyId: s.lastUsedMode === 'family' ? s.familyId : undefined,
+  }));
+  const lastUsedMode = useAuthStore((s) => s.lastUsedMode);
+  const setFamilyId = useAuthStore((s) => s.setFamilyId);
+  const setLastUsedMode = useAuthStore((s) => s.setLastUsedMode);
+  // ───────────────────────────────────────────────────────────────────────
 
-  // invite management state
+  const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
+  const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);  // ───────────────────────────────────────────────────────────────────────
+
+  // ── fetch family ownerId from Firestore ────────────────────────────────
+  useEffect(() => {
+    if (!familyId) {
+      clearOwnerId();
+      return;
+    }
+
+    fetchOwnerId(familyId);
+  }, [familyId]);
+
+  const ownerId = useFamilyStore((state) => state.ownerId);
+
+  // ── invite state ──────────────────────────────────────────────────────
   const [invites, setInvites] = useState([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
+  // ───────────────────────────────────────────────────────────────────────
 
-  // load invites for this family
+  // ── load invites ──────────────────────────────────────────────────────
   const loadInvites = async () => {
-    if (!ctx.familyId) return;
+    if (!familyId) return;
     setLoadingInvites(true);
     try {
-      const items = await listInvites({ familyId: ctx.familyId });
+      const items = await listInvites({ familyId });
       setInvites(items);
     } catch (err) {
       console.error('Failed to load invites', err);
@@ -76,19 +91,19 @@ export default function UserSettingsPage() {
       setLoadingInvites(false);
     }
   };
-
   useEffect(() => {
     loadInvites();
-  }, [ctx.familyId]);
+  }, [familyId]);
+  // ───────────────────────────────────────────────────────────────────────
 
-  // create & share invite
+  // ── create & share invite ─────────────────────────────────────────────
   const handleCreateInvite = async () => {
-    if (!ctx.familyId) {
+    if (!familyId) {
       Alert.alert('Error', 'You must be in family mode to invite.');
       return;
     }
     try {
-      const code = await createInvite({ familyId: ctx.familyId });
+      const code = await createInvite({ familyId, ownerId });
       const link = Linking.createURL('invite', { queryParams: { code } });
       await Share.share({
         title: 'Join my family',
@@ -100,70 +115,157 @@ export default function UserSettingsPage() {
       Alert.alert('Error', err.message);
     }
   };
+  // ───────────────────────────────────────────────────────────────────────
 
-  // revoke invite
-  const handleRevoke = (code) => async () => {
+  // ── revoke invite ─────────────────────────────────────────────────────
+  const handleRevoke = (inviteId) => async () => {
     try {
-      await revokeInvite(code);
-      Alert.alert('Invite revoked');
+      await revokeInvite(inviteId);
       loadInvites();
     } catch (err) {
       console.error('Revoke failed', err);
       Alert.alert('Error', 'Could not revoke invite');
     }
   };
+  // ───────────────────────────────────────────────────────────────────────
 
-  // original toggle logic commented out; replaced with simplified call
+  // ── toggle personal/family ────────────────────────────────────────────
   const handleToggle = async () => {
-    /* OLD:
-    const userId = useAuthStore.getState().user?.uid;
-    const current = useAuthStore.getState().lastUsedMode;
-    if (!userId) { Alert.alert("Not logged in"); return; }
-    try {
-      const res = await toggleUserMode({ userId, currentMode: current });
-      setFamilyId(res.familyId);
-      setLastUsedMode(res.mode);
-      Alert.alert("Success", res.mode==="family"?`Switched to Family ID: ${res.familyId}`:"Switched to Personal Mode");
-    } catch(e){ Alert.alert("Error", e.message); }
-    */
-
-    // NEW:
     const { user, lastUsedMode: mode } = useAuthStore.getState();
     if (!user?.uid) {
-      Alert.alert("Not logged in");
+      Alert.alert('Not logged in');
       return;
     }
     try {
-      const res = await toggleUserMode({ userId: user.uid, currentMode: mode });
+      const res = await toggleUserMode({
+        userId: user.uid,
+        currentMode: mode,
+      });
       setFamilyId(res.familyId);
       setLastUsedMode(res.mode);
       Alert.alert(
-        "Success",
-        res.mode === "family"
+        'Success',
+        res.mode === 'family'
           ? `Switched to Family ID: ${res.familyId}`
-          : "Switched to Personal Mode"
+          : 'Switched to Personal Mode'
       );
+      loadInvites();
     } catch (e) {
-      console.error("Toggle failed:", e);
-      Alert.alert("Error", e.message);
+      console.error('Toggle failed:', e);
+      Alert.alert('Error', e.message);
     }
   };
-
   const nextMode =
     lastUsedMode === 'family'
       ? 'Switch to Personal Mode'
       : 'Switch to Family Mode';
+  // ───────────────────────────────────────────────────────────────────────
+
+  // ── leave family (any member) ────────────────────────────────────────
+  const handleLeaveFamily = async () => {
+    try {
+      await exitFamilyMembership({ userId, familyId });
+      setFamilyId(null);
+      setLastUsedMode('personal');
+      Alert.alert('Success', 'You have left the family');
+    } catch (err) {
+      console.error('Leave family failed', err);
+      Alert.alert('Error', err.message);
+    }
+  };
+  // ───────────────────────────────────────────────────────────────────────
+
+  // ── remove a member (owner only) ────────────────────────────────────
+  const handleRemoveMember = (memberId) => async () => {
+    try {
+      await removeFamilyMember({
+        ownerId: userId,
+        familyId,
+        memberId,
+      });
+      Alert.alert('Success', 'Member removed');
+    } catch (err) {
+      console.error('Remove member failed', err);
+      Alert.alert('Error', err.message);
+    }
+  };
+  // ───────────────────────────────────────────────────────────────────────
+
+  // ── deep-link listener ────────────────────────────────────────────────
+  const [pendingCode, setPendingCode] = useState(null);
+  const PENDING_INVITE_KEY = 'pendingInviteCode';
+
+  useEffect(() => {
+    const handleUrl = ({ url }) => {
+      if (!url) return;
+      const { path, queryParams } = Linking.parse(url);
+      if (path === 'invite' && queryParams?.code) {
+        const code = queryParams.code;
+        Alert.alert('Invite Received', `Invite code: ${code}`);
+        setPendingCode(code);
+
+        // consume immediately if already logged in
+        const st = useAuthStore.getState();
+        if (st.user?.uid) {
+          acceptInvite({ userId: st.user.uid }, code)
+            .then((famId) => {
+              setFamilyId(famId);
+              setLastUsedMode('family');
+              Alert.alert('Joined family!', `Family ID: ${famId}`);
+            })
+            .catch((e) => Alert.alert('Invite Error', e.message));
+          return;
+        }
+
+        // otherwise stash for login
+        AsyncStorage.setItem(PENDING_INVITE_KEY, code);
+      }
+    };
+
+    Linking.getInitialURL().then((u) => u && handleUrl({ url: u }));
+    const subscription = RNLinking.addListener('url', handleUrl);
+    return () => subscription.remove();
+  }, []);
+
+  // ── consume on login ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!useAuthStore.getState().user?.uid || !pendingCode) return;
+    (async () => {
+      try {
+        const famId = await acceptInvite(
+          { userId: useAuthStore.getState().user.uid },
+          pendingCode
+        );
+        setFamilyId(famId);
+        setLastUsedMode('family');
+        Alert.alert('Joined family!', `Family ID: ${famId}`);
+        await AsyncStorage.removeItem(PENDING_INVITE_KEY);
+        setPendingCode(null);
+      } catch (err) {
+        console.error('Invite accept failed', err);
+        Alert.alert('Invite Error', err.message);
+      }
+    })();
+  }, [pendingCode]);
+  // ───────────────────────────────────────────────────────────────────────
+
+  // ── load fonts ────────────────────────────────────────────────────────
+  useFonts({
+    Inter: require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+  });
+  // ───────────────────────────────────────────────────────────────────────
 
   return (
     <View style={styles.UserSettingsPage}>
       <ScrollView>
         <View style={styles.UserSettingsPage_ContentWrapper}>
-          {/* Family mode toggle */}
+          {/* mode toggle */}
           <View style={{ marginVertical: 16 }}>
             <Button title={nextMode} onPress={handleToggle} />
           </View>
 
-          {/* Invite controls */}
+          {/* invite controls */}
           <View style={styles.inviteSection}>
             <Text style={styles.sectionHeader}>Family Invitations</Text>
             <Button title="Create & Share Invite" onPress={handleCreateInvite} />
@@ -173,7 +275,6 @@ export default function UserSettingsPage() {
               <FlatList
                 data={invites}
                 keyExtractor={(item) => item.id}
-                style={styles.inviteList}
                 renderItem={({ item }) => (
                   <View style={styles.inviteRow}>
                     <Text style={styles.code}>Code: {item.id}</Text>
@@ -190,10 +291,23 @@ export default function UserSettingsPage() {
                 }
               />
             )}
+
+            {/* leave family */}
+            {familyId && (
+              <View style={{ marginTop: 12 }}>
+                <Button
+                  title="Leave Family"
+                  color="#e53e3e"
+                  onPress={handleLeaveFamily}
+                />
+              </View>
+            )}
           </View>
 
-          {/* Existing UI */}
-          <Text style={[styles.SectionHeader]}>Features offered by premium:</Text>
+          {/* premium features UI… */}
+          <Text style={[styles.SectionHeader]}>
+            Features offered by premium:
+          </Text>
           <Text style={styles.PremiumSubHeader}>
             Get all this for just 3.21/month or 24.6/year
           </Text>
@@ -208,7 +322,6 @@ export default function UserSettingsPage() {
             </Text>
           </View>
           <UserSlots />
-          {/* … rest of your premium features … */}
         </View>
       </ScrollView>
     </View>
@@ -240,9 +353,6 @@ const styles = StyleSheet.create({
     fontFamily: MainFont,
     color: greyTextColor,
   },
-  inviteList: {
-    marginTop: 8,
-  },
   inviteRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -268,5 +378,28 @@ const styles = StyleSheet.create({
     fontFamily: MainFont,
     color: greyTextColor,
   },
-  // … keep existing styles …
+  SectionHeader: {
+    fontFamily: MainFont_Bold,
+    fontSize: 18,
+    marginTop: 16,
+  },
+  PremiumSubHeader: {
+    fontFamily: MainFont,
+    fontSize: 14,
+    color: greyTextColor,
+    marginBottom: 8,
+  },
+  PremiumFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  PremiumFeature_Icon: {
+    marginRight: 10,
+    color: addButtonColor,
+  },
+  PremiumFeature_Text: {
+    fontFamily: MainFont_Bold,
+    fontSize: 16,
+  },
 });
