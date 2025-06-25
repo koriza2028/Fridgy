@@ -4,26 +4,21 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 
-const currentUser = {
-  id: 'user-1',
-  name: 'You',
-  color: addButtonColor,
-  namePosition: 'center'
-};
+// const currentUser = {
 
-const invitedUsers = [
-  { id: 'user-2', name: 'Alice', color: '#f59e0b', namePosition: 'start' },
-  // { id: 'user-3', name: 'Bob', color: '#10b981', namePosition: 'start' },   
-  null, 
-  null, 
-  null,
-  // null,
-];
+// const invitedUsers = [
+//   { id: 'user-2', name: 'Array.first', color: '#f59e0b', namePosition: 'start' },
+//   // { id: 'user-3', name: 'Bob', color: '#10b981', namePosition: 'start' },   
+//   null, 
+//   null, 
+//   null,
+//   // null,
+// ];
 
 const MAX_SLOTS = 5;
 
 const UserSlot = ({ user, isCurrentUser }) => {
-  const [text, setText] = useState("John Doe"); // default value
+    const [text, setText] = useState("John Doe"); // default value
     const [isEditable, setIsEditable] = useState(false);
   
     const handleIconPress = () => {
@@ -47,7 +42,7 @@ const UserSlot = ({ user, isCurrentUser }) => {
     //   <Text style={styles.userText}>{isCurrentUser ? 'You' : user.name}</Text>
     // </View>
 
-    <View style={[styles.userBox, { backgroundColor: user.color, justifyContent: user.namePosition }]}>
+    <View style={[styles.userBox, { backgroundColor: '#10b981', justifyContent: "start" }]}>
       {isCurrentUser ? (
         <>
           <Text style={styles.staticPrefix}>You, </Text>
@@ -64,19 +59,19 @@ const UserSlot = ({ user, isCurrentUser }) => {
           </Pressable>
         </>
       ) : (
-        <Text style={[styles.userText]}>{user.name}</Text>
+        <Text style={[styles.userText]}>{user.username}</Text>
       )}
     </View>
   );
 };
 
-const UserSlots = () => {
-  const allSlots = [currentUser, ...invitedUsers];
+const UserSlots = ({currentUser, members}) => {
   return (
     <View style={styles.container}>
-      {allSlots.map((user, index) => (
-        <UserSlot key={index} user={user} isCurrentUser={index === 0} />
-      ))}
+        <UserSlot user={currentUser} isCurrentUser={true} />
+        {members.map((user, index) => (
+          <UserSlot key={index} user={user} isCurrentUser={false} />
+        ))}
     </View>
   );
 };

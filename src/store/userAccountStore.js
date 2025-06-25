@@ -1,4 +1,3 @@
-// store/userstore.js
 import {
   doc,
   getDoc,
@@ -21,7 +20,7 @@ export const ensureUserAccount = async ({ userId }, email) => {
   if (!snap.exists()) {
     await setDoc(ref, {
       email: email.toLowerCase(),
-      name: null,
+      username: null,
       familyId: null,
       lastUsedMode: "personal",
     });
@@ -36,6 +35,24 @@ export const getUserAccount = async ({ userId }) => {
   const snap = await getDoc(ref);
   if (!snap.exists()) throw new Error("Account info not found");
   return snap.data();
+};
+
+/**
+ * Set the username for a user
+ */
+export const setUsername = async ({ userId }, username) => {
+  const ref = doc(db, "users", userId);
+  await updateDoc(ref, { username });
+};
+
+/**
+ * Get the username of a user
+ */
+export const getUsername = async ({ userId }) => {
+  const ref = doc(db, "users", userId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error("User not found");
+  return snap.data().username;
 };
 
 /**
@@ -56,7 +73,6 @@ export const assignOrCreateFamily = async ({ userId }) => {
 
   let familyId = userSnap.data().familyId;
   if (!familyId) {
-    // generate a new family ID
     familyId = `fam-${Date.now()}`;
     const familyRef = doc(db, "families", familyId);
     await setDoc(familyRef, {
@@ -67,7 +83,6 @@ export const assignOrCreateFamily = async ({ userId }) => {
     await updateDoc(userRef, { familyId });
   }
 
-  // switch into family mode
   await updateDoc(userRef, { lastUsedMode: "family" });
   return familyId;
 };
@@ -79,18 +94,15 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
   const userRef = doc(db, "users", userId);
 
   if (currentMode === "family") {
-    // go back to personal
     await updateDoc(userRef, { lastUsedMode: "personal" });
     return { mode: "personal", familyId: null };
   }
 
-  // else: switch into family
   const snap = await getDoc(userRef);
   if (!snap.exists()) throw new Error("User account not found");
 
   let familyId = snap.data().familyId;
   if (!familyId) {
-    // create new family
     familyId = `fam-${Date.now()}`;
     const familyRef = doc(db, "families", familyId);
     await setDoc(familyRef, {
@@ -105,26 +117,3 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
   return { mode: "family", familyId };
 };
 
-/**
- * Find an existing users doc by email, and give them this familyId
- */
-export const addMemberByEmail = async ({ familyId }, email) => {
-  if (!familyId) throw new Error("Must be in family mode to add members");
-
-  const accountsCol = collection(db, "users");
-  const q = query(
-    accountsCol,
-    where("email", "==", email.trim().toLowerCase())
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    throw new Error(`No account found for "${email}"`);
-  }
-
-  // update each matching account
-  await Promise.all(
-    snap.docs.map((d) =>
-      updateDoc(doc(db, "users", d.id), { familyId })
-    )
-  );
-};
