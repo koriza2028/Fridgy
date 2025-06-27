@@ -1,8 +1,17 @@
-import React, {useMemo} from "react";
-import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
+import React from "react";
+import { StyleSheet, View, Text, Pressable, Dimensions, ActivityIndicator } from "react-native";
 import AppImage from "../../components/image/AppImage";
 
-import { buttonColor, addButtonColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
+
+const DURATION = 200;
+
+import { buttonColor, addButtonColor, MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,6 +27,61 @@ const productCardHeight = productCardWidth*1.34;
 // Make the view for ipads too
 
 
+const ReanimatedButton = ({ 
+        label = 'A',
+        onPress,
+        isDisabled = false,
+        isLoading = false,
+    }) => {
+
+    const transition = useSharedValue(0);
+    const isActive = useSharedValue(false);
+
+    const animatedStyle = useAnimatedStyle(() => {
+
+        const scale = interpolate(transition.value, [0, 1], [1, 0.95]);
+        const bgOpacity = interpolate(transition.value, [0, 1], [0, 0.25]); // darken background
+
+        return {
+            transform: [{ scale }],
+            backgroundColor: `rgba(0, 0, 0, ${bgOpacity})`, // overlay blend
+        };
+    });
+
+  const handlePressIn = () => {
+    isActive.value = true;
+    transition.value = withTiming(1, { duration: DURATION }, () => {
+      if (!isActive.value) {
+        transition.value = withTiming(0, { duration: DURATION });
+      }
+    });
+  };
+
+  const handlePressOut = () => {
+    isActive.value = false;
+    transition.value = withTiming(0, { duration: DURATION });
+  };
+
+  return (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={onPress}
+      disabled={isDisabled || isLoading}
+      hitSlop={8}
+    >
+      <Animated.View style={[styles.Button_AddOrRemoveProductAmount, animatedStyle, isDisabled && { opacity: 0.5 }]}>
+        {isLoading ? (
+          <ActivityIndicator color="white" size={18} />
+        ) : (
+          <Text style={[styles.Text_AddOrRemoveProductAmount]}>{label}</Text>
+        )}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+
 export default function ProductCard(props) {
     const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
@@ -29,6 +93,7 @@ export default function ProductCard(props) {
     const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+        'Inter-SemiBold': require('../../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
     });
 
     const handleDecrement = async (id) => {
@@ -60,15 +125,19 @@ export default function ProductCard(props) {
             <View style={styles.ProductInfoAndButtons}>
 
                 <View style={styles.ProductAmountAndActions}>            
-                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
+                    {/* <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleDecrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>-</Text>
-                    </Pressable>
+                    </Pressable> */}
+
+                    <ReanimatedButton label="-" onPress={() => handleDecrement(props.product.id)}></ReanimatedButton>
 
                     <Text style={styles.ProductAmountLabel}>{props.product.amount} {props.product.UoM}</Text>
 
-                    <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
+                    {/* <Pressable style={styles.Button_AddOrRemoveProductAmount} onPress={() => handleIncrement(props.product.id)}>
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
-                    </Pressable>
+                    </Pressable> */}
+
+                    <ReanimatedButton label="+" onPress={() => handleIncrement(props.product.id)}></ReanimatedButton>
                     {/* <Text style={styles.ProductAmountLabel}>{props.product.name}</Text> */}
                 </View>
 
@@ -108,12 +177,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 6,
         elevation: 4,
+        // overflow: 'hidden',
     },
     ProductPicture: {
         width: '100%',
-        height: productCardWidth,
-        // backgroundColor: 'blue',
-        
+        height: productCardWidth -16,
+        // backgroundColor: 'blue',  
         
         borderRadius: 10,
     },
@@ -122,17 +191,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: productCardHeight - productCardWidth -10,
         backgroundColor: '#FFF',  
-        borderRadius: 10,  
-        
+        borderRadius: 10,      
+        // marginTop: -20,
     },
     ProductNameAndCategory: {
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
-        width: '100%',
-        height: productCardHeight - productCardWidth,
-        justifyContent: 'space-between',
-        paddingLeft: 4,
-        marginTop: -10 
+        paddingHorizontal: 6,
+        paddingVertical: 4,
+        width: '82%',
+        height: "100%",
+        justifyContent: 'center',
+        alignSelf: 'start',
+        marginTop: -24,
     },
     ProductNameLabel: {
         fontWeight: 'bold',
@@ -170,21 +241,23 @@ const styles = StyleSheet.create({
       height: 26,
       justifyContent: 'center',
       alignItems: 'center',
+      borderRadius: 6,
     //   borderColor: '#C0C0C0',
     //   borderWidth: 1,
     },
     Text_AddOrRemoveProductAmount: {
-        fontSize: 20,
+        fontSize: 22,
     },
 
     SendToBasket_Button: {
         position: 'absolute',
         right: 10,
-        bottom: '20%'
+        bottom: '30%'
     },
 
     SendToBasket_Button_Text: {
         // color: 'green',
         color: addButtonColor,
     },
+
 });

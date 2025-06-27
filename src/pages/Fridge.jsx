@@ -1,11 +1,16 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { View, Text, Dimensions, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+
+
 import CollapsibleSection from "../components/CollapsableSection";
 import ModalCreateProduct from "../components/fridge/ModalCreateProduct";
 import ProductCard from "../components/fridge/ProductCard";
 import SearchInput from '../components/Search';
 import AddNewButton from "../components/Button_AddNew";
+import { ResizingButton } from "../components/Button_Bouncing";
+
+
 import { backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import { categoryNames } from "../../assets/Variables/categories";
@@ -126,7 +131,7 @@ export default function FridgePage({ navigation }) {
             )}
           </CollapsibleSection>
 
-          <CollapsibleSection title="Archived Products">
+          <CollapsibleSection title="Currently not in fridge">
             {filteredArchived.length > 0 ? (
               filteredArchived.map(product => (
                 <ProductCard
@@ -161,6 +166,7 @@ export default function FridgePage({ navigation }) {
       </ScrollView>
 
       <AddNewButton creativeAction={openModal} />
+      <ResizingButton/>
     </View>
   );
 }
@@ -173,6 +179,7 @@ const styles = StyleSheet.create({
     width: width,
   },
   FridgePage_ContentWrapper: {},
+  
   ProductFilter: {
     flexDirection: 'row',
     marginBottom: 10,

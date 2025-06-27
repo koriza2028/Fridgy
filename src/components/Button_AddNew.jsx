@@ -2,6 +2,50 @@ import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import { addButtonColor, MainFont_Bold } from '../../assets/Styles/styleVariables';
 
+import { ResizingButton } from './Button_Bouncing';
+
+// import Animated, {
+//   useSharedValue,
+//   useAnimatedStyle,
+//   withSpring,
+// } from 'react-native-reanimated';
+
+// const ReanimatedButton = ({ label, onPress }) => {
+//   const scale = useSharedValue(1);
+
+//   const animatedStyle = useAnimatedStyle(() => {
+//     return {
+//       transform: [{ scale: scale.value }],
+//     };
+//   });
+
+//   const handlePressIn = () => {
+//     scale.value = withSpring(0.95, { damping: 10 });
+//   };
+
+//   const handlePressOut = () => {
+//     scale.value = withSpring(1, { damping: 10 });
+//     onPress?.();
+//   };
+
+//   return (
+//     <Animated.View style={[
+//         animatedStyle,
+//         styles.Button_AddOrRemoveProductAmount, // put this here instead
+//     ]}
+// >
+//       <Pressable
+//         onPressIn={handlePressIn}
+//         onPressOut={handlePressOut}
+//         style={styles.Button_AddProduct}
+//       >
+//         <Text style={styles.Button_AddProduct_Text}>{label}</Text>
+//       </Pressable>
+//     </Animated.View>
+//   );
+// };
+
+
 const AddNewButton = ({ creativeAction }) => {
     return (
         <Pressable style={styles.Button_AddProduct} onPress={() => creativeAction()}>
