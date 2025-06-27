@@ -8,7 +8,6 @@ import ModalCreateProduct from "../components/fridge/ModalCreateProduct";
 import ProductCard from "../components/fridge/ProductCard";
 import SearchInput from '../components/Search';
 import AddNewButton from "../components/Button_AddNew";
-import { ResizingButton } from "../components/Button_Bouncing";
 
 
 import { backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
@@ -166,7 +165,6 @@ export default function FridgePage({ navigation }) {
       </ScrollView>
 
       <AddNewButton creativeAction={openModal} />
-      <ResizingButton/>
     </View>
   );
 }

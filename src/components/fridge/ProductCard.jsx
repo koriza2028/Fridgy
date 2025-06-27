@@ -32,6 +32,8 @@ const ReanimatedButton = ({
         onPress,
         isDisabled = false,
         isLoading = false,
+        style,
+        textStyle,
     }) => {
 
     const transition = useSharedValue(0);
@@ -69,12 +71,13 @@ const ReanimatedButton = ({
       onPress={onPress}
       disabled={isDisabled || isLoading}
       hitSlop={8}
+      style={style}
     >
-      <Animated.View style={[styles.Button_AddOrRemoveProductAmount, animatedStyle, isDisabled && { opacity: 0.5 }]}>
+      <Animated.View style={[style, animatedStyle, isDisabled && { opacity: 0.5 }]}>
         {isLoading ? (
           <ActivityIndicator color="white" size={18} />
         ) : (
-          <Text style={[styles.Text_AddOrRemoveProductAmount]}>{label}</Text>
+          <Text style={[textStyle]}>{label}</Text>
         )}
       </Animated.View>
     </Pressable>
@@ -129,7 +132,9 @@ export default function ProductCard(props) {
                         <Text style={styles.Text_AddOrRemoveProductAmount}>-</Text>
                     </Pressable> */}
 
-                    <ReanimatedButton label="-" onPress={() => handleDecrement(props.product.id)}></ReanimatedButton>
+                    <ReanimatedButton label="-" onPress={() => handleDecrement(props.product.id)}
+                        style={styles.Button_AddOrRemoveProductAmount} textStyle={styles.Text_AddOrRemoveProductAmount}>
+                    </ReanimatedButton>
 
                     <Text style={styles.ProductAmountLabel}>{props.product.amount} {props.product.UoM}</Text>
 
@@ -137,7 +142,9 @@ export default function ProductCard(props) {
                         <Text style={styles.Text_AddOrRemoveProductAmount}>+</Text>
                     </Pressable> */}
 
-                    <ReanimatedButton label="+" onPress={() => handleIncrement(props.product.id)}></ReanimatedButton>
+                    <ReanimatedButton label="+" onPress={() => handleIncrement(props.product.id)}
+                        style={styles.Button_AddOrRemoveProductAmount} textStyle={styles.Text_AddOrRemoveProductAmount}>
+                    </ReanimatedButton>
                     {/* <Text style={styles.ProductAmountLabel}>{props.product.name}</Text> */}
                 </View>
 
@@ -146,14 +153,14 @@ export default function ProductCard(props) {
                     {/* <Text style={styles.ProductCategoryLabel}>{props.product.category.tagIcon}</Text> */}
                 </View>
 
-
-                {/* <Pressable style={styles.Availability_Button} >
-                    <Text style={styles.Availability_Button_Text}>Availability</Text>
+                {/* <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
+                    <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
                 </Pressable> */}
 
-                <Pressable style={styles.SendToBasket_Button} onPress={() => handleMoveToBasket(props.product.id)}>
-                    <Text style={styles.SendToBasket_Button_Text}><MaterialCommunityIcons name="cart-arrow-right" size={24} /></Text>
-                </Pressable>
+                <ReanimatedButton onPress={() => handleMoveToBasket(props.product.id)}
+                    style={styles.SendToBasket_Button} textStyle={styles.SendToBasket_Button_Text}
+                    label={<MaterialCommunityIcons name="cart-arrow-right" size={24} />} >
+                </ReanimatedButton>
                 
             </View>
         </Pressable>
@@ -203,7 +210,7 @@ const styles = StyleSheet.create({
         height: "100%",
         justifyContent: 'center',
         alignSelf: 'start',
-        marginTop: -24,
+        marginTop: -26,
     },
     ProductNameLabel: {
         fontWeight: 'bold',
@@ -251,8 +258,10 @@ const styles = StyleSheet.create({
 
     SendToBasket_Button: {
         position: 'absolute',
-        right: 10,
-        bottom: '30%'
+        right: 2,
+        padding: 4,
+        borderRadius: 6,
+        bottom: '24%'
     },
 
     SendToBasket_Button_Text: {
