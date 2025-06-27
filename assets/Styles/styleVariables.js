@@ -28,6 +28,7 @@ export const SecondTitleFontSize = 16;
 
 export const MainFont = 'Inter';
 export const MainFont_Bold = 'Inter-Bold';
+export const MainFont_SemiBold = 'Inter-SemiBold';
 export const MainFont_Title = 'Inter-Title';
 // export const secondFont = 'Open-Sans';
 export const ReceiptFont = 'Grotesk';

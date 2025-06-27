@@ -2,9 +2,9 @@ import React, {useState} from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
+import { useFonts } from 'expo-font';
 
-// const currentUser = {
+import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
 
 // const invitedUsers = [
 //   { id: 'user-2', name: 'Array.first', color: '#f59e0b', namePosition: 'start' },
@@ -17,7 +17,14 @@ import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } f
 
 const MAX_SLOTS = 5;
 
-const UserSlot = ({ user, isCurrentUser }) => {
+const UserSlot = ({ user, isCurrentUser, createInvite }) => {
+
+  const [fontsLoaded] = useFonts({
+        'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+        'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    });
+
+
     const [text, setText] = useState("John Doe"); // default value
     const [isEditable, setIsEditable] = useState(false);
   
@@ -31,16 +38,13 @@ const UserSlot = ({ user, isCurrentUser }) => {
 
   if (!user) {
     return (
-      <Pressable style={[styles.userBox, styles.emptyBox]}>
+      <Pressable style={[styles.userBox, styles.emptyBox]} onPress={createInvite}>
         <Text style={styles.plusSign}>+ Add member</Text>
       </Pressable>
     );
   }
 
   return (
-    // <View style={[styles.userBox, { backgroundColor: user.color }]}>
-    //   <Text style={styles.userText}>{isCurrentUser ? 'You' : user.name}</Text>
-    // </View>
 
     <View style={[styles.userBox, { backgroundColor: '#10b981', justifyContent: "start" }]}>
       {isCurrentUser ? (
@@ -59,19 +63,26 @@ const UserSlot = ({ user, isCurrentUser }) => {
           </Pressable>
         </>
       ) : (
+        <>
         <Text style={[styles.userText]}>{user.username}</Text>
+        <Pressable style={styles.editButton}>
+          <MaterialIcons name={'remove-circle'} size={20} color="white" />
+        </Pressable>
+        </>
+        
       )}
     </View>
   );
 };
 
-const UserSlots = ({currentUser, members}) => {
+const UserSlots = ({currentUser, members, createInvite}) => {
   return (
     <View style={styles.container}>
         <UserSlot user={currentUser} isCurrentUser={true} />
         {members.map((user, index) => (
           <UserSlot key={index} user={user} isCurrentUser={false} />
         ))}
+        <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/>
     </View>
   );
 };
@@ -97,6 +108,8 @@ const styles = StyleSheet.create({
   },
   editButton: {
     padding: 8,
+    position: 'absolute',
+    right: 10,
   },
   userBox: {
     height: 60,

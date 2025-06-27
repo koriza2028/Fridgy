@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  FlatList,
   Button,
   Pressable,
   Share,
@@ -16,6 +15,8 @@ import * as Linking from 'expo-linking';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 import UserSlots from '../components/usersettings/UserSlots';
 import useAuthStore from '../store/authStore';
@@ -35,17 +36,32 @@ import {
 import useFamilyStore from '../store/familyStore';
 
 import { useFonts } from 'expo-font';
+
 import {
   addButtonColor,
   backgroundColor,
+  blackTextColor,
+  buttonColor,
   greyTextColor,
+  greyTextColor2,
   MainFont,
   MainFont_Bold,
+  MainFont_SemiBold,
+  SecondTitleFontSize,
+  SecondTitleFontWeight,
+  TextFontSize,
 } from '../../assets/Styles/styleVariables';
 
 const { width } = Dimensions.get('window');
 
 export default function UserSettingsPage() {
+
+  const [fontsLoaded] = useFonts({
+      'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+      'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+  });
+
   // ── auth context ──────────────────────────────────────────────────────
   const { userId, familyId, user } = useAuthStore((s) => ({
     userId: s.user?.uid,
@@ -65,6 +81,8 @@ export default function UserSettingsPage() {
   const familyMembers = useFamilyStore((state) => state.familyMembers);
   const setFamilyMembers = useFamilyStore((state) => state.setFamilyMembers);
   const fetchFamilyMembers = useFamilyStore((state) => state.fetchFamilyMembers);
+
+  const isOwner = ownerId === userId;
 
   // usage
   useEffect(() => {
@@ -199,7 +217,7 @@ export default function UserSettingsPage() {
       Alert.alert('Error', e.message);
     }
   };
-  const nextMode =
+  const changeMode =
     lastUsedMode === 'family'
       ? 'Switch to Personal Mode'
       : 'Switch to Family Mode';
@@ -289,11 +307,10 @@ export default function UserSettingsPage() {
         <View style={styles.UserSettingsPage_ContentWrapper}>
           {/* mode toggle */}
           <View style={{ marginVertical: 16 }}>
-            <Button title={nextMode} onPress={handleToggle} />
+            <Button title={changeMode} onPress={handleToggle} />
           </View>
 
-          {/* Family members list */}
-          {familyId && (
+          {/* {familyId && (
             <View style={{ marginBottom: 24 }}>
               <Text style={styles.sectionHeader}>Family Members</Text>
               <FlatList
@@ -362,10 +379,10 @@ export default function UserSettingsPage() {
                 }}
               />
             </View>
-          )}
+          )} */}
 
           {/* Leave family */}
-          {familyId && (
+          {familyId && !isOwner && (
             <View style={{ marginBottom: 24 }}>
               <Button
                 title="Leave Family"
@@ -373,7 +390,7 @@ export default function UserSettingsPage() {
                 onPress={() =>
                   Alert.alert(
                     'Leave Family',
-                    'Are you sure you want to leave this family?',
+                    'Are you sure you want to leave the family?',
                     [
                       { text: 'Cancel', style: 'cancel' },
                       { text: 'Leave', style: 'destructive', onPress: handleLeaveFamily },
@@ -384,41 +401,45 @@ export default function UserSettingsPage() {
             </View>
           )}
 
-          {/* Invite link create & revoke */}
-          {familyId && (
-            <View style={{ marginBottom: 24 }}>
-              <Button
-                title="Create Invite Link"
-                onPress={handleCreateInvite}
-                color={addButtonColor}
-              />
-              <Text style={styles.sectionHeader}>Active Invites</Text>
-              {loadingInvites && <Text>Loading invites...</Text>}
-              {!loadingInvites && invites.length === 0 && (
-                <Text style={{ fontStyle: 'italic' }}>No active invites.</Text>
-              )}
-              {!loadingInvites &&
-                invites.map((inv) => (
-                  <View
-                    key={inv.id}
-                    style={styles.inviteRow}
-                  >
-                    <Text style={{ flex: 1 }}>{inv.code}</Text>
-                    <Button
-                      title="Revoke"
-                      onPress={handleRevoke(inv.id)}
-                      color="red"
-                    />
-                  </View>
-                ))}
-            </View>
-          )}
-
           {/* Username editing for current user (duplicate, optional) */}
-          <UserSlots currentUser={user} members={familyMembers}/>
+          <UserSlots currentUser={user} members={familyMembers} createInvite={handleCreateInvite}/>
 
           {/* Premium Features placeholder (keep your original) */}
-          {/* ... your premium features and other UI ... */}
+          <View style={styles.listOfPremiumFeatures}>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Unlock family account for up to 5 users</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Unlimited dates for Meal Planner</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Unlimited Autobasket size</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
+            </View>
+
+            <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text>
+            {/* Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
+            <Pressable style={styles.upgradeButton}>
+              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
+              <Text style={styles.upgradeText}>Upgrade to Premium</Text>
+              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -476,5 +497,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+  },
+  SectionHeader: {
+    fontSize: SecondTitleFontSize + 2,
+    fontWeight: SecondTitleFontWeight,
+    marginTop: 10,
+    fontFamily: MainFont_Bold
+  },
+  PremiumSubHeader: {
+    fontSize: 14,
+    fontFamily: MainFont,
+    color: greyTextColor2,
+  },
+  listOfPremiumFeatures: {
+    marginTop: 10,
+  },
+  PremiumFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  PremiumFeature_Icon: {
+    marginRight: 10,
+    fontSize: 18,
+    color: addButtonColor,
+  },
+  PremiumFeature_Text: {
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    fontFamily: MainFont_SemiBold,
+    fontSize: TextFontSize + 2,
+    color: blackTextColor,
+  },
+  explanationHint: {
+    marginTop: 10,
+    fontSize: TextFontSize,
+    fontFamily: MainFont,
+    color: greyTextColor2,
+  },
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    backgroundColor: addButtonColor,
+    height: 42,
+    borderRadius: 20,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+  },
+  upgradeText: {
+    fontSize: TextFontSize + 2,
+    fontFamily: MainFont_Bold,
+    color: 'white',
+  },
+  upgradeIcon: {
+    color: 'white',
+    marginHorizontal: 10,
+    fontSize: TextFontSize + 4,
   },
 });
