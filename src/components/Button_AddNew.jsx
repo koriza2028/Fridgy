@@ -13,13 +13,13 @@ import Animated, {
 
 
 
-const AddNewButton = ({ creativeAction }) => {
+const AddNewButton = ({ creativeAction, label, style, textStyle, innerStyle }) => {
 
     const transition = useSharedValue(0);
     const isActive = useSharedValue(false);
 
     const animatedStyle = useAnimatedStyle(() => {
-      const scale = interpolate(transition.value, [0, 1], [1, 0.92]);
+      const scale = interpolate(transition.value, [0, 1], [1, 0.90]);
       const bgOverlayOpacity = interpolate(transition.value, [0, 1], [0, 0.15]);
 
       return {
@@ -47,22 +47,15 @@ const AddNewButton = ({ creativeAction }) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={creativeAction}
-        style={styles.Button_AddProduct} // outer container needs position
+        style={[styles.Button_AddProduct, style]} // outer container needs position
         hitSlop={8}
       >
-        <Animated.View style={[styles.InnerCircle, animatedStyle]}>
-          <Text style={styles.Button_AddProduct_Text}>+</Text>
+        <Animated.View style={[styles.InnerCircle, innerStyle, animatedStyle]}>
+          <Text style={[styles.Button_AddProduct_Text, textStyle]}>{label}</Text>
         </Animated.View>
       </Pressable>
     );
 
-
-
-    // return (
-    //     <Pressable style={styles.Button_AddProduct} onPress={() => creativeAction()}>
-    //         <Text style={styles.Button_AddProduct_Text}>+</Text>
-    //     </Pressable>
-    // );
 };
 
 const styles = StyleSheet.create({
@@ -80,7 +73,7 @@ const styles = StyleSheet.create({
           backgroundColor: '#FFF',
           borderRadius: 60,
           borderColor: addButtonColor,
-          borderWidth: 2,
+          borderWidth: 1,
           
           shadowColor: '#007bff', 
           shadowOffset: { width: 0, height: 2 },

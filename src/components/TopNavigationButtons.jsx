@@ -4,6 +4,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import UserOptionsModal from './UserOptionsModal';
 import NotificationsModal from './NotificationsModal';
+import ButtonBouncing from './Button_Bouncing';
 
 import useAuthStore from '../store/authStore';
 import useNotificationsStore from '../store/notificationsStore';
@@ -36,19 +37,34 @@ const TopNavigationButtons = () => {
   return (
     <View style={styles.container}>
       {/* Notifications Button with Badge */}
-      <Pressable onPress={() => setShowNotifications(true)} style={styles.iconWrapper}>
+      {/* <Pressable onPress={() => setShowNotifications(true)} style={styles.iconWrapper}>
         <MaterialIcons name="notifications" size={28} color="black" />
         {totalMissingCount > 0 && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{totalMissingCount}</Text>
           </View>
         )}
-      </Pressable>
+      </Pressable> */}
 
       {/* User Options Button */}
-      <Pressable onPress={() => setShowUserOptions(true)}>
+
+      <ButtonBouncing onPress={() => setShowNotifications(true)}  innerStyle={{borderRadius: 30, padding: 4, marginRight: 10}}
+        label={<View>
+          <MaterialIcons name="notifications" size={28} color="black" />
+          {totalMissingCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{totalMissingCount}</Text>
+          </View>
+        )}
+           </View>}
+      />
+
+      <ButtonBouncing onPress={() => setShowUserOptions(true)} innerStyle={{borderRadius: 30, padding: 4}}
+        label={<MaterialIcons name="account-circle" size={28} color="black" />}
+      />
+      {/* <Pressable onPress={() => setShowUserOptions(true)}>
         <MaterialIcons name="account-circle" size={28} color="black" />
-      </Pressable>
+      </Pressable> */}
 
       {/* Modals */}
       <UserOptionsModal

@@ -8,6 +8,7 @@ import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import Button_Autobasket from '../components/basket/Button_Autobasket';
+import ButtonBouncing from '../components/Button_Bouncing';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
@@ -220,9 +221,14 @@ export default function BasketPage({ navigation }) {
 
         </View>
 
-        <Pressable style={styles.Button_ShowReceipt} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
+        {/* <Pressable style={styles.Button_ShowReceipt} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
           <MaterialCommunityIcons name="basket-check" color={isAnyChecked ? addButtonColor : 'black'} style={styles.basketButtonIcon} />
-        </Pressable>
+        </Pressable> */}
+
+        <ButtonBouncing style={[styles.Button_ShowReceipt, { borderWidth: isAnyChecked ? 2 : 0 }]} isDisabled={!isAnyChecked}
+          innerStyle={styles.innerStyle} onPress={handleDisplayCheckedItems}
+          label={<MaterialCommunityIcons name="basket-check" color={isAnyChecked ? addButtonColor : 'black'} style={styles.basketButtonIcon}/>}
+        />
 
         <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')} onGClick={handleAddAutoBasketToBasket} />
       </View>
@@ -280,12 +286,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 60,
     borderColor: addButtonColor,
-    borderWidth: 2,
+    // borderWidth: 2,
     shadowColor: '#007bff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 2,
+  },
+  innerStyle: { 
+    borderRadius: 60, 
+    width: 50,
+    height: 50,
+    justifyContent: 'center', 
+    alignItems: 'center' 
   },
   basketButtonIcon: {
     fontSize: 28,

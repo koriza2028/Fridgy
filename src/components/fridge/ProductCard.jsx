@@ -28,7 +28,7 @@ const productCardHeight = productCardWidth*1.34;
 
 
 const ReanimatedButton = ({ 
-        label = 'A',
+        label,
         onPress,
         isDisabled = false,
         isLoading = false,

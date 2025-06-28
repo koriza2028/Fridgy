@@ -8,11 +8,13 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import CalendarModal from '../components/mealplanner.jsx/ModalCalendar.jsx';
 import MealCard from '../components/cooking/MealCard.jsx';
 import SearchModal from "../components/SearchModal";
-import IngredientItem from "../components/cooking/IngredientCard";
+import AddNewButton from '../components/Button_AddNew.jsx';
+import ButtonBouncing from '../components/Button_Bouncing.jsx';
 
 import { useFonts } from 'expo-font';
 import Entypo from 'react-native-vector-icons/Entypo';
-import { buttonColor, backgroundColor, addButtonColor } from '../../assets/Styles/styleVariables';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { buttonColor, backgroundColor, addButtonColor, MainFont, TextFontSize, MainFont_Bold } from '../../assets/Styles/styleVariables';
 import useAuthStore from '../store/authStore';
 import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
@@ -203,13 +205,15 @@ export default function MealPlannerPage({ navigation }) {
     <View style={styles.MealPlannerPage}>
       <View style={styles.MealPlannerPage_ContentWrapper}>
         <View style={styles.navigation}>
-          <Pressable onPress={() => changeDate(-1)}>
-            <Entypo name="arrow-long-left" size={30} />
-          </Pressable>
-          <Text>{formatDateDisplay(selectedDate)}</Text>
-          <Pressable onPress={() => changeDate(1)}>
-            <Entypo name="arrow-long-right" size={30} />
-          </Pressable>
+
+          <ButtonBouncing onPress={() => changeDate(-1)} innerStyle={styles.ButtonArrows}
+            label={<Entypo name="arrow-long-left" size={30} />}/>
+
+          <Text style={styles.TextDate}>{formatDateDisplay(selectedDate)}</Text>
+
+          <ButtonBouncing onPress={() => changeDate(1)} innerStyle={styles.ButtonArrows}
+            label={<Entypo name="arrow-long-right" size={30} />}/>
+
         </View>
 
         <SwipeListView
@@ -232,22 +236,24 @@ export default function MealPlannerPage({ navigation }) {
             index,
           })}
           ListFooterComponent={() => (
-            <Pressable
-              style={styles.addMore_Button}
-              onPress={() => setIsSearchModalVisible(true)}
-            >
-              <Text style={styles.addMore_Button_Text}>Add more +</Text>
-            </Pressable>
+            // <Pressable
+            //   style={styles.addMore_Button}
+            //   onPress={() => setIsSearchModalVisible(true)}
+            // >
+            //   <Text style={styles.addMore_Button_Text}>Add more +</Text>
+            // </Pressable>
+
+            <AddNewButton creativeAction={() => setIsSearchModalVisible(true)} label={'Add more +'} 
+              style={styles.addMore_Button} textStyle={styles.addMore_Button_Text} innerStyle={styles.addMore_innerStyle}
+        />
           )}
         />
       </View>
 
-      <Pressable
-        style={styles.openCalendar_Button}
-        onPress={() => setIsCalendarVisible(v => !v)}
-      >
-        <Text>C</Text>
-      </Pressable>
+{/* calendar-month */}
+      <AddNewButton creativeAction={() => setIsCalendarVisible(v => !v)} 
+        label={<MaterialIcons name={'calendar-month'} size={30} />}
+        />
 
       <CalendarModal
         isVisible={isCalendarVisible}
@@ -366,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   dailyContent: {
     minHeight: width / 4,
@@ -381,16 +387,31 @@ const styles = StyleSheet.create({
   },
   addMore_Button: {
     // marginVertical: 20,
+    position: 'static',
+    borderWidth: 0,
+    shadowColor: 'transparent',
+    backgroundColor: 'transparent',
+    width: 'auto',
   },
   addMore_Button_Text: {
     fontSize: 18,
     fontWeight: 'bold',
     color: addButtonColor,
   },
-  requiredIngredients: {
-    marginTop: 20,
-    paddingHorizontal: 4,
-    // height: 300,
+  addMore_innerStyle: {
+    // borderWidth: 0,
+  },
+  ButtonArrows: {
+    padding: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    marginTop: 10,
+  },
+  TextDate: {
+    fontFamily: MainFont_Bold,
+    fontSize: TextFontSize + 2,
+    paddingTop: 10,
   },
   rowFront: {
     // backgroundColor: backgroundColor,

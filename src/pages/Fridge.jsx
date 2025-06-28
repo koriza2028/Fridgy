@@ -10,7 +10,7 @@ import SearchInput from '../components/Search';
 import AddNewButton from "../components/Button_AddNew";
 
 
-import { backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
+import { backgroundColor, buttonColor, MainFont, MainFont_Bold, MainFont_SemiBold, TextFontSize } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import { categoryNames } from "../../assets/Variables/categories";
 import useAuthStore from '../store/authStore';
@@ -164,7 +164,7 @@ export default function FridgePage({ navigation }) {
         </View>
       </ScrollView>
 
-      <AddNewButton creativeAction={openModal} />
+      <AddNewButton creativeAction={openModal} label={"+"}/>
     </View>
   );
 }
@@ -204,6 +204,6 @@ const styles = StyleSheet.create({
   },
   SelectedCategory_Text: {
     color: 'white',
-    fontFamily: MainFont_Bold,
+    fontFamily: MainFont_SemiBold,
   },
 });

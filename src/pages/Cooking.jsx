@@ -195,7 +195,7 @@ export default function CookingPage({ navigation }) {
           </View>
         </View>
       </ScrollView>
-      <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} />
+      <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} label={'+'} />
     </View>
   );
 }
