@@ -23,8 +23,9 @@ import IngredientItem from "../components/cooking/IngredientCard";
 import Tag from "../components/cooking/Tag";
 import ModalProductCategoryPicker from "../components/fridge/ModalProductCategoryPicker";
 import SearchModal from "../components/SearchModal";
-import Entypo from "react-native-vector-icons/Entypo";
+import ButtonBouncing from "../components/Button_Bouncing";
 
+import Entypo from "react-native-vector-icons/Entypo";
 import {
   buttonColor,
   deleteButtonColor,
@@ -311,16 +312,13 @@ export default function RecipeCreatePage({ navigation, route }) {
         return (
           <View style={styles.IngredientsHeader}>
             <Text style={styles.ListOfIngredients_Text}>{item.title}</Text>
-            <Pressable
+            <ButtonBouncing label={'Add'}
               onPress={() =>
-                item.title === "Mandatory Ingredients"
-                  ? openIngredientSearchModal(true)
-                  : openIngredientSearchModal(false)
-              }
-              style={styles.addIngredient_Button}
-            >
-              <Text style={styles.addIngredient_ButtonText}>Add</Text>
-            </Pressable>
+                  item.title === "Mandatory Ingredients"
+                    ? openIngredientSearchModal(true)
+                    : openIngredientSearchModal(false)
+                }
+              style={styles.addIngredient_Button} textStyle={styles.addIngredient_ButtonText} innerStyle={styles.innerAddButt}/>
           </View>
         );
       } else {
@@ -706,16 +704,23 @@ const styles = StyleSheet.create({
   },
   addIngredient_Button: {
     marginRight: 14,
-    borderWidth: 1,
     borderRadius: 20,
+    borderWidth: 1,
     borderColor: addButtonColor,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    // paddingVertical: 2,
+    // paddingHorizontal: 2,
   },
   addIngredient_ButtonText: {
     fontFamily: MainFont_Bold,
     fontSize: TextFontSize,
     color: addButtonColor,
+  },
+  innerAddButt: {
+    borderRadius: 30,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: addButtonColor,
   },
   ListOfIngredients_Text: {
     fontWeight: SecondTitleFontWeight,

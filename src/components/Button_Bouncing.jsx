@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import { addButtonColor, MainFont_Bold } from '../../assets/Styles/styleVariables';
 
-const DURATION = 200;
+const DURATION = 300;
 
 import Animated, {
   useSharedValue,
@@ -22,6 +22,7 @@ const ButtonBouncing = ({
         outerStyle,
         innerStyle,
         textStyle,
+        toScale = 0.9,
     }) => {
 
     const transition = useSharedValue(0);
@@ -29,7 +30,7 @@ const ButtonBouncing = ({
 
     const animatedStyle = useAnimatedStyle(() => {
 
-        const scale = interpolate(transition.value, [0, 1], [1, 0.95]);
+        const scale = interpolate(transition.value, [0, 1], [1, toScale]);
         const bgOpacity = interpolate(transition.value, [0, 1], [0, 0.25]); // darken background
 
         return {

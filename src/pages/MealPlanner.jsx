@@ -236,14 +236,7 @@ export default function MealPlannerPage({ navigation }) {
             index,
           })}
           ListFooterComponent={() => (
-            // <Pressable
-            //   style={styles.addMore_Button}
-            //   onPress={() => setIsSearchModalVisible(true)}
-            // >
-            //   <Text style={styles.addMore_Button_Text}>Add more +</Text>
-            // </Pressable>
-
-            <AddNewButton creativeAction={() => setIsSearchModalVisible(true)} label={'Add more +'} 
+            <AddNewButton creativeAction={() => setIsSearchModalVisible(true)} label={'Add more +'} toScale={0.95}
               style={styles.addMore_Button} textStyle={styles.addMore_Button_Text} innerStyle={styles.addMore_innerStyle}
         />
           )}

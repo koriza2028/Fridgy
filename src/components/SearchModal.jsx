@@ -10,7 +10,9 @@ import Tag from './cooking/Tag';
 
 import { useFonts } from 'expo-font';
 import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
+
 import AppImage from './image/AppImage';
+import ButtonBouncing from './Button_Bouncing';
 
 const SearchModal = ({
   isSearchModalVisible,
@@ -74,17 +76,25 @@ const SearchModal = ({
     };
   } else if (isRecipeCreate) {
     renderItem = ({ item }) => (
-      <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, isMandatory)}>
-        <AppImage 
-          style={styles.searchItem_Image}
-          imageUri={item.imageUri}
-          staticImagePath={item.staticImagePath}
-        />
-        <View style={styles.NameAndHint}>
-            <Text style={styles.searchItem_Text}>{item.name}</Text>
-            <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
+      <ButtonBouncing 
+        onPress={() => {
+          addProduct(item, isMandatory)
+        }
+          }
+        innerStyle={styles.innerPressable}  
+        toScale={0.95} label={
+        <View style={styles.fridgeItem}>
+          <AppImage 
+            style={styles.searchItem_Image}
+            imageUri={item.imageUri}
+            staticImagePath={item.staticImagePath}
+          />
+          <View style={styles.NameAndHint}>
+              <Text style={styles.searchItem_Text}>{item.name}</Text>
+              <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
           </View>
-      </Pressable>
+        </View>}
+      />
     );
   } else if (isMealPlanner) {
     renderItem = ({ item }) => (
@@ -153,7 +163,8 @@ const SearchModal = ({
         placeholder="Find a product"
         value={searchQuery}
         onChangeText={handleSearch}
-        ref={modalSearchRef}
+        // ref={modalSearchRef}
+        // нахер его, от него лишь проблемы с двойными кликами 
       />
       
 
@@ -164,7 +175,7 @@ const SearchModal = ({
               data={modifiedData}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderItem}
-              keyboardShouldPersistTaps="handled"
+              keyboardShouldPersistTaps="always"
               style={styles.flatList}
             />
           )}
@@ -172,15 +183,16 @@ const SearchModal = ({
       )}
 
       {!isBasket && isRecipeCreate && (
-        <View style={styles.modalContent}>
-          <FlatList
-            data={filteredData}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderItem}
-            keyboardShouldPersistTaps="handled"
-            style={styles.flatList}
-          />
-        </View>
+          <View style={styles.modalContent}>
+            <FlatList
+              data={filteredData}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderItem}
+              onScrollBeginDrag={Keyboard.dismiss}
+              keyboardShouldPersistTaps="always"
+              style={styles.flatList}
+            />
+          </View>
       )}
 
       {!isBasket && !isRecipeCreate && (
@@ -189,7 +201,7 @@ const SearchModal = ({
             data={filteredData}
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderItem}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             style={styles.flatList}
           />
         </View>
@@ -230,6 +242,9 @@ const styles = StyleSheet.create({
     elevation: 2, 
     // marginTop: 20,
     // marginBottom: 10,
+  },
+  innerPressable: {
+    borderRadius: 6
   },
   flatList: {
     marginTop: 8,

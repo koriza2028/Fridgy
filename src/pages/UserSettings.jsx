@@ -20,7 +20,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 
 import UserSlots from '../components/usersettings/UserSlots';
 import useAuthStore from '../store/authStore';
-import { toggleUserMode, changeUsername } from '../store/userAccountStore';
+import { toggleUserMode, setUsername } from '../store/userAccountStore';
 
 import {
   createInvite,
@@ -281,7 +281,7 @@ export default function UserSettingsPage() {
       return;
     }
     try {
-      await changeUsername({ userId: editUserId, newUsername });
+      await setUsername({ userId: editUserId, username: newUsername });
       Alert.alert('Success', 'Username updated');
       // Update local family members username too
       loadFamilyMembers();

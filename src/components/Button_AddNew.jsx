@@ -13,13 +13,13 @@ import Animated, {
 
 
 
-const AddNewButton = ({ creativeAction, label, style, textStyle, innerStyle }) => {
+const AddNewButton = ({ creativeAction, label, style, textStyle, innerStyle, toScale = 0.9 }) => {
 
     const transition = useSharedValue(0);
     const isActive = useSharedValue(false);
 
     const animatedStyle = useAnimatedStyle(() => {
-      const scale = interpolate(transition.value, [0, 1], [1, 0.90]);
+      const scale = interpolate(transition.value, [0, 1], [1, toScale]);
       const bgOverlayOpacity = interpolate(transition.value, [0, 1], [0, 0.15]);
 
       return {
