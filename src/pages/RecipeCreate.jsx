@@ -189,21 +189,34 @@ export default function RecipeCreatePage({ navigation, route }) {
       });
   }, [id, title, categories, mandatoryIngredients, optionalIngredients, description, imageUri, ctx.userId, navigation]);
 
+  const getAvailableProducts = useCallback(() => {
+    const usedIds = new Set([
+      ...mandatoryIngredients.map(i => i.productId),
+      ...optionalIngredients.map(i => i.productId),
+    ]);
+    return products.filter(p => !usedIds.has(p.id));
+  }, [products, mandatoryIngredients, optionalIngredients]);
+
+  useEffect(() => {
+    setFilteredData(getAvailableProducts());
+  }, [products, mandatoryIngredients, optionalIngredients, getAvailableProducts]);
+
   const handleSearchInput = useCallback(
     (text) => {
       setSearchQuery(text);
+      let base = getAvailableProducts();
       let results = [];
       if (text) {
-        results = products.filter((item) =>
+        results = base.filter((item) =>
           item.name.toLowerCase().includes(text.toLowerCase())
         );
       } else {
-        results = products;
+        results = base;
       }
       results.sort((a, b) => a.name.localeCompare(b.name));
       setFilteredData(results);
     },
-    [products]
+    [getAvailableProducts]
   );
 
   const addIngredient = useCallback(async (item, mandatoryFlag) => {
@@ -223,7 +236,6 @@ export default function RecipeCreatePage({ navigation, route }) {
         setOptionalIngredients((prev) => [...prev, ingredientToAdd]);
       }
       closeSearchModal();
-      setProducts((prev) => prev.filter((product) => product.id !== item.id));
     } catch (error) {
       console.error("Failed to add ingredient:", error);
       setError("Failed to add ingredient. Please try again.");
@@ -233,9 +245,10 @@ export default function RecipeCreatePage({ navigation, route }) {
   const removeIngredient = useCallback((idToRemove, mandatoryFlag) => {
     try {
       if (mandatoryFlag) {
-        setMandatoryIngredients((prev) =>
-          prev.filter((ing) => (ing._id || ing.productId) !== idToRemove)
-        );
+        setMandatoryIngredients((prev) => {
+          const updated = prev.filter((ing) => (ing._id || ing.productId) !== idToRemove);
+          return [...updated]; // new array ref
+        });
       } else {
         setOptionalIngredients((prev) =>
           prev.filter((ing) => (ing._id || ing.productId) !== idToRemove)
@@ -256,14 +269,14 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   const openIngredientSearchModal = useCallback(
     (mandatoryFlag) => {
-      setFilteredData(products);
+      setFilteredData(getAvailableProducts());
       setIsMandatoryFlag(mandatoryFlag);
       setSearchModalVisible(true);
       setTimeout(() => {
         modalSearchRef.current?.focus();
       }, 100);
     },
-    [products]
+    [getAvailableProducts]
   );
 
   const closeSearchModal = useCallback(() => {
@@ -272,7 +285,18 @@ export default function RecipeCreatePage({ navigation, route }) {
     setFilteredData([]);
   }, []);
 
-  const isSaveDisabled = useMemo(() => title.trim() === "" || mandatoryIngredients.length === 0, [title, mandatoryIngredients]);
+  const isSaveDisabled = useMemo(() => {
+  const hasValidTitle = title.trim().length > 0;
+  const hasAtLeastOneIngredient = Array.isArray(mandatoryIngredients) && mandatoryIngredients.length > 0;
+  return !(hasValidTitle && hasAtLeastOneIngredient);
+}, [title, mandatoryIngredients]);
+
+useEffect(() => {
+  console.log('title:', title);
+  console.log('mandatoryIngredients:', mandatoryIngredients);
+  console.log('isSaveDisabled:', isSaveDisabled);
+}, [isSaveDisabled]);
+
   const [isEditing, setIsEditing] = useState(false);
 
   const combinedData = useMemo(() => {
@@ -514,7 +538,7 @@ export default function RecipeCreatePage({ navigation, route }) {
         </View>
       </View>
     );
-  }, [description]);
+  }, [isSaveDisabled, isCreatingNew, confirmDelete, saveOrUpdateRecipe, id]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

@@ -72,13 +72,7 @@ const useFamilyStore = create((set) => ({
   // Existing methods...
   clearOwnerId: () => set({ ownerId: null }),
 
-  fetchOwnerId: async (userId) => {
-    const userDoc = await getDoc(doc(db, "users", userId));
-    if (!userDoc.exists()) throw new Error("User not found");
-
-    const data = userDoc.data();
-    const familyId = data.familyId;
-
+  fetchOwnerId: async (familyId) => {
     if (!familyId) {
       set({ ownerId: null });
       return;

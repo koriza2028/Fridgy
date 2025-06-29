@@ -11,7 +11,7 @@ export default function ButtonGoBack() {
     return (         
             <Pressable style={styles.Button_GoBack}
                 onPress={() => navigation.goBack()}>
-            <Entypo name="chevron-left" size={32} style={{ width: 60}} />
+            <Entypo name="chevron-left" size={34} style={{ width: 60}} />
             </Pressable>
     )}
 
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 
     Button_GoBack: {
         position: 'absolute',
-        top: 54,
-        left: 2,
+        top: 60,
+        left: 10,
     }
 })

@@ -30,7 +30,6 @@ import {
 
 import {
   exitFamilyMembership,
-  removeFamilyMember,
 } from '../store/familyStore';
 
 import useFamilyStore from '../store/familyStore';
@@ -238,22 +237,7 @@ export default function UserSettingsPage() {
   };
   // ───────────────────────────────────────────────────────────────────────
 
-  // ── remove a member (owner only) ────────────────────────────────────
-  const handleRemoveMember = (memberId) => async () => {
-    try {
-      await removeFamilyMember({
-        ownerId: userId,
-        familyId,
-        memberId,
-      });
-      Alert.alert('Success', 'Member removed');
-      // Reload members list after removal
-      loadFamilyMembers();
-    } catch (err) {
-      console.error('Remove member failed', err);
-      Alert.alert('Error', err.message);
-    }
-  };
+
   // ───────────────────────────────────────────────────────────────────────
 
   // ── username editing handlers ────────────────────────────────────────
@@ -382,7 +366,7 @@ export default function UserSettingsPage() {
           )} */}
 
           {/* Leave family */}
-          {familyId && !isOwner && (
+          {familyId && isOwner && (
             <View style={{ marginBottom: 24 }}>
               <Button
                 title="Leave Family"

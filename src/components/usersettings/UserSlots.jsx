@@ -1,10 +1,21 @@
-import React, {useState} from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, Alert} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import { useFonts } from 'expo-font';
 
 import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
+
+
+import { setUsername } from '../../store/userAccountStore';
+import {
+  exitFamilyMembership,
+  removeFamilyMember,
+  clearOwnerId
+} from '../../store/familyStore';
+
+import useFamilyStore from '../../store/familyStore';
+import useAuthStore from '../../store/authStore';
 
 // const invitedUsers = [
 //   { id: 'user-2', name: 'Array.first', color: '#f59e0b', namePosition: 'start' },
@@ -18,6 +29,9 @@ import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } f
 const MAX_SLOTS = 5;
 
 const UserSlot = ({ user, isCurrentUser, createInvite }) => {
+  const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
+  const ownerId = useFamilyStore((state) => state.ownerId);
+  const familyId = useAuthStore((s) => s.familyId);
 
   const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
@@ -44,6 +58,43 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
     );
   }
 
+  useEffect(() => {
+    if (!familyId) {
+      clearOwnerId();
+      return;
+    }
+    fetchOwnerId(familyId);
+  }, [familyId]);
+
+  const handleRemoveMember = (memberId) => () => {
+    Alert.alert(
+      'Remove Member',
+      'Are you sure you want to remove this family member?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await removeFamilyMember({
+                ownerId: ownerId,
+                familyId: familyId,
+                memberId: memberId,
+              });
+              Alert.alert('Success', 'Member removed');
+            } catch (err) {
+              console.error('Remove member failed', err);
+              Alert.alert('Error', err.message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+
   return (
 
     <View style={[styles.userBox, { backgroundColor: '#10b981', justifyContent: "start" }]}>
@@ -58,14 +109,14 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
               styles.userName_Input,
             ]}
           />
-          <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
+          {/* <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
             <MaterialIcons name={isEditable ? 'check' : 'edit'} size={20} color="white" />
-          </Pressable>
+          </Pressable> */}
         </>
       ) : (
         <>
         <Text style={[styles.userText]}>{user.username}</Text>
-        <Pressable style={styles.editButton}>
+        <Pressable style={styles.editButton} onPress={handleRemoveMember(user.userId)}>
           <MaterialIcons name={'remove-circle'} size={20} color="white" />
         </Pressable>
         </>
@@ -80,7 +131,7 @@ const UserSlots = ({currentUser, members, createInvite}) => {
     <View style={styles.container}>
         <UserSlot user={currentUser} isCurrentUser={true} />
         {members.map((user, index) => (
-          <UserSlot key={index} user={user} isCurrentUser={false} />
+          <UserSlot key={index} user={user} isCurrentUser={false}/>
         ))}
         <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/>
     </View>
