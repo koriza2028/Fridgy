@@ -168,7 +168,7 @@ const SearchModal = ({
       />
       
 
-      {isBasket && !isRecipeCreate && (
+      {/* {isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
           {searchQuery.trim() !== '' && (
             <FlatList
@@ -180,7 +180,7 @@ const SearchModal = ({
             />
           )}
         </View>
-      )}
+      )} */}
 
       {!isBasket && isRecipeCreate && (
           <View style={styles.modalContent}>

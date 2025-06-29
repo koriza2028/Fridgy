@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import ButtonBouncing from '../Button_Bouncing';
+
 import { useFonts } from 'expo-font';
 
 import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
@@ -11,7 +13,6 @@ import { setUsername } from '../../store/userAccountStore';
 import {
   exitFamilyMembership,
   removeFamilyMember,
-  clearOwnerId
 } from '../../store/familyStore';
 
 import useFamilyStore from '../../store/familyStore';
@@ -30,6 +31,7 @@ const MAX_SLOTS = 5;
 
 const UserSlot = ({ user, isCurrentUser, createInvite }) => {
   const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
+  const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
   const familyId = useAuthStore((s) => s.familyId);
 
@@ -38,23 +40,14 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
 
-
-    const [text, setText] = useState("John Doe"); // default value
-    const [isEditable, setIsEditable] = useState(false);
-  
-    const handleIconPress = () => {
-      if (isEditable) {
-        // Save logic here (e.g., update to Firestore)
-        console.log('Saved:', text);
-      }
-      setIsEditable(!isEditable);
-    };
-
   if (!user) {
     return (
-      <Pressable style={[styles.userBox, styles.emptyBox]} onPress={createInvite}>
-        <Text style={styles.plusSign}>+ Add member</Text>
-      </Pressable>
+      <ButtonBouncing scale={0.95} onPress={createInvite} style={[styles.userBox, styles.emptyBox]} innerStyle={styles.innerPress}
+        label={<Text style={styles.plusSign}>+ Add member</Text>}
+      />
+      // <Pressable style={[styles.userBox, styles.emptyBox]} onPress={createInvite}>
+        
+      // </Pressable>
     );
   }
 
@@ -100,22 +93,14 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
     <View style={[styles.userBox, { backgroundColor: '#10b981', justifyContent: "start" }]}>
       {isCurrentUser ? (
         <>
-          <Text style={styles.staticPrefix}>You, </Text>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            editable={isEditable}
-            style={[
-              styles.userName_Input,
-            ]}
-          />
+          <Text style={styles.staticPrefix}>You, {user.email} </Text>
           {/* <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
             <MaterialIcons name={isEditable ? 'check' : 'edit'} size={20} color="white" />
           </Pressable> */}
         </>
       ) : (
         <>
-        <Text style={[styles.userText]}>{user.username}</Text>
+        <Text style={[styles.userText]}>{user.email}</Text>
         <Pressable style={styles.editButton} onPress={handleRemoveMember(user.userId)}>
           <MaterialIcons name={'remove-circle'} size={20} color="white" />
         </Pressable>
@@ -133,7 +118,10 @@ const UserSlots = ({currentUser, members, createInvite}) => {
         {members.map((user, index) => (
           <UserSlot key={index} user={user} isCurrentUser={false}/>
         ))}
-        <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/>
+        {members.length < MAX_SLOTS - 1 && (
+          <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/>
+        )}
+        {/* <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/> */}
     </View>
   );
 };
@@ -181,6 +169,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: greyTextColor,
     fontFamily: MainFont,
+  },
+  innerPress: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'start',
+    justifyContent: 'center',
   },
   userText: {
     fontSize: 16,

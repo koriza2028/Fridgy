@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, ScrollView, Pressable, Text, 
+import { View, Pressable, Text, FlatList,
   Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert, LayoutAnimation } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
@@ -9,6 +9,8 @@ import BasketItem from '../components/basket/BasketItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import Button_Autobasket from '../components/basket/Button_Autobasket';
 import ButtonBouncing from '../components/Button_Bouncing';
+
+import AppImage from '../components/image/AppImage';
 
 import { useFocusEffect } from '@react-navigation/native';
 import useAuthStore from '../store/authStore';
@@ -24,7 +26,7 @@ import {
 } from '../store/basketStore';
 
 import { useFonts } from 'expo-font';
-import { buttonColor, backgroundColor, addButtonColor } from '../../assets/Styles/styleVariables';
+import { buttonColor, backgroundColor, addButtonColor, SecondTitleFontSize, MainFont } from '../../assets/Styles/styleVariables';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
@@ -65,19 +67,33 @@ export default function BasketPage({ navigation }) {
     }, [ctx.userId, ctx.familyId])
   );
 
+  // const handleSearch = (text) => {
+  //   setSearchQuery(text);
+  //   if (text) {
+  //     const allProducts = [...available, ...archived];
+  //     const results = allProducts.filter(prod =>
+  //       !basket.some(b => b.productId === prod.id) &&
+  //       prod.name.toLowerCase().includes(text.toLowerCase())
+  //     );
+  //     setFilteredData(results);
+  //   } else {
+  //     closeSearchModal();
+  //   }
+  // };
+
   const handleSearch = (text) => {
-    setSearchQuery(text);
-    if (text) {
-      const allProducts = [...available, ...archived];
-      const results = allProducts.filter(prod =>
-        !basket.some(b => b.productId === prod.id) &&
-        prod.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredData(results);
-    } else {
-      closeSearchModal();
-    }
-  };
+  setSearchQuery(text);
+  if (text) {
+    const allProducts = [...available, ...archived];
+    const results = allProducts.filter(prod =>
+      !basket.some(b => b.productId === prod.id) &&
+      prod.name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredData(results);
+  } else {
+    setFilteredData([]);
+  }
+};
 
   const openSearchModal = (text) => {
     setSearchQuery(text);
@@ -173,9 +189,11 @@ export default function BasketPage({ navigation }) {
       <View style={styles.BasketPage}>
         <View style={styles.BasketPage_ContentWrapper}>
 
-          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
+          {/* <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} /> */}
+          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
 
-          <SearchModal 
+
+          {/* <SearchModal 
             isSearchModalVisible={isSearchModalVisible}
             closeSearchModal={closeSearchModal}
             addProduct={addProduct}
@@ -183,9 +201,40 @@ export default function BasketPage({ navigation }) {
             handleSearch={handleSearch}
             filteredData={filteredData}
             isBasket={true}
-          />
+          /> */}
 
           <View style={styles.BasketPage_ListOfBasketItems}>
+            {searchQuery.length > 0 ? (
+              <FlatList
+                data={[...filteredData, searchQuery]}
+                keyExtractor={(item, index) => index.toString()}
+                keyboardShouldPersistTaps="always"
+                renderItem={({ item }) => {
+                  if (typeof item === 'string') {
+                    return (
+                      <Pressable style={[styles.newItem, styles.searchItem]} onPress={() => addProduct(item, false)}>
+                        <Text style={styles.searchItem_Text}>{item}</Text>
+                        <Text style={styles.ItemCategoryHint}>Add new item</Text>
+                      </Pressable>
+                    );
+                  } else {
+                    return (
+                      <Pressable style={[styles.fridgeItem, styles.searchItem]} onPress={() => addProduct(item, true)}>
+                        <AppImage 
+                          style={styles.searchItem_Image}
+                          imageUri={item.imageUri}
+                          staticImagePath={item.staticImagePath}
+                        />
+                        <View style={styles.NameAndHint}>
+                          <Text style={styles.searchItem_Text}>{item.name}</Text>
+                          <Text style={styles.ItemCategoryHint}>{item.category?.tagName || ''}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  }
+                }}
+              />
+            ) : (
             <SwipeListView
               data={basket}
               keyExtractor={item => item.basketId.toString()}
@@ -211,6 +260,7 @@ export default function BasketPage({ navigation }) {
                 </View>
               )}
             />
+          )}
           </View>
 
           <ModalItemInfo 
@@ -306,5 +356,58 @@ const styles = StyleSheet.create({
     marginTop: 18,
     width: 50,
     height: 50,
-  }
+  },
+
+
+
+  innerPressable: {
+      borderRadius: 6
+    },
+    flatList: {
+      marginTop: 8,
+    },
+    searchItem: {
+      padding: 10,
+      marginHorizontal: 10,
+      borderRadius: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
+    },
+    fridgeItem: { 
+      flexDirection: 'row',
+    },
+    newItem: {
+      backgroundColor: '#eee',
+    },
+    mealItem: {
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
+      flexDirection: 'row',
+      // backgroundColor: '#fff',
+      // alignItems: 'center',
+    },
+    ItemCategoryTag: {
+      height: 20,
+    },
+    searchItem_Image: {
+      width: 50,
+      height: 50,
+      borderRadius: 8,
+    },
+    NameAndHint: {
+      flexDirection: 'column',
+      marginLeft: 16,
+    },
+    searchItem_Text: {
+      fontSize: SecondTitleFontSize,
+      fontFamily: MainFont,
+    },
+    ItemCategoryHint: {
+      paddingTop: 10,
+      fontSize: 12,
+      fontFamily: MainFont,
+    },
 });

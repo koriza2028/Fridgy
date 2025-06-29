@@ -290,9 +290,9 @@ export default function UserSettingsPage() {
       <ScrollView>
         <View style={styles.UserSettingsPage_ContentWrapper}>
           {/* mode toggle */}
-          <View style={{ marginVertical: 16 }}>
-            <Button title={changeMode} onPress={handleToggle} />
-          </View>
+          {/* <View style={{ marginVertical: 16 }}>
+            <Pressable title={changeMode} onPress={handleToggle} />
+          </View> */}
 
           {/* {familyId && (
             <View style={{ marginBottom: 24 }}>
@@ -366,7 +366,7 @@ export default function UserSettingsPage() {
           )} */}
 
           {/* Leave family */}
-          {familyId && isOwner && (
+          {familyId && !isOwner && (
             <View style={{ marginBottom: 24 }}>
               <Button
                 title="Leave Family"
