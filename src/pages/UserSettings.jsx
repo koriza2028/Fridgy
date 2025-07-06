@@ -281,89 +281,19 @@ export default function UserSettingsPage() {
   };
   // ───────────────────────────────────────────────────────────────────────
 
-  // ── deep-link listener, invite acceptance, fonts etc. omitted for brevity ─
-  // (You can keep all your original deep-linking and font loading logic here unchanged)
-  // ───────────────────────────────────────────────────────────────────────
-
   return (
     <View style={styles.UserSettingsPage}>
       <ScrollView>
         <View style={styles.UserSettingsPage_ContentWrapper}>
           {/* mode toggle */}
-          {/* <View style={{ marginVertical: 16 }}>
-            <Pressable title={changeMode} onPress={handleToggle} />
-          </View> */}
+            <Pressable title={changeMode} onPress={handleToggle}>
+            <Text style={styles.Text_SwitchMode}>
+              {lastUsedMode === 'family'
+                ? 'You are in Family Mode'
+                : 'You are in Personal Mode'}
+            </Text>
+            </Pressable>
 
-          {/* {familyId && (
-            <View style={{ marginBottom: 24 }}>
-              <Text style={styles.sectionHeader}>Family Members</Text>
-              <FlatList
-                data={familyMembers}
-                keyExtractor={(item) => item.userId}
-                renderItem={({ item }) => {
-                  const isOwner = ownerId === userId;
-                  const isMemberOwner = item.userId === ownerId;
-                  const isEditing = editingUserIds.has(item.userId);
-
-                  return (
-                    <View style={styles.memberRow}>
-                      {isEditing ? (
-                        <>
-                          <TextInput
-                            style={styles.usernameInput}
-                            value={usernameEdits[item.userId]}
-                            onChangeText={(txt) => onUsernameChange(item.userId, txt)}
-                            autoFocus
-                          />
-                          <View style={styles.editButtons}>
-                            <Button
-                              title="Save"
-                              onPress={() => saveUsername(item.userId)}
-                            />
-                            <Button
-                              title="Cancel"
-                              onPress={() => cancelEditing(item.userId)}
-                            />
-                          </View>
-                        </>
-                      ) : (
-                        <>
-                          <Text style={styles.usernameText}>{item.username || '(no name)'}</Text>
-                          {item.userId === userId && (
-                            <Pressable onPress={() => startEditing(item.userId)} style={styles.editIcon}>
-                              <MaterialIcons name="edit" size={20} color="#444" />
-                            </Pressable>
-                          )}
-                        </>
-                      )}
-
-                      {isOwner && !isMemberOwner && (
-                        <Pressable
-                          onPress={() => {
-                            Alert.alert(
-                              'Remove Member',
-                              `Remove ${item.username || 'this member'} from family?`,
-                              [
-                                { text: 'Cancel', style: 'cancel' },
-                                {
-                                  text: 'Remove',
-                                  style: 'destructive',
-                                  onPress: handleRemoveMember(item.userId),
-                                },
-                              ]
-                            );
-                          }}
-                          style={styles.removeButton}
-                        >
-                          <FontAwesome6 name="user-xmark" size={22} color="red" />
-                        </Pressable>
-                      )}
-                    </View>
-                  );
-                }}
-              />
-            </View>
-          )} */}
 
           {/* Leave family */}
           {familyId && !isOwner && (
@@ -492,6 +422,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: MainFont,
     color: greyTextColor2,
+  },
+  Text_SwitchMode: {
+    fontSize: TextFontSize + 2,
+    fontFamily: MainFont_SemiBold,
   },
   listOfPremiumFeatures: {
     marginTop: 10,

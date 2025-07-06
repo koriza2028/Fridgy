@@ -29,11 +29,12 @@ import useAuthStore from '../../store/authStore';
 
 const MAX_SLOTS = 5;
 
-const UserSlot = ({ user, isCurrentUser, createInvite }) => {
+const UserSlot = ({ user, isCurrentUser, createInvite, loadFamilyMembers}) => {
+    const familyId = useAuthStore((s) => s.familyId);
+
   const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
   const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
-  const familyId = useAuthStore((s) => s.familyId);
 
   const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
@@ -76,6 +77,7 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
                 memberId: memberId,
               });
               Alert.alert('Success', 'Member removed');
+              await loadFamilyMembers();
             } catch (err) {
               console.error('Remove member failed', err);
               Alert.alert('Error', err.message);
@@ -111,15 +113,51 @@ const UserSlot = ({ user, isCurrentUser, createInvite }) => {
   );
 };
 
-const UserSlots = ({currentUser, members, createInvite}) => {
+const UserSlots = ({currentUser, createInvite}) => {
+  const familyId = useAuthStore((s) => s.familyId);
+
+  const familyMembers = useFamilyStore((state) => state.familyMembers);
+  const setFamilyMembers = useFamilyStore((state) => state.setFamilyMembers);
+  const fetchFamilyMembers = useFamilyStore((state) => state.fetchFamilyMembers);
+
+  const loadFamilyMembers = async () => {
+      if (!familyId) {
+        setFamilyMembers([]);
+        return;
+      }
+      try {
+        const members = await fetchFamilyMembers(familyId);
+        setFamilyMembers(members);
+      } catch (err) {
+        console.error('Failed to load family members', err);
+        Alert.alert('Error', 'Could not load family members');
+      }
+    };
+
+  useEffect(() => {
+    if (!familyId) {
+      setFamilyMembers([]);
+      return;
+    }
+    loadFamilyMembers();
+  }, [familyId]);
+
   return (
     <View style={styles.container}>
         <UserSlot user={currentUser} isCurrentUser={true} />
-        {members.map((user, index) => (
-          <UserSlot key={index} user={user} isCurrentUser={false}/>
+        {familyMembers.map((user, index) => (
+          <UserSlot key={index} user={user} isCurrentUser={false} loadFamilyMembers={loadFamilyMembers}/>
         ))}
-        {members.length < MAX_SLOTS - 1 && (
-          <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/>
+        {familyMembers.length < MAX_SLOTS - 1 && (
+          <UserSlot
+            user={null}
+            isCurrentUser={false}
+            createInvite={async () => {
+              await createInvite();
+              await loadFamilyMembers();
+            }}
+            loadFamilyMembers={loadFamilyMembers}
+          />
         )}
         {/* <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/> */}
     </View>

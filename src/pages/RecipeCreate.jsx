@@ -451,18 +451,23 @@ useEffect(() => {
             />
           </View>
           <View style={styles.productDataEntry}>
-            <Pressable
+            <View
               style={[styles.productDataEntryInput, styles.productTags]}
-              onPress={openCategoryModal}
+              // onPress={openCategoryModal}
             >
+              
+              <ButtonBouncing label="Add tags +" toScale='0.92' onPress={openCategoryModal}
+                innerStyle={styles.innerTagStyle} textStyle={styles.innerTextStyle}/>
+
               {categories && categories.length > 0 ? (
                 categories.map((category, index) => (
                   <Tag key={index} name={category.tagName} type={category.tagType} icon={category.tagIcon} />
                 ))
               ) : (
-                <Tag name="Add tags +" />
+                // <Tag name="Add tags +" />
+                <Text></Text>
               )}
-            </Pressable>
+            </View>
           </View>
           <ModalProductCategoryPicker
             isCategoryModalVisible={isCategoryModalVisible}
@@ -633,6 +638,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  innerTagStyle: {
+    // paddingVertical: 16,
+    borderRadius: 25,
+    paddingVertical: 2,
+    paddingHorizontal: 2,
+    // borderColor: 'grey',
+    marginRight: 4,
+    // borderWidth: 1,
+  },
+  innerTextStyle: {
+    fontFamily: MainFont_Bold,
+    fontSize: TextFontSize,
+    color: '#444',
+    padding: 6,
+    backgroundColor: backgroundColor,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'grey',
+  },
+
 
   RecipeCreatePage: {
     flex: 1,
@@ -676,6 +701,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: "center",
     borderColor: "#ddd",
+    marginVertical: -4,
   },
   productDataEntryInput: {
     marginVertical: 6,

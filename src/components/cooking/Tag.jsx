@@ -17,29 +17,13 @@ export default function Tag({ name, type, icon }) {
         <View style={[styles.TagBody, 
         // tagStyle
         ]}>
-            {name && !icon && <Text style={[styles.TagName, {paddingVertical: 6,paddingHorizontal: 8,}]}>{name}</Text>}
+            {name && !icon && <Text style={[styles.TagName, {paddingVertical: 6,paddingHorizontal: 6,}]}>{name}</Text>}
             {icon && <Text style={[styles.TagIcon, {padding: 4,}]}>{icon}</Text>}
              
             {/* <Text style={styles.TagIcon}>{icon}</Text>  */}
         </View>
 )};
 
-// const getTagStyle = (type) => {
-//     switch (type) {
-//         case 1:
-//             return styles.typeOne;
-//         case 2:
-//             return styles.typeTwo;
-//         case 3:
-//             return styles.typeThree;
-//         case 3:
-//             return styles.typeFour;
-//         case 3:
-//             return styles.typeFive;
-//         default:
-//             return styles.defaultType;
-//     }
-// };
 
 
 const styles = StyleSheet.create({

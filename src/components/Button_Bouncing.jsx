@@ -19,7 +19,6 @@ const ButtonBouncing = ({
         isDisabled = false,
         isLoading = false,
         style,
-        outerStyle,
         innerStyle,
         textStyle,
         toScale = 0.9,

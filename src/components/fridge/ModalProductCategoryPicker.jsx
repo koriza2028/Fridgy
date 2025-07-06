@@ -31,27 +31,28 @@ export default function ModalProductCategoryPicker({
       setSelectedCategory(alreadySelectedCategory);
   }, [alreadySelectedCategory]);
 
+
   const handleCategoryOptionSelect = (selectedTag) => {
-    if (multiSelect) {
-      setSelectedCategories((prevSelected) => {
-        const isAlreadySelected = prevSelected.some(tag => {
-          tag.tagName === selectedTag.tagName
-      });
-        
-        if (isAlreadySelected) {
-          return prevSelected.filter(tag => tag.tagName !== selectedTag.tagName);
-        } else {
-          // Remove any previously selected tag with the same tagType and add the new one
-          const filteredSelection = prevSelected.filter(tag => tag.tagType !== selectedTag.tagType);
-          return [...filteredSelection, selectedTag];
-        }
-      });
-    } else {
-      setSelectedCategory(selectedTag);
-      onCategorySelect(selectedTag);
-      setIsCategoryModalVisible(false);
-    }
-  };
+  if (multiSelect) {
+    setSelectedCategories((prevSelected) => {
+      const isAlreadySelected = prevSelected.some(tag => tag.tagName === selectedTag.tagName);
+
+      if (isAlreadySelected) {
+        // Deselect by removing the tag
+        return prevSelected.filter(tag => tag.tagName !== selectedTag.tagName);
+      } else {
+        // Remove any selected tag of the same tagType, then add the new tag
+        const filteredSelection = prevSelected.filter(tag => tag.tagType !== selectedTag.tagType);
+        return [...filteredSelection, selectedTag];
+      }
+    });
+  } else {
+    setSelectedCategory(selectedTag);
+    onCategorySelect(selectedTag);
+    setIsCategoryModalVisible(false);
+  }
+};
+
 
   const handleConfirmSelection = () => {
     onCategorySelect(selectedCategories);

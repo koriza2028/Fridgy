@@ -116,4 +116,3 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
   await updateDoc(userRef, { lastUsedMode: "family" });
   return { mode: "family", familyId };
 };
-
