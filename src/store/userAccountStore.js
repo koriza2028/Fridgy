@@ -102,17 +102,38 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
   if (!snap.exists()) throw new Error("User account not found");
 
   let familyId = snap.data().familyId;
-  if (!familyId) {
+  let shouldCreateNewFamily = false;
+
+  if (familyId) {
+    const familyRef = doc(db, "families", familyId);
+    const famSnap = await getDoc(familyRef);
+
+    if (!famSnap.exists()) {
+      shouldCreateNewFamily = true;
+    } else {
+      const familyData = famSnap.data();
+      const isMember = Array.isArray(familyData.members) && familyData.members.includes(userId);
+
+      if (!isMember) {
+        shouldCreateNewFamily = true;
+      }
+    }
+  } else {
+    shouldCreateNewFamily = true;
+  }
+
+  if (shouldCreateNewFamily) {
     familyId = `fam-${Date.now()}`;
     const familyRef = doc(db, "families", familyId);
     await setDoc(familyRef, {
       createdAt: Date.now(),
       createdBy: userId,
-      members: [userId],
+      members: [],
     });
     await updateDoc(userRef, { familyId });
   }
 
   await updateDoc(userRef, { lastUsedMode: "family" });
   return { mode: "family", familyId };
+
 };

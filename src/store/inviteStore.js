@@ -9,6 +9,7 @@ import {
   where,
   getDocs,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -84,6 +85,12 @@ export const acceptInvite = async ({ userId }, inviteId) => {
   await updateDoc(accountRef, {
     familyId,
     lastUsedMode: "family",
+  });
+
+  // Add user to family's member list
+  const familyRef = doc(db, "families", familyId);
+  await updateDoc(familyRef, {
+    members: arrayUnion(userId),
   });
 
   // Optional: get username of the user accepting the invite
