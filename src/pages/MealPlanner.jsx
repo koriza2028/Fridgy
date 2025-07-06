@@ -1,20 +1,23 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, Alert, 
-  Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation
+  Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation, FlatList,
  } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
+import AppImage from '../components/image/AppImage';
+
 import CalendarModal from '../components/mealplanner.jsx/ModalCalendar.jsx';
 import MealCard from '../components/cooking/MealCard.jsx';
 import SearchModal from "../components/SearchModal";
+import SearchInput from '../components/Search';
 import AddNewButton from '../components/Button_AddNew.jsx';
 import ButtonBouncing from '../components/Button_Bouncing.jsx';
 
 import { useFonts } from 'expo-font';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { buttonColor, backgroundColor, addButtonColor, MainFont, TextFontSize, MainFont_Bold } from '../../assets/Styles/styleVariables';
+import { buttonColor, backgroundColor, addButtonColor, MainFont, TextFontSize, MainFont_Bold, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 import useAuthStore from '../store/authStore';
 import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
@@ -68,6 +71,23 @@ export default function MealPlannerPage({ navigation }) {
       .catch(console.error);
   }, [ctx.userId, ctx.familyId]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!ctx.userId) return;
+
+      fetchEnrichedRecipes(ctx)
+        .then(data => {
+          setRecipeBook({ recipes: data });
+          setFilteredData(data);
+        })
+        .catch(console.error);
+
+      fetchAvailableProducts(ctx)
+        .then(setFridgeProducts)
+        .catch(console.error);
+    }, [ctx.userId, ctx.familyId])
+  );
+
   useEffect(() => {
     if (!ctx.userId) return;
     const startDate = new Date(selectedDate);
@@ -97,17 +117,6 @@ export default function MealPlannerPage({ navigation }) {
       })
       .catch(console.error);
   }, [ctx.userId, selectedDate]);
-
-  useEffect(() => {
-    const base = recipeBook.recipes.filter(r => !plannedRecipeIds.some(id => id.startsWith(r.id)));
-    if (searchQuery.trim()) {
-      setFilteredData(
-        base.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    } else {
-      setFilteredData(base);
-    }
-  }, [searchQuery, recipeBook.recipes, plannedRecipeIds]);
 
   const changeDate = (offsetDays) => {
     const d = new Date(selectedDate);
@@ -160,13 +169,13 @@ export default function MealPlannerPage({ navigation }) {
     }
   };
 
-  const handleSearch = (text) => {
-    setSearchQuery(text);
-  };
+  // const handleSearch = (text) => {
+  //   setSearchQuery(text);
+  // };
 
   const cards = useMemo(
     () => recipeBook.recipes.filter(r => plannedRecipeIds.includes(`${r.id}_${selectedDate}`)),
-    [recipeBook.recipes, plannedRecipeIds, selectedDate]
+    [recipeBook, recipeBook.recipes, plannedRecipeIds, selectedDate]
   );
 
   const renderItem = useCallback(
@@ -201,9 +210,29 @@ export default function MealPlannerPage({ navigation }) {
       }, [])
   );
 
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    if (text) {
+      const recipes = recipeBook.recipes;
+      const results = recipes.filter(recipe =>
+        !plannedRecipeIds.includes(`${recipe.id}_${selectedDate}`) &&
+        recipe.title.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredData(results);
+    } else {
+      const base = recipeBook.recipes.filter(
+        recipe => !plannedRecipeIds.includes(`${recipe.id}_${selectedDate}`)
+      );
+      setFilteredData(base);
+    }
+  };
+
   return (
     <View style={styles.MealPlannerPage}>
       <View style={styles.MealPlannerPage_ContentWrapper}>
+
+        <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
+
         <View style={styles.navigation}>
 
           <ButtonBouncing onPress={() => changeDate(-1)} innerStyle={styles.ButtonArrows}
@@ -215,7 +244,39 @@ export default function MealPlannerPage({ navigation }) {
             label={<Entypo name="arrow-long-right" size={30} />}/>
 
         </View>
+          {searchQuery.length > 0 ? (
+            <FlatList
+              data={[...filteredData]}
+              keyExtractor={(item, index) => index.toString()}
+              keyboardShouldPersistTaps="always"
+              renderItem={({ item }) => {
+                return (
+                  <Pressable style={styles.mealItem} onPress={() => handleAddRecipe(item.id)}>
+                    <AppImage 
+                      style={styles.searchItem_Image}
+                      imageUri={item.imageUri}
+                      staticImagePath={item.staticImagePath}
+                    />
+                    <View style={styles.NameAndHint}>
+                      <Text style={styles.searchItem_Text}>{item.title}</Text>
+                      {
+                        item.categories && item.categories.length > 0 ? (
+                          item.categories.map((category, index) => (
+                            <Text key={index} style={styles.ItemCategoryHint}>
+                              {category?.tagIcon || "No tag"}
+                            </Text>
+                          ))
+                        ) : (
+                          <Text style={styles.ItemCategoryHint}>No tag</Text>
+                        )
+                      }
+                    </View>
+                  </Pressable>
+                );
+              }}
 
+            />
+        ) : (
         <SwipeListView
           data={cards}
           keyExtractor={(item) => `${item.id}_${selectedDate}`}
@@ -235,12 +296,8 @@ export default function MealPlannerPage({ navigation }) {
             offset: 120 * index,
             index,
           })}
-          ListFooterComponent={() => (
-            <AddNewButton creativeAction={() => setIsSearchModalVisible(true)} label={'Add more +'} toScale={0.95}
-              style={styles.addMore_Button} textStyle={styles.addMore_Button_Text} innerStyle={styles.addMore_innerStyle}
         />
-          )}
-        />
+        )}
       </View>
 
 {/* calendar-month */}
@@ -255,92 +312,8 @@ export default function MealPlannerPage({ navigation }) {
         selectedDate={selectedDate}
       />
 
-      <SearchModal
-        isSearchModalVisible={isSearchModalVisible}
-        closeSearchModal={() => setIsSearchModalVisible(false)}
-        handleSearch={handleSearch}
-        searchQuery={searchQuery}
-        filteredData={filteredData}
-        isRecipeCreate={false}
-        addProduct={handleAddRecipe}
-        isMealPlanner={true}
-      />
     </View>
   );
-   
-
-  // return (
-  //   <View style={styles.MealPlannerPage}>
-  //     <View style={styles.MealPlannerPage_ContentWrapper}>
-
-  //       <View style={styles.navigation}>
-  //         <Pressable onPress={() => changeDate(-1)}>
-  //           <Entypo name="arrow-long-left" size={30}/>
-  //         </Pressable>
-  //         <Text>{formatDateDisplay(selectedDate)}</Text>
-  //         <Pressable onPress={() => changeDate(1)}>
-  //           <Entypo name="arrow-long-right" size={30}/>
-  //         </Pressable>
-  //       </View>
-
-  //       <View style={styles.dailyContent}>
-  //         {recipeBook.recipes
-  //           .filter(r => plannedRecipeIds.includes(r.id))
-  //           .map(recipe => (
-  //             <MealCard
-  //               key={recipe.id}
-  //               recipe={recipe}
-  //               isAvailable={true}
-  //               isMealPlanner={true}
-  //               onLongPress={() => handleRemoveRecipe(recipe.id)}
-  //             />
-  //           ))}
-  //         <Pressable style={styles.addMore_Button} onPress={() => setIsSearchModalVisible(true)}>
-  //           <Text style={styles.addMore_Button_Text}>Add more +</Text>
-  //         </Pressable>
-  //       </View>
-
-  //       <View style={styles.requiredIngredients}>
-  //         <Text>List of required ingredients {formatDateDisplay(selectedDate)}</Text>
-  //         {mergeMandatoryIngredients().map((ingredient, index) => (
-  //           // <Text key={index}>{ingredient.name}</Text>
-  //           <IngredientItem 
-  //               key={index}
-  //               ingredient={ingredient}
-  //               isAvailable={checkIngredientIsAvailable(ingredient.productId)}
-  //               />
-  //         ))}
-  //       </View>
-
-  //     </View>
-
-  //     <Pressable
-  //       style={styles.openCalendar_Button}
-  //       onPress={() => setIsCalendarVisible(prev => !prev)}
-  //     >
-  //       <Text>C</Text>
-  //     </Pressable>
-
-  //     <CalendarModal
-  //       isVisible={isCalendarVisible}
-  //       onClose={() => setIsCalendarVisible(false)}
-  //       onDaySelect={(date) => setSelectedDate(date)}
-  //       selectedDate={selectedDate}
-  //     />
-
-  //     <SearchModal
-  //       isSearchModalVisible={isSearchModalVisible}
-  //       closeSearchModal={() => setIsSearchModalVisible(false)}
-  //       handleSearch={handleSearch}
-  //       searchQuery={searchQuery}
-  //       filteredData={filteredData}
-  //       isRecipeCreate={false}
-  //       addProduct={handleAddRecipe}
-  //       isMealPlanner={true}
-  //     />
-
-  //   </View>
-  // );
 
 }
 
@@ -450,5 +423,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 2,
     elevation: 2,
+  },
+
+
+  mealItem: {
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    // backgroundColor: '#fff',
+    // alignItems: 'center',
+  },
+  searchItem_Image: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+  },
+  NameAndHint: {
+    // alignContent: 'center',
+    // justifyContent: 'center',
+    marginLeft: 16,
+    // borderWidth: 1,
+    // borderColor: '#eee',
+  },
+  searchItem_Text: {
+    fontSize: SecondTitleFontSize,
+    fontFamily: MainFont,
+  },
+  ItemCategoryHint: {
+    paddingTop: 10,
+    fontSize: 12,
+    fontFamily: MainFont,
   },
 });

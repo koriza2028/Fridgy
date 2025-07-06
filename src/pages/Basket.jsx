@@ -4,7 +4,6 @@ import { View, Pressable, Text, FlatList,
 import { SwipeListView } from 'react-native-swipe-list-view';
 
 import SearchInput from '../components/Search';
-import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
 import Button_Autobasket from '../components/basket/Button_Autobasket';
@@ -95,12 +94,12 @@ export default function BasketPage({ navigation }) {
   }
 };
 
-  const openSearchModal = (text) => {
-    setSearchQuery(text);
-    setSearchModalVisible(true);
-    handleSearch(text);
-    setTimeout(() => modalSearchRef.current?.focus(), 100);
-  };
+  // const openSearchModal = (text) => {
+  //   setSearchQuery(text);
+  //   setSearchModalVisible(true);
+  //   handleSearch(text);
+  //   setTimeout(() => modalSearchRef.current?.focus(), 100);
+  // };
 
   const closeSearchModal = () => {
     setSearchModalVisible(false);
@@ -110,7 +109,7 @@ export default function BasketPage({ navigation }) {
 
   const addProduct = async (item, isFromFridge) => {
     await addProductToBasket(ctx, item, isFromFridge);
-    closeSearchModal();
+    // closeSearchModal();
     await refreshBasket();
   };
 
