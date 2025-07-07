@@ -3,6 +3,8 @@ import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
+import ButtonBouncing from './Button_Bouncing';
+
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
@@ -60,19 +62,35 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
         style={styles.modal}
       >
         <View style={styles.menuContainer}>
-          <Pressable style={styles.menuItem} 
+
+          <ButtonBouncing 
             onPress={() => {
               onClose(); // close modal first
               navigation.navigate('UserSettingsPage');
-            }}>
-            <MaterialIcons name="person-outline" size={20} style={styles.icon} />
-            <Text style={styles.menuText}>Premium Features</Text>
-          </Pressable>
-  
-          <Pressable style={styles.menuItem} onPress={handleLogout}>
-            <MaterialIcons name="logout" size={20} style={styles.icon} />
-            <Text style={styles.menuText}>Logout</Text>
-          </Pressable>
+            }}
+
+            style={{borderRadius: 8, borderBottomLeftRadius: 0, borderBottomRightRadius: 0}}
+          
+            label={
+              <View style={styles.menuItem}>
+                <MaterialIcons name="person-outline" size={20} style={styles.icon} />
+                <Text style={styles.menuText}>Premium Features</Text>
+              </View>
+            } toScale={1}
+          />
+
+          <ButtonBouncing 
+            onPress={handleLogout}
+
+            style={{borderRadius: 8, borderTopLeftRadius: 0, borderTopRightRadius: 0}}
+
+            label={
+              <View style={styles.menuItem}>
+                <MaterialIcons name="logout" size={20} style={styles.icon} />
+                <Text style={styles.menuText}>Logout</Text>
+              </View>} toScale={1}
+          />
+
         </View>
       </Modal>
     );
@@ -89,7 +107,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
     menuContainer: {
       backgroundColor: '#fff',
       borderRadius: 8,
-      paddingVertical: 6,
+      // paddingVertical: 6,
       width: 200,
       shadowColor: '#000',
       shadowOpacity: 0.2,

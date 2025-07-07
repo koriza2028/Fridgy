@@ -456,8 +456,8 @@ useEffect(() => {
               // onPress={openCategoryModal}
             >
               
-              <ButtonBouncing label="Add tags +" toScale='0.92' onPress={openCategoryModal}
-                innerStyle={styles.innerTagStyle} textStyle={styles.innerTextStyle}/>
+              <ButtonBouncing label="Add tags +" toScale={0.95} onPress={openCategoryModal}
+                style={styles.innerTagStyle} textStyle={styles.innerTextStyle}/>
 
               {categories && categories.length > 0 ? (
                 categories.map((category, index) => (
@@ -523,13 +523,37 @@ useEffect(() => {
 
         <View style={styles.buttonPanel}>
           {!isCreatingNew && (
-            <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
-              <Text style={styles.Button_SaveRecipe_Text}>
-                <Entypo name="trash" size={28} />
-              </Text>
-            </Pressable>
+            // <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
+            //   <Text style={styles.Button_SaveRecipe_Text}>
+            //     <Entypo name="trash" size={28} />
+            //   </Text>
+            // </Pressable>
+
+            <ButtonBouncing style={{borderRadius: 30}}
+              onPress={() => confirmDelete(id)}
+              label={
+                <View style={styles.Button_DeleteRecipe}>
+                  <Text style={styles.Button_SaveRecipe_Text}>
+                    <Entypo name="trash" size={28} />
+                  </Text>
+                </View>
+              }
+            />
           )}
-          <Pressable
+
+          <ButtonBouncing 
+            innerStyle={styles.Button_SaveRecipe}
+            style={[
+                styles.Button_SaveRecipe,
+                isSaveDisabled && styles.Button_SaveRecipeDisabled,
+                isCreatingNew && styles.Button_SaveRecipeAlone,
+              ]}
+            // onPress={saveOrUpdateRecipe}
+            isDisabled={isSaveDisabled}
+            label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
+            toScale={0.95}
+          />
+          {/* <Pressable
             style={[
               styles.Button_SaveRecipe,
               isSaveDisabled && styles.Button_SaveRecipeDisabled,
@@ -539,7 +563,8 @@ useEffect(() => {
             disabled={isSaveDisabled}
           >
             <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-          </Pressable>
+          </Pressable> */}
+
         </View>
       </View>
     );
@@ -644,7 +669,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 2,
     // borderColor: 'grey',
-    marginRight: 4,
+    marginRight: 6,
+    marginLeft: -6,
     // borderWidth: 1,
   },
   innerTextStyle: {

@@ -295,14 +295,16 @@ export default function ModalCreateProduct({
                   <View style={styles.buttonPanel}>
                     {!isCreatingNew && (
                       <ButtonBouncing
-                        innerStyle={[styles.Button_DeleteProduct]}
-                        style={[styles.Button_DeleteProduct]}
+                        // innerStyle={[styles.Button_DeleteProduct]}
+                        // style={[styles.Button_DeleteProduct]}
+                        style={{borderRadius: 30}}
                         onPress={() => confirmDelete(id)}
-                        label={<Text style={styles.Button_DeleteProduct_Text}><Entypo name="trash" size={28} /></Text>}
+                        label={
+                          <View style={[styles.Button_DeleteProduct]}>
+                            <Text style={styles.Button_DeleteProduct_Text}><Entypo name="trash" size={28} /></Text>
+                          </View>
+                      }
                       />
-      // <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
-      //                   <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
-      //                 </Pressable> 
                 
                     )}
 
@@ -486,10 +488,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: deleteButtonColor, 
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
-    shadowRadius: 2,
-    elevation: 2,  
+    shadowRadius: 4,
+    elevation: 4,  
   },
   Button_DeleteProduct_Text: {
     

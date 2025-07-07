@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet } from 'react-native';
+import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { addButtonColor, MainFont_Bold } from '../../assets/Styles/styleVariables';
 
 const DURATION = 300;
@@ -79,7 +79,7 @@ const ButtonBouncing = ({
         onPress={onPress}
         disabled={isDisabled || isLoading}
         hitSlop={8}
-        style={[innerStyle, {width: '100%', justifyContent: 'center', alignItems: 'center',}]}
+        style={[innerStyle, {width: '100%',}]}
       >
         {isLoading ? (
           <ActivityIndicator color="white" size={18} />
