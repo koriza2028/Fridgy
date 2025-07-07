@@ -94,18 +94,7 @@ export default function BasketPage({ navigation }) {
   }
 };
 
-  // const openSearchModal = (text) => {
-  //   setSearchQuery(text);
-  //   setSearchModalVisible(true);
-  //   handleSearch(text);
-  //   setTimeout(() => modalSearchRef.current?.focus(), 100);
-  // };
 
-  const closeSearchModal = () => {
-    setSearchModalVisible(false);
-    setSearchQuery('');
-    setFilteredData([]);
-  };
 
   const addProduct = async (item, isFromFridge) => {
     await addProductToBasket(ctx, item, isFromFridge);
@@ -191,17 +180,6 @@ export default function BasketPage({ navigation }) {
           {/* <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} /> */}
           <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
 
-
-          {/* <SearchModal 
-            isSearchModalVisible={isSearchModalVisible}
-            closeSearchModal={closeSearchModal}
-            addProduct={addProduct}
-            searchQuery={searchQuery}
-            handleSearch={handleSearch}
-            filteredData={filteredData}
-            isBasket={true}
-          /> */}
-
           <View style={styles.BasketPage_ListOfBasketItems}>
             {searchQuery.length > 0 ? (
               <FlatList
@@ -211,24 +189,42 @@ export default function BasketPage({ navigation }) {
                 renderItem={({ item }) => {
                   if (typeof item === 'string') {
                     return (
-                      <Pressable style={[styles.newItem, styles.searchItem]} onPress={() => addProduct(item, false)}>
-                        <Text style={styles.searchItem_Text}>{item}</Text>
-                        <Text style={styles.ItemCategoryHint}>Add new item</Text>
-                      </Pressable>
+                      <ButtonBouncing 
+                        style={{borderRadius: 6}} 
+                        // onPress={() => addProduct(item, false)}
+                        label={
+                          <View style={[styles.newItem, styles.searchItem]}>
+                            <Text style={styles.searchItem_Text}>{item}</Text>
+                            <Text style={styles.ItemCategoryHint}>Add new item</Text>
+                          </View>
+                        } toScale={0.95}
+                        />
+
+                      // <Pressable style={[styles.newItem, styles.searchItem]} onPress={() => addProduct(item, false)}>
+                      //   <Text style={styles.searchItem_Text}>{item}</Text>
+                      //   <Text style={styles.ItemCategoryHint}>Add new item</Text>
+                      // </Pressable>
                     );
                   } else {
                     return (
-                      <Pressable style={[styles.fridgeItem, styles.searchItem]} onPress={() => addProduct(item, true)}>
-                        <AppImage 
-                          style={styles.searchItem_Image}
-                          imageUri={item.imageUri}
-                          staticImagePath={item.staticImagePath}
-                        />
-                        <View style={styles.NameAndHint}>
-                          <Text style={styles.searchItem_Text}>{item.name}</Text>
-                          <Text style={styles.ItemCategoryHint}>{item.category?.tagName || ''}</Text>
-                        </View>
-                      </Pressable>
+
+                      <ButtonBouncing 
+                        style={{borderRadius: 6}} 
+                        // onPress={() => addProduct(item, true)}
+                        label={
+                          <View style={[styles.fridgeItem, styles.searchItem]}>
+                            <AppImage 
+                              style={styles.searchItem_Image}
+                              imageUri={item.imageUri}
+                              staticImagePath={item.staticImagePath}
+                            />
+                            <View style={styles.NameAndHint}>
+                              <Text style={styles.searchItem_Text}>{item.name}</Text>
+                              <Text style={styles.ItemCategoryHint}>{item.category?.tagName || ''}</Text>
+                            </View>
+                          </View>
+                        } toScale={0.95}
+                      />
                     );
                   }
                 }}
@@ -270,13 +266,13 @@ export default function BasketPage({ navigation }) {
 
         </View>
 
-        {/* <Pressable style={styles.Button_ShowReceipt} onPress={handleDisplayCheckedItems} disabled={!isAnyChecked}>
-          <MaterialCommunityIcons name="basket-check" color={isAnyChecked ? addButtonColor : 'black'} style={styles.basketButtonIcon} />
-        </Pressable> */}
-
-        <ButtonBouncing style={[styles.Button_ShowReceipt, { borderWidth: isAnyChecked ? 2 : 0 }]} isDisabled={!isAnyChecked}
-          innerStyle={styles.innerStyle} onPress={handleDisplayCheckedItems}
-          label={<MaterialCommunityIcons name="basket-check" color={isAnyChecked ? addButtonColor : 'black'} style={styles.basketButtonIcon}/>}
+        <ButtonBouncing style={[styles.Button_ShowReceipt, { borderWidth: isAnyChecked ? 2 : 0 }]} 
+          innerStyle={{height: "100%", justifyContent: 'center', alignItems: 'center', }}
+          isDisabled={!isAnyChecked}
+          // onPress={handleDisplayCheckedItems}
+          label={<MaterialCommunityIcons name="basket-check" 
+            // color={isAnyChecked ? addButtonColor : 'black'}
+             style={styles.basketButtonIcon}/>}
         />
 
         <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')} onGClick={handleAddAutoBasketToBasket} />
@@ -358,10 +354,6 @@ const styles = StyleSheet.create({
   },
 
 
-
-  innerPressable: {
-      borderRadius: 6
-    },
     flatList: {
       marginTop: 8,
     },

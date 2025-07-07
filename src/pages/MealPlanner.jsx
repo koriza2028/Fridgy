@@ -235,12 +235,12 @@ export default function MealPlannerPage({ navigation }) {
 
         <View style={styles.navigation}>
 
-          <ButtonBouncing onPress={() => changeDate(-1)} innerStyle={styles.ButtonArrows}
+          <ButtonBouncing onPress={() => changeDate(-1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-left" size={30} />}/>
 
           <Text style={styles.TextDate}>{formatDateDisplay(selectedDate)}</Text>
 
-          <ButtonBouncing onPress={() => changeDate(1)} innerStyle={styles.ButtonArrows}
+          <ButtonBouncing onPress={() => changeDate(1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-right" size={30} />}/>
 
         </View>
@@ -251,27 +251,33 @@ export default function MealPlannerPage({ navigation }) {
               keyboardShouldPersistTaps="always"
               renderItem={({ item }) => {
                 return (
-                  <Pressable style={styles.mealItem} onPress={() => handleAddRecipe(item.id)}>
-                    <AppImage 
-                      style={styles.searchItem_Image}
-                      imageUri={item.imageUri}
-                      staticImagePath={item.staticImagePath}
-                    />
-                    <View style={styles.NameAndHint}>
-                      <Text style={styles.searchItem_Text}>{item.title}</Text>
-                      {
-                        item.categories && item.categories.length > 0 ? (
-                          item.categories.map((category, index) => (
-                            <Text key={index} style={styles.ItemCategoryHint}>
-                              {category?.tagIcon || "No tag"}
-                            </Text>
-                          ))
-                        ) : (
-                          <Text style={styles.ItemCategoryHint}>No tag</Text>
-                        )
-                      }
-                    </View>
-                  </Pressable>
+                  <ButtonBouncing 
+                    style={{borderRadius: 6}} 
+                    onPress={() => handleAddRecipe(item.id)}
+                    label={
+                      <View style={styles.mealItem}>
+                        <AppImage 
+                          style={styles.searchItem_Image}
+                          imageUri={item.imageUri}
+                          staticImagePath={item.staticImagePath}
+                        />
+                          <View style={styles.NameAndHint}>
+                            <Text style={styles.searchItem_Text}>{item.title}</Text>
+                            {
+                            item.categories && item.categories.length > 0 ? (
+                              item.categories.map((category, index) => (
+                                <Text key={index} style={styles.ItemCategoryHint}>
+                                  {category?.tagIcon || "No tag"}
+                                </Text>
+                              ))
+                            ) : (
+                              <Text style={styles.ItemCategoryHint}>No tag</Text>
+                            )
+                          }
+                        </View>
+                      </View>
+                    } toScale={0.95}
+                  />
                 );
               }}
 

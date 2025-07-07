@@ -81,7 +81,7 @@ const SearchModal = ({
           addProduct(item, isMandatory)
         }
           }
-        innerStyle={styles.innerPressable}  
+        style={{borderRadius: 6}}  
         toScale={0.95} label={
         <View style={styles.fridgeItem}>
           <AppImage 
@@ -195,7 +195,7 @@ const SearchModal = ({
           </View>
       )}
 
-      {!isBasket && !isRecipeCreate && (
+      {/* {!isBasket && !isRecipeCreate && (
         <View style={styles.modalContent}>
           <FlatList
             data={filteredData}
@@ -205,7 +205,7 @@ const SearchModal = ({
             style={styles.flatList}
           />
         </View>
-      )}
+      )} */}
     </Modal>
   );
 };
@@ -242,9 +242,6 @@ const styles = StyleSheet.create({
     elevation: 2, 
     // marginTop: 20,
     // marginBottom: 10,
-  },
-  innerPressable: {
-    borderRadius: 6
   },
   flatList: {
     marginTop: 8,

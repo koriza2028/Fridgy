@@ -52,24 +52,6 @@ const ButtonBouncing = ({
     transition.value = withTiming(0, { duration: DURATION });
   };
 
-  // return (
-  //   <Pressable
-  //     onPressIn={handlePressIn}
-  //     onPressOut={handlePressOut}
-  //     onPress={onPress}
-  //     disabled={isDisabled || isLoading}
-  //     hitSlop={8}
-  //     style={style}
-  //   >
-  //     <Animated.View style={[innerStyle, animatedStyle]}>
-  //       {isLoading ? (
-  //         <ActivityIndicator color="white" size={18} />
-  //       ) : (
-  //         <Text style={[textStyle]}>{label}</Text>
-  //       )}
-  //     </Animated.View>
-  //   </Pressable>
-  // );
 
   return (
     <Animated.View style={[style, animatedStyle]}>
@@ -81,10 +63,10 @@ const ButtonBouncing = ({
         hitSlop={8}
         style={[innerStyle, {width: '100%',}]}
       >
-        {isLoading ? (
-          <ActivityIndicator color="white" size={18} />
-        ) : (
+        {typeof label === 'string' ? (
           <Text style={[textStyle]}>{label}</Text>
+        ) : (
+          label
         )}
       </Pressable>
     </Animated.View>
