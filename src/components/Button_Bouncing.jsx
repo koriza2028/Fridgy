@@ -52,24 +52,44 @@ const ButtonBouncing = ({
     transition.value = withTiming(0, { duration: DURATION });
   };
 
+  // return (
+  //   <Pressable
+  //     onPressIn={handlePressIn}
+  //     onPressOut={handlePressOut}
+  //     onPress={onPress}
+  //     disabled={isDisabled || isLoading}
+  //     hitSlop={8}
+  //     style={style}
+  //   >
+  //     <Animated.View style={[innerStyle, animatedStyle]}>
+  //       {isLoading ? (
+  //         <ActivityIndicator color="white" size={18} />
+  //       ) : (
+  //         <Text style={[textStyle]}>{label}</Text>
+  //       )}
+  //     </Animated.View>
+  //   </Pressable>
+  // );
+
   return (
-    <Pressable
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={onPress}
-      disabled={isDisabled || isLoading}
-      hitSlop={8}
-      style={style}
-    >
-      <Animated.View style={[innerStyle, animatedStyle]}>
+    <Animated.View style={[style, animatedStyle]}>
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        disabled={isDisabled || isLoading}
+        hitSlop={8}
+        style={[innerStyle, {width: '100%', justifyContent: 'center', alignItems: 'center',}]}
+      >
         {isLoading ? (
           <ActivityIndicator color="white" size={18} />
         ) : (
           <Text style={[textStyle]}>{label}</Text>
         )}
-      </Animated.View>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
+
 };
 
 const styles = StyleSheet.create({

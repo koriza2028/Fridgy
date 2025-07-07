@@ -20,6 +20,8 @@ import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import ModalProductCategoryPicker from "./ModalProductCategoryPicker";
+import ButtonBouncing from "../Button_Bouncing";
+
 import useAuthStore from '../../store/authStore';
 import { addOrUpdateProduct, deleteProduct } from "../../store/fridgeStore";
 
@@ -292,16 +294,35 @@ export default function ModalCreateProduct({
 
                   <View style={styles.buttonPanel}>
                     {!isCreatingNew && (
-                      <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
-                        <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
-                      </Pressable>
+                      <ButtonBouncing
+                        innerStyle={[styles.Button_DeleteProduct]}
+                        style={[styles.Button_DeleteProduct]}
+                        onPress={() => confirmDelete(id)}
+                        label={<Text style={styles.Button_DeleteProduct_Text}><Entypo name="trash" size={28} /></Text>}
+                      />
+      // <Pressable style={[styles.Button_DeleteProduct]} onPress={() => confirmDelete(id)}>
+      //                   <Text style={styles.Button_UpdateProduct_Text}><Entypo name="trash" size={28} /></Text>
+      //                 </Pressable> 
+                
                     )}
 
-                    <Pressable 
+                    <ButtonBouncing 
+                      innerStyle={[styles.Button_UpdateProduct]}
+                      style={[styles.Button_UpdateProduct, 
+                      isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
+                      isDisabled={isSaveDisabled}
+                      toScale={0.95}
+                      onPress={createOrUpdateProduct}
+                      disabled={isSaveDisabled}
+                      label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
+                    />
+
+                    {/* <Pressable 
                       style={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
                       onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
                       <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-                    </Pressable>
+                    </Pressable> */}
+
                   </View>
                 </View>
               </View>
@@ -437,10 +458,10 @@ const styles = StyleSheet.create({
     fontFamily: MainFont_Title,
     fontSize: SecondTitleFontSize,
     shadowColor: buttonColor, 
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4,  
+    shadowRadius: 2,
+    elevation: 2,  
   },
   Button_UpdateProductAlone: {
     width: '100%',
@@ -452,10 +473,10 @@ const styles = StyleSheet.create({
   Button_UpdateProductDisabled: {
     backgroundColor: '#A9A9A9', 
     shadowColor: '#A9A9A9', 
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4, 
+    shadowRadius: 2,
+    elevation: 2, 
   },
   Button_DeleteProduct: {
     borderRadius: 60,
@@ -465,10 +486,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: deleteButtonColor, 
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4,  
+    shadowRadius: 2,
+    elevation: 2,  
   },
   Button_DeleteProduct_Text: {
     
