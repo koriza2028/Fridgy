@@ -1,12 +1,35 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TextInput, Pressable } from 'react-native';
+import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
+
 import AppImage from '../image/AppImage';
+
+import { deleteButtonColor } from '../../../assets/Styles/styleVariables';
+
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
-    onRemove(ingredient._id, isMandatory);
+    Alert.alert(
+      "Delete Ingredient?",
+      "",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            onRemove(ingredient._id, isMandatory);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
+
 
   const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
@@ -20,10 +43,14 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
             />
 
             <View style={[styles.IngredientItem_NameAndInstructions, !isMandatory && styles.IngredientItem_OnlyName]}>
-                <View style={styles.IngredientItem_Name}>
-                  <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} </Text>
-                </View>
+              <View style={styles.IngredientItem_Name}>
+                <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} </Text>
+              </View>
 
+              <Pressable style={styles.removeIcon} onPress={removeProduct}> 
+                {/* <Text>-</Text> */}
+                <MaterialIcons name={'remove-circle'} size={22} color={deleteButtonColor} />
+              </Pressable>
             </View>
 
 
@@ -34,15 +61,16 @@ const styles = StyleSheet.create({
 
     IngredientItem: {
         flexDirection: 'row',
-        // marginVertical: 6,
+        marginVertical: 6,
         marginHorizontal: 10,
         // marginTop: 20,
         
         // justifyContent: 'space-between',
-        // width: '90%',
+        width: '100%',
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
-        borderRadius: 10,
+        // backgroundColor: 'white',
+        // borderRadius: 10,
         // borderTopWidth: 1,
         
       },
@@ -64,13 +92,22 @@ const styles = StyleSheet.create({
         // borderWidth: 1,
       },
 
-      IngredientItem_OnlyName: {
-        justifyContent: 'center',
-      },
 
       IngredientItem_Name_Text: {
         fontSize: 16,
         // fontWeight: 700,
+      },
+
+      removeIcon: {
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        width: 30,
+        height: 30,
+        // backgroundColor: deleteButtonColor,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
       },
 
       IngredientItem_Instructions: {

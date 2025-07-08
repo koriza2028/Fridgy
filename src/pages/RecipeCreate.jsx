@@ -9,6 +9,7 @@ import {
   Platform,
   Dimensions,
   TouchableWithoutFeedback,
+  ScrollView,
   Keyboard,
   Animated,
   Easing
@@ -299,93 +300,6 @@ useEffect(() => {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const combinedData = useMemo(() => {
-    const data = [];
-    data.push({
-      type: "header",
-      title: "Mandatory Ingredients",
-      key: "mandatory-header",
-    });
-    mandatoryIngredients.forEach((ingredient) => {
-      data.push({
-        type: "ingredient",
-        ingredient,
-        mandatory: true,
-        key: ingredient._id || ingredient.productId,
-      });
-    });
-    data.push({
-      type: "header",
-      title: "Optional Ingredients",
-      key: "optional-header",
-    });
-    optionalIngredients.forEach((ingredient) => {
-      data.push({
-        type: "ingredient",
-        ingredient,
-        mandatory: false,
-        key: ingredient._id || ingredient.productId,
-      });
-    });
-    return data;
-  }, [mandatoryIngredients, optionalIngredients]);
-
-  const renderItem = useCallback(
-    ({ item }) => {
-      if (item.type === "header") {
-        return (
-          <View style={styles.IngredientsHeader}>
-            <Text style={styles.ListOfIngredients_Text}>{item.title}</Text>
-            <ButtonBouncing label={'Add'}
-              onPress={() =>
-                  item.title === "Mandatory Ingredients"
-                    ? openIngredientSearchModal(true)
-                    : openIngredientSearchModal(false)
-                }
-              style={styles.addIngredient_Button} textStyle={styles.addIngredient_ButtonText} innerStyle={styles.innerAddButt}/>
-          </View>
-        );
-      } else {
-        return (
-          <View style={styles.ingredientWrapper}>
-            <View style={styles.rowFront}>
-              <IngredientItem
-                ingredient={item.ingredient}
-                isMandatory={item.mandatory}
-                onRemove={removeIngredient}
-                isEditing={isEditing}
-                isCreatingNew={isCreatingNew}
-                isAvailable={checkIngredientIsAvailable(item.ingredient.productId)}
-              />
-            </View>
-          </View>
-        );
-      }
-    },
-    [isEditing, isCreatingNew, openIngredientSearchModal, removeIngredient, checkIngredientIsAvailable]
-  );
-
-  const renderHiddenItem = useCallback(
-    ({ item }) => {
-      if (item.type === "header") return null;
-      return (
-        <View style={styles.rowBack}>
-          <View style={styles.rowBackContent}>
-            <Pressable
-              style={styles.deleteButton}
-              onPress={() =>
-                removeIngredient(item.ingredient._id || item.ingredient.productId, item.mandatory)
-              }
-            >
-              <Text style={styles.deleteText}>Delete</Text>
-            </Pressable>
-          </View>
-        </View>
-      );
-    },
-    [removeIngredient]
-  );
-
   const scrollA = useRef(new Animated.Value(0)).current;
 
   const memoizedImageStyle = useMemo(() => ({
@@ -428,15 +342,24 @@ useEffect(() => {
     };
   }, []);
 
-  // Memoize the header that contains the image and text inputs.
-  const RenderedHeader = useMemo(() => {
-    return (
+  
+return (
+  <Animated.View style={[styles.RecipeCreatePage, { transform: [{ translateY: Animated.multiply(keyboardHeight, -0.6) }] } ]}>
+    <Animated.ScrollView
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollA } } }],
+        { useNativeDriver: true }
+      )}
+      scrollEventThrottle={16}
+      nestedScrollEnabled
+      contentContainerStyle={{ paddingBottom: 100 }}
+    >
       <View style={styles.RecipeCreatePage_ContentWrapper}>
         <ImageWithUpload
           imageUri={imageUri}
           animatedStyle={memoizedImageStyle}
           setImageUri={setImageUri}
-          enableStaticImages={false} // <-- Disable static images
+          enableStaticImages={false}
         />
 
         <View style={styles.productDataEntry_Wrapper}>
@@ -450,39 +373,80 @@ useEffect(() => {
               placeholderTextColor="#9e9e9e"
             />
           </View>
+
           <View style={styles.productDataEntry}>
-            <View
-              style={[styles.productDataEntryInput, styles.productTags]}
-              // onPress={openCategoryModal}
-            >
-              
+            <View style={[styles.productDataEntryInput, styles.productTags]}>
               <ButtonBouncing label="Add tags +" toScale={0.95} onPress={openCategoryModal}
                 style={styles.innerTagStyle} textStyle={styles.innerTextStyle}/>
-
-              {categories && categories.length > 0 ? (
-                categories.map((category, index) => (
-                  <Tag key={index} name={category.tagName} type={category.tagType} icon={category.tagIcon} />
-                ))
-              ) : (
-                // <Tag name="Add tags +" />
-                <Text></Text>
-              )}
+              {categories && categories.length > 0 && categories.map((category, index) => (
+                <Tag key={index} name={category.tagName} type={category.tagType} icon={category.tagIcon} />
+              ))}
             </View>
           </View>
-          <ModalProductCategoryPicker
-            isCategoryModalVisible={isCategoryModalVisible}
-            setIsCategoryModalVisible={setIsCategoryModalVisible}
-            onClose={closeCategoryModal}
-            onCategorySelect={handleMultipleCategoriesSelect}
-            multiSelect={true}
-            categories={tags}
-            alreadySelectedCategories={categories || []}
-          />
+
+            <View style={styles.ListOfIngredients}>
+              <View style={styles.IngredientsHeader}>
+                <Text style={styles.ListOfIngredients_Text}>Mandatory Ingredients</Text>
+                <ButtonBouncing label={'Add'}
+                  onPress={() => openIngredientSearchModal(true)}
+                  style={styles.addIngredient_Button} textStyle={styles.addIngredient_ButtonText} innerStyle={styles.innerAddButt}/>
+              </View>
+              {mandatoryIngredients.map((ingredient) => (
+                <View key={ingredient._id || ingredient.productId} style={styles.rowFront}>
+                  <IngredientItem
+                    ingredient={ingredient}
+                    isMandatory={true}
+                    onRemove={removeIngredient}
+                    isEditing={isEditing}
+                    isCreatingNew={isCreatingNew}
+                    isAvailable={checkIngredientIsAvailable(ingredient.productId)}
+                  />
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.ListOfIngredients}>
+              <View style={styles.IngredientsHeader}>
+                  <Text style={styles.ListOfIngredients_Text}>Optional Ingredients</Text>
+                  <ButtonBouncing label={'Add'}
+                    onPress={() => openIngredientSearchModal(false)}
+                    style={styles.addIngredient_Button} textStyle={styles.addIngredient_ButtonText} innerStyle={styles.innerAddButt}/>
+                </View>
+                {optionalIngredients.map((ingredient) => (
+                  <View key={ingredient._id || ingredient.productId} style={styles.rowFront}>
+                    <IngredientItem
+                      ingredient={ingredient}
+                      isMandatory={false}
+                      onRemove={removeIngredient}
+                      isEditing={isEditing}
+                      isCreatingNew={isCreatingNew}
+                      isAvailable={checkIngredientIsAvailable(ingredient.productId)}
+                    />
+                  </View>
+                ))}
+            </View>
         </View>
+
+        
+        <View style={{ backgroundColor: "white", width: "90%", alignSelf: "center", paddingTop: 20 }}>
+          <View style={styles.productDataEntry}>
+            <Text style={{ fontFamily: MainFont_Title, fontSize: 18, marginBottom: 6 }}>Notes</Text>
+            <TextInput
+              style={[styles.productDataEntryInput, styles.productNotes]}
+              autoCapitalize="sentences"
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Do you need instructions how to cook it?"
+              placeholderTextColor="#9e9e9e"
+              multiline={true}
+              textAlignVertical="top"
+            />
+          </View>
+        </View>
+
         <SearchModal
           isSearchModalVisible={isSearchModalVisible}
           closeSearchModal={closeSearchModal}
-          // searchQuery={searchQuery}
           handleSearch={handleSearchInput}
           filteredData={filteredData}
           isRecipeCreate={true}
@@ -490,168 +454,54 @@ useEffect(() => {
           isMandatory={isMandatoryFlag}
           modalSearchRef={modalSearchRef}
         />
-      </View>
-    );
-  }, [
-    imageUri,
-    scrollA,
-    title,
-    categories,
-    isCategoryModalVisible,
-    searchQuery,
-    filteredData,
-    isSearchModalVisible,
-    isMandatoryFlag,
-  ]);
 
-  const ListFooter = useMemo(() => {
-    return (
-      <View style={{ backgroundColor: "white", width: "90%", marginHorizontal: "auto", paddingTop: 20 }}>
-        <View style={styles.productDataEntry}>
-          <Text style={{ fontFamily: MainFont_Title, fontSize: 18, marginBottom: 6 }}>Notes</Text>
-          <TextInput
-            style={[styles.productDataEntryInput, styles.productNotes]}
-            autoCapitalize="sentences"
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Do you need instructions how to cook it?"
-            placeholderTextColor="#9e9e9e"
-            multiline={true}
-            textAlignVertical="top"
-          />
-        </View>
-
-        {/* <View style={styles.buttonPanel}>
-          {!isCreatingNew && (
-            <ButtonBouncing style={{borderRadius: 30}}
-              onPress={() => confirmDelete(id)}
-              label={
-                <View style={styles.Button_DeleteRecipe}>
-                  <Text style={styles.Button_SaveRecipe_Text}>
-                    <Entypo name="trash" size={28} />
-                  </Text>
-                </View>
-              }
-            />
-          )}
-
-          <ButtonBouncing 
-            innerStyle={styles.Button_SaveRecipe}
-            style={[
-                styles.Button_SaveRecipe,
-                isSaveDisabled && styles.Button_SaveRecipeDisabled,
-                isCreatingNew && styles.Button_SaveRecipeAlone,
-              ]}
-            onPress={saveOrUpdateRecipe}
-            isDisabled={isSaveDisabled}
-            label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
-            toScale={0.95}
-          />
-        </View> */}
-
-      </View>
-    );
-  }, [isSaveDisabled, isCreatingNew, confirmDelete, saveOrUpdateRecipe, id]);
-
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Animated.View
-  style={{ flex: 1, transform: [{ translateY: Animated.multiply(keyboardHeight, -0.6) }] }}
->
-      <View style={styles.RecipeCreatePage}>
-        <AnimatedSwipeListView
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollA } } }], { useNativeDriver: true })}
-          data={combinedData}
-          keyExtractor={(item) => item.key}
-          ListHeaderComponent={RenderedHeader}
-          ListFooterComponent={ListFooter}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-75}
-          disableRightSwipe
-          disableScrollOnSwipe
-          nestedScrollEnabled
-          contentContainerStyle={{ paddingBottom: 40 }}
-          swipeRowDisabled={({ item }) => item.type === "header"}
+        <ModalProductCategoryPicker
+          isCategoryModalVisible={isCategoryModalVisible}
+          setIsCategoryModalVisible={setIsCategoryModalVisible}
+          onClose={closeCategoryModal}
+          onCategorySelect={handleMultipleCategoriesSelect}
+          multiSelect={true}
+          categories={tags}
+          alreadySelectedCategories={categories || []}
         />
-        <View style={styles.buttonPanel}>
-          {!isCreatingNew && (
-            <ButtonBouncing style={{borderRadius: 30}}
-              onPress={() => confirmDelete(id)}
-              label={
-                <View style={styles.Button_DeleteRecipe}>
-                  <Text style={styles.Button_SaveRecipe_Text}>
-                    <Entypo name="trash" size={28} />
-                  </Text>
-                </View>
-              }
-            />
-          )}
-
-          <ButtonBouncing 
-            innerStyle={styles.Button_SaveRecipe}
-            style={[
-                styles.Button_SaveRecipe,
-                isSaveDisabled && styles.Button_SaveRecipeDisabled,
-                isCreatingNew && styles.Button_SaveRecipeAlone,
-              ]}
-            onPress={saveOrUpdateRecipe}
-            isDisabled={isSaveDisabled}
-            label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
-            toScale={0.95}
-          />
-        </View>
-
-        <ButtonGoBack navigation={navigation} />
-
       </View>
-      </Animated.View>
-    </TouchableWithoutFeedback>
-  );
+    </Animated.ScrollView>
+
+    <View style={styles.buttonPanel}>
+      {!isCreatingNew && (
+        <ButtonBouncing style={{ borderRadius: 30 }}
+          onPress={() => confirmDelete(id)}
+          label={
+            <View style={styles.Button_DeleteRecipe}>
+              <Text style={styles.Button_SaveRecipe_Text}>
+                <Entypo name="trash" size={28} />
+              </Text>
+            </View>
+          }
+        />
+      )}
+
+      <ButtonBouncing
+        innerStyle={styles.Button_SaveRecipe}
+        style={[
+          styles.Button_SaveRecipe,
+          isSaveDisabled && styles.Button_SaveRecipeDisabled,
+          isCreatingNew && styles.Button_SaveRecipeAlone,
+        ]}
+        onPress={saveOrUpdateRecipe}
+        isDisabled={isSaveDisabled}
+        label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
+        toScale={0.95}
+      />
+    </View>
+
+    <ButtonGoBack navigation={navigation} />
+  </Animated.View>
+)
 }
 
 const styles = StyleSheet.create({
-  rowFront: {
-    backgroundColor: "white",
-    minHeight: 70,
-    justifyContent: "center",
-    width: "100%",
-    marginTop: -10,
-  },
-  ingredientWrapper: {
-    width: "90%",
-    alignSelf: "center",
-  },
-  rowBack: {
-    position: "absolute",
-    top: 10,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "center",
-    alignItems: "flex-end",
-    backgroundColor: "transparent",
-  },
-  rowBackContent: {
-    width: "90%",
-    height: "100%",
-    alignSelf: "center",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  deleteButton: {
-    width: 75,
-    height: 50,
-    backgroundColor: "red",
-    justifyContent: "center",
-    alignItems: "center",
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  deleteText: {
-    color: "white",
-    fontWeight: "bold",
-  },
+
 
   innerTagStyle: {
     // paddingVertical: 16,
@@ -681,6 +531,7 @@ const styles = StyleSheet.create({
   },
   RecipeCreatePage_ContentWrapper: {
     alignItems: "center",
+    // backgroundColor: 'white',
   },
   ProductCreatePicture: (scrollA) => ({
     width: width,
@@ -749,14 +600,14 @@ const styles = StyleSheet.create({
     lineHeight: Platform.OS === "android" ? 24 : 20,
     borderColor: "#ddd",
     borderLeftWidth: 2,
-    marginBottom: 60,
+    // marginBottom: 60,
   },
   ListOfIngredients: {
-    marginTop: 10,
+    // marginTop: 10,
     width: "100%",
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    // paddingHorizontal: 10,
+    // borderWidth: 1,
+    // borderColor: "#ddd",
   },
   IngredientsHeader: {
     flexDirection: "row",
@@ -766,7 +617,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
     backgroundColor: "white",
-    width: "90%",
+    width: "100%",
     marginHorizontal: "auto",
   },
   addIngredient_Button: {
