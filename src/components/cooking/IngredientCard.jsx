@@ -10,6 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
+    const id = ingredient._id || ingredient.productId;
     Alert.alert(
       "Delete Ingredient?",
       "",
@@ -22,7 +23,7 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            onRemove(ingredient._id, isMandatory);
+            onRemove(id, isMandatory);
           },
         },
       ],

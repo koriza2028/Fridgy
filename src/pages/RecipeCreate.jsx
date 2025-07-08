@@ -279,13 +279,14 @@ export default function RecipeCreatePage({ navigation, route }) {
 
   const openIngredientSearchModal = useCallback(
     (mandatoryFlag) => {
+      setSearchModalVisible(true);
       setFilteredData(getAvailableProducts());
       setIsMandatoryFlag(mandatoryFlag);
       
-      setTimeout(() => {
+      // setTimeout(() => {
         // modalSearchRef.current?.focus();
-        setSearchModalVisible(true);
-      }, 0);
+        
+      // }, 0);
     },
     [getAvailableProducts]
   );

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, TextInput, View, Text, Pressable, FlatList, Keyboard, Dimensions } from 'react-native';
-import { Image } from 'expo-image';
 
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -33,7 +32,6 @@ const SearchModal = ({
       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
   
-
 
   const modalSearchRef = useRef(null);
   const [error, setError] = useState(null);
@@ -80,9 +78,9 @@ const SearchModal = ({
       // onBackdropPress={Keyboard.dismiss}
       // avoidKeyboard={true}
       onBackButtonPress={closeSearchModal}
-      animationIn="fadeIn"
+      animationIn='fadeIn'
       animationOut="fadeOut"
-      animationInTiming={400}
+      // animationInTiming={300}
       // animationOutTiming={0}
       style={styles.modal}
     >

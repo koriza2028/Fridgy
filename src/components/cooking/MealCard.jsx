@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, Text, Pressable, Dimensions, 
     // Image 
 } from 'react-native';
-import { Image } from 'expo-image';
 import AppImage from '../image/AppImage';
 
 import { MainFont, MainFont_Bold, MainFont_Title, TextFontSize, SecondTitleFontSize, SecondTitleFontWeight, deleteButtonColor } from '../../../assets/Styles/styleVariables';
@@ -33,13 +32,9 @@ export default function MealCard({ navigation, recipe, isAvailable, isMealPlanne
             label={
                 <View style={styles.MealBody} >
                     <View>
-                        {recipe.imageUri ? (
-                            <Image
-                                style={styles.MealImage} source={ {uri: recipe.imageUri }} />
-                            ) : (
-                            <Image style={styles.MealImage} source={require('../../../assets/ProductImages/banana_test.png')}
-                            />
-                        )}
+                        <AppImage
+                            imageUri={recipe.imageUri} style={styles.MealImage}
+                        />
                     </View>
 
                     <View style={styles.MealDescription}>

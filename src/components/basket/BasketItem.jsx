@@ -47,112 +47,25 @@ export default function BasketItem({ product, onDecrement, onAdd, isChecked, onT
         />}        
 
       <View style={styles.BasketItem_Name}>
-        <AppImage 
-          style={styles.ProductPicture}
-          imageUri={product.imageUri}
-          staticImagePath={product.staticImagePath}
-        />
-        <Pressable style={styles.BasketItem_Name_Button} onPress={() => openInfoModal(product)}>
+        <Pressable onPress={() => openInfoModal(product)}>
+          <AppImage 
+            style={styles.ProductPicture}
+            imageUri={product.imageUri}
+            staticImagePath={product.staticImagePath}
+          />
+        </Pressable>
+        <View style={styles.BasketItem_Name_Button} >
           <Text 
             style={styles.BasketItem_Text} numberOfLines={2} ellipsizeMode="tail">
             {product.name}
           </Text>  
-        </Pressable>
+        </View>
       </View>
-
-      {/* <View style={styles.BasketItem_AmountAndButtons}>
-        <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
-          <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-        </Pressable>
-
-        <Text style={styles.BasketItem_Text}>{product.amount}</Text>
-
-        <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
-          <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-        </Pressable>
-      </View> */}
 
     </View>
   )
   
-  // return (
-  //   product.isFromFridge ? (
-  //     <Pressable onPress={() => openInfoModal(product)}>
-  //       <View style={styles.BasketItem}>
-  //         <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-  //           <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={24} />
-  //         </Pressable>
 
-  //         <View style={styles.BasketItem_Name}>
-  //           <Image 
-  //             style={styles.ProductPicture}
-  //             source={getImageSource(product)}
-  //           />
-  //           <Text 
-  //             style={styles.BasketItem_Text}
-  //             numberOfLines={2}
-  //             ellipsizeMode="tail"
-  //           >
-  //             {product.name}
-  //           </Text>  
-  //         </View>
-
-  //         <View style={styles.BasketItem_AmountAndButtons}>
-  //         <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
-  //           <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-  //         </Pressable>
-
-  //         <Text style={styles.BasketItem_Text}>{product.amount}</Text>
-
-  //         <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
-  //            <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-  //          </Pressable>
-  //        </View>
-
-  //       </View>
-  //     </Pressable>
-  //   ) : (
-  //     <View style={styles.BasketItem}>
-  //       <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
-  //         <FontAwesomeIcons name={isChecked ? 'check-square' : 'square-o'} size={12} />
-  //       </Pressable>
-
-  //       <View style={styles.BasketItem_Name}>
-  //         <Image 
-  //           style={styles.ProductPicture}
-  //           source={ product.imageUri 
-  //                     ? { uri: product.imageUri } 
-  //                     : require('../../../assets/ProductImages/banana_test.png')
-  //                 }
-  //         />
-  //         <TextInput 
-  //           multiline={true}
-  //           numberOfLines={2}
-  //           maxLength={20}
-  //           value={title} 
-  //           style={[styles.BasketItem_Text, styles.textEdit]}
-  //           editable={true} // Ensure it's editable
-  //           onChangeText={(text) => setTitle(text)} 
-  //           // onPressIn={(e) => e.stopPropagation()}
-  //           onBlur={() => onChangeName(product.basketId, title)}
-  //         />
-  //       </View>
-
-  //       <View style={styles.BasketItem_AmountAndButtons}>
-  //         <Pressable style={styles.BasketItem_RemoveButton} onPress={decrementProduct}>
-  //           <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>-</Text>
-  //         </Pressable>
-
-  //         <Text style={styles.BasketItem_Text}>{product.amount}</Text>
-
-  //         <Pressable style={styles.BasketItem_AddButton} onPress={addProduct}>
-  //            <Text style={[styles.BasketItem_Text, styles.BasketItem_ButtonText]}>+</Text>
-  //          </Pressable>
-  //        </View>
-
-  //     </View>
-  //   )
-  // );
   
 }
 
@@ -183,6 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignContent: 'center',
+    // borderWidth: 1,
   },
   BasketItem_Name_Button: {
     flexDirection: 'row',

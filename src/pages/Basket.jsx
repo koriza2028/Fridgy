@@ -3,6 +3,8 @@ import { View, Pressable, Text, FlatList,
   Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert, LayoutAnimation } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
+import Entypo from 'react-native-vector-icons/Entypo';
+
 import SearchInput from '../components/Search';
 import BasketItem from '../components/basket/BasketItem';
 import ModalItemInfo from '../components/basket/ModalItemInfo';
@@ -25,7 +27,7 @@ import {
 } from '../store/basketStore';
 
 import { useFonts } from 'expo-font';
-import { buttonColor, backgroundColor, addButtonColor, SecondTitleFontSize, MainFont } from '../../assets/Styles/styleVariables';
+import { buttonColor, backgroundColor, addButtonColor, SecondTitleFontSize, MainFont, deleteButtonColor } from '../../assets/Styles/styleVariables';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
@@ -98,7 +100,9 @@ export default function BasketPage({ navigation }) {
 
   const addProduct = async (item, isFromFridge) => {
     await addProductToBasket(ctx, item, isFromFridge);
-    // closeSearchModal();
+    setSearchQuery('');
+    setFilteredData([]);
+    Keyboard.dismiss(); // optional, hides the keyboard
     await refreshBasket();
   };
 
@@ -150,7 +154,8 @@ export default function BasketPage({ navigation }) {
   const renderHiddenItem = ({ item }) => (
     <View style={styles.rowBack}>
       <Pressable style={styles.deleteButton} onPress={() => handleRemoveProductFromBasket(item.basketId)}>
-        <Text style={styles.deleteButtonText}>Delete</Text>
+        {/* <Text style={styles.deleteButtonText}>Delete</Text> */}
+        <Entypo name="trash" size={28} style={styles.deleteButtonText}/>
       </Pressable>
     </View>
   );
@@ -202,7 +207,6 @@ export default function BasketPage({ navigation }) {
                     );
                   } else {
                     return (
-
                       <ButtonBouncing 
                         style={{borderRadius: 6}} 
                         onPress={() => addProduct(item, true)}
@@ -282,21 +286,24 @@ const styles = StyleSheet.create({
   },
   rowBack: {
     alignItems: 'flex-end',
-    backgroundColor: 'red',
+    // backgroundColor: 'red',
     justifyContent: 'center',
-    width: 75,
+    width: 65,
     position: 'absolute',
-    right: -10,
+    right: 0,
     top: 0,
     bottom: 0,
   },
   deleteButton: {
     paddingRight: 20,
+    width: 65,
+    // backgroundColor: 'black',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    color: deleteButtonColor,
   },
   BasketPage: {
     flex: 1,
