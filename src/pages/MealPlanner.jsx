@@ -16,7 +16,7 @@ import ButtonBouncing from '../components/Button_Bouncing.jsx';
 import { useFonts } from 'expo-font';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { buttonColor, backgroundColor, addButtonColor, MainFont, TextFontSize, MainFont_Bold, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
+import { buttonColor, backgroundColor, addButtonColor, MainFont, TextFontSize, MainFont_Bold, SecondTitleFontSize, deleteButtonColor } from '../../assets/Styles/styleVariables';
 import useAuthStore from '../store/authStore';
 import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
@@ -195,7 +195,7 @@ export default function MealPlannerPage({ navigation }) {
     ({ item }) => (
       <View style={styles.rowBack}>
         <Pressable onPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}>
-          <Text style={styles.deleteText}>Delete</Text>
+          <Entypo name="trash" size={28} style={styles.deleteText}/>
         </Pressable>
       </View>
     ),
@@ -391,8 +391,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   deleteText: {
-    color: 'black',
-    fontWeight: 'bold',
+    color: deleteButtonColor,
   },
   openCalendar_Button: {
     alignItems: 'center',

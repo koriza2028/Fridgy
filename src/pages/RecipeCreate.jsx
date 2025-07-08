@@ -25,6 +25,7 @@ import SearchModal from "../components/SearchModal";
 import ButtonBouncing from "../components/Button_Bouncing";
 
 import Entypo from "react-native-vector-icons/Entypo";
+
 import {
   buttonColor,
   deleteButtonColor,
@@ -475,9 +476,7 @@ return (
           onPress={() => confirmDelete(id)}
           label={
             <View style={styles.Button_DeleteRecipe}>
-              <Text style={styles.Button_SaveRecipe_Text}>
-                <Entypo name="trash" size={28} />
-              </Text>
+              <Entypo name="trash" size={28} style={styles.Button_SaveRecipe_Text}/>
             </View>
           }
         />
