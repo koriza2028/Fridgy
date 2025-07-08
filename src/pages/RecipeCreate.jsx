@@ -69,7 +69,11 @@ export default function RecipeCreatePage({ navigation, route }) {
     if (Platform.OS === "web") {
       if (window.confirm("Are you sure you want to delete this recipe?")) {
         removeRecipe(ctx, id)
-          .then(() => navigation.navigate("CookingPage"))
+          .then(() => navigation.reset({
+            index: 0,
+            routes: [{ name: "CookingPage" }],
+          }))
+          
           .catch((error) => console.error("Error deleting recipe:", error));
       }
     } else {
@@ -82,7 +86,10 @@ export default function RecipeCreatePage({ navigation, route }) {
             text: "Delete",
             onPress: () =>
               removeRecipe(ctx, id)
-                .then(() => navigation.navigate("CookingPage"))
+                .then(() => navigation.reset({
+                  index: 0,
+                  routes: [{ name: "CookingPage" }],
+                }))
                 .catch((error) => console.error("Error deleting recipe:", error)),
             style: "destructive",
           },

@@ -274,7 +274,7 @@ export default function MealPlannerPage({ navigation }) {
           rightOpenValue={-75}
           disableRightSwipe={false}
           disableScrollOnSwipe
-          contentContainerStyle={{ flexGrow: 1, gap: 14, paddingHorizontal: 10, }}
+          contentContainerStyle={{ flexGrow: 1, gap: 14, paddingHorizontal: 10,  }}
           recalculateHiddenLayout
           closeOnRowOpen={false}
           closeOnScroll={false}
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   MealPlannerPage_ContentWrapper: {
     width: width,
-    height: height,
+    // height: height,
     // paddingHorizontal: 10,
     flex: 1,
   },
@@ -330,17 +330,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
   },
-  dailyContent: {
-    minHeight: width / 4,
-    width: '100%',
-    justifyContent: 'center',
-    marginTop: 20,
+  // dailyContent: {
+  //   minHeight: width / 4,
+  //   width: '100%',
+  //   justifyContent: 'center',
+  //   marginTop: 20,
 
-    // paddingHorizontal: 8,
-    // borderWidth: 2,
-    // borderRadius: 8,
-    // borderColor: '#000',
-  },
+  //   // backgroundColor: 'red',
+  //   // paddingHorizontal: 8,
+  //   // borderWidth: 2,
+  //   // borderColor: '#000',
+  // },
   addMore_Button: {
     // marginVertical: 20,
     position: 'static',
