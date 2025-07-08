@@ -11,6 +11,10 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       backdropOpacity={0.5}
+      animationIn="fadeIn"
+      animationOut="fadeOut"
+      animationInTiming={400}
+      animationOutTiming={300}
       style={styles.modal}
     >
       <View style={styles.modalContent}>

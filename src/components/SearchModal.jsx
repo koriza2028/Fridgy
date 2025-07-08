@@ -148,13 +148,13 @@ const SearchModal = ({
       onBackButtonPress={closeSearchModal}
       animationIn="fadeIn"
       animationOut="fadeOut"
-      animationInTiming={250}
+      animationInTiming={400}
       animationOutTiming={300}
       style={styles.modal}
     >
       <Pressable onPress={() => {  Keyboard.dismiss(); closeSearchModal()}} 
         style={styles.closeButton}>
-        <Entypo name="chevron-left" size={28} />
+        <Entypo name="chevron-left" size={30} />
       </Pressable>
 
       {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
@@ -227,10 +227,10 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     // borderColor: '#C0C0C0',
     width: '96%',
-    height: 40,
+    height: 42,
     alignSelf: 'center',
     paddingBottom: 4,
-    paddingHorizontal: 40,
+    paddingHorizontal: 44,
     marginBottom: 10,
     marginTop: 20,
     fontFamily: MainFont,

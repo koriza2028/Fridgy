@@ -521,14 +521,8 @@ useEffect(() => {
           />
         </View>
 
-        <View style={styles.buttonPanel}>
+        {/* <View style={styles.buttonPanel}>
           {!isCreatingNew && (
-            // <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
-            //   <Text style={styles.Button_SaveRecipe_Text}>
-            //     <Entypo name="trash" size={28} />
-            //   </Text>
-            // </Pressable>
-
             <ButtonBouncing style={{borderRadius: 30}}
               onPress={() => confirmDelete(id)}
               label={
@@ -548,24 +542,13 @@ useEffect(() => {
                 isSaveDisabled && styles.Button_SaveRecipeDisabled,
                 isCreatingNew && styles.Button_SaveRecipeAlone,
               ]}
-            // onPress={saveOrUpdateRecipe}
+            onPress={saveOrUpdateRecipe}
             isDisabled={isSaveDisabled}
             label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
             toScale={0.95}
           />
-          {/* <Pressable
-            style={[
-              styles.Button_SaveRecipe,
-              isSaveDisabled && styles.Button_SaveRecipeDisabled,
-              isCreatingNew && styles.Button_SaveRecipeAlone,
-            ]}
-            onPress={saveOrUpdateRecipe}
-            disabled={isSaveDisabled}
-          >
-            <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-          </Pressable> */}
+        </View> */}
 
-        </View>
       </View>
     );
   }, [isSaveDisabled, isCreatingNew, confirmDelete, saveOrUpdateRecipe, id]);
@@ -591,26 +574,33 @@ useEffect(() => {
           contentContainerStyle={{ paddingBottom: 40 }}
           swipeRowDisabled={({ item }) => item.type === "header"}
         />
-        {/* <View style={styles.buttonPanel}>
+        <View style={styles.buttonPanel}>
           {!isCreatingNew && (
-            <Pressable style={styles.Button_DeleteRecipe} onPress={() => confirmDelete(id)}>
-              <Text style={styles.Button_SaveRecipe_Text}>
-                <Entypo name="trash" size={28} />
-              </Text>
-            </Pressable>
+            <ButtonBouncing style={{borderRadius: 30}}
+              onPress={() => confirmDelete(id)}
+              label={
+                <View style={styles.Button_DeleteRecipe}>
+                  <Text style={styles.Button_SaveRecipe_Text}>
+                    <Entypo name="trash" size={28} />
+                  </Text>
+                </View>
+              }
+            />
           )}
-          <Pressable
+
+          <ButtonBouncing 
+            innerStyle={styles.Button_SaveRecipe}
             style={[
-              styles.Button_SaveRecipe,
-              isSaveDisabled && styles.Button_SaveRecipeDisabled,
-              isCreatingNew && styles.Button_SaveRecipeAlone,
-            ]}
+                styles.Button_SaveRecipe,
+                isSaveDisabled && styles.Button_SaveRecipeDisabled,
+                isCreatingNew && styles.Button_SaveRecipeAlone,
+              ]}
             onPress={saveOrUpdateRecipe}
-            disabled={isSaveDisabled}
-          >
-            <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-          </Pressable>
-        </View> */}
+            isDisabled={isSaveDisabled}
+            label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
+            toScale={0.95}
+          />
+        </View>
 
         <ButtonGoBack navigation={navigation} />
 
@@ -759,6 +749,7 @@ const styles = StyleSheet.create({
     lineHeight: Platform.OS === "android" ? 24 : 20,
     borderColor: "#ddd",
     borderLeftWidth: 2,
+    marginBottom: 60,
   },
   ListOfIngredients: {
     marginTop: 10,
@@ -810,12 +801,12 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-around",
-    marginTop: 10,
     // marginBottom: 20,
-    paddingHorizontal: 10,
-    // position: "absolute",
+    paddingHorizontal: "6%",
+    position: "absolute",
     marginTop: 20,
-    bottom: 2,
+    bottom: 20,
+    backgroundColor: 'transparent',
   },
   Button_SaveRecipe: {
     backgroundColor: buttonColor,

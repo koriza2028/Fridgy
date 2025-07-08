@@ -66,7 +66,12 @@ export default function ModalProductCategoryPicker({
   }, {});
 
   return (
-    <Modal isVisible={isCategoryModalVisible} style={styles.modal} backdropColor="darkgrey" backdropOpacity={0.2} >
+    <Modal isVisible={isCategoryModalVisible} style={styles.modal} backdropColor="darkgrey" backdropOpacity={0.2} 
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        animationInTiming={400}
+        animationOutTiming={300}
+    >
       <Pressable onPress={onClose} style={styles.closeButton}>
         <Text style={styles.closeButtonText}>X</Text>
       </Pressable>

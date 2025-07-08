@@ -191,7 +191,7 @@ export default function BasketPage({ navigation }) {
                     return (
                       <ButtonBouncing 
                         style={{borderRadius: 6}} 
-                        // onPress={() => addProduct(item, false)}
+                        onPress={() => addProduct(item, false)}
                         label={
                           <View style={[styles.newItem, styles.searchItem]}>
                             <Text style={styles.searchItem_Text}>{item}</Text>
@@ -210,7 +210,7 @@ export default function BasketPage({ navigation }) {
 
                       <ButtonBouncing 
                         style={{borderRadius: 6}} 
-                        // onPress={() => addProduct(item, true)}
+                        onPress={() => addProduct(item, true)}
                         label={
                           <View style={[styles.fridgeItem, styles.searchItem]}>
                             <AppImage 

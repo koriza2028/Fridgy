@@ -53,6 +53,14 @@ export default function ModalCreateProduct({
   onChange,
   usedIngredients,
 }) {
+
+  const [fontsLoaded] = useFonts({
+      'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+      'Inter-SemiBold': require('../../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+  });
+
+
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
     const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
@@ -84,11 +92,6 @@ export default function ModalCreateProduct({
   }
 }, [product]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     resetForm();
-  //   };
-  // }, []);
 
   const resetForm = () => {
     setName("");
@@ -210,7 +213,7 @@ export default function ModalCreateProduct({
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="fadeOut"
-      animationInTiming={400}
+      animationInTiming={300}
       animationOutTiming={350}
       useNativeDriver={true}
       backdropColor="black"
@@ -498,7 +501,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 10,
+    top: 7,
     right: 0,
     zIndex: 10,
     height: 30,
