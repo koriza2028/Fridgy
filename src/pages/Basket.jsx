@@ -199,11 +199,6 @@ export default function BasketPage({ navigation }) {
                           </View>
                         } toScale={0.95}
                         />
-
-                      // <Pressable style={[styles.newItem, styles.searchItem]} onPress={() => addProduct(item, false)}>
-                      //   <Text style={styles.searchItem_Text}>{item}</Text>
-                      //   <Text style={styles.ItemCategoryHint}>Add new item</Text>
-                      // </Pressable>
                     );
                   } else {
                     return (

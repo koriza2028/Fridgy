@@ -9,7 +9,6 @@ import AppImage from '../components/image/AppImage';
 
 import CalendarModal from '../components/mealplanner.jsx/ModalCalendar.jsx';
 import MealCard from '../components/cooking/MealCard.jsx';
-import SearchModal from "../components/SearchModal";
 import SearchInput from '../components/Search';
 import AddNewButton from '../components/Button_AddNew.jsx';
 import ButtonBouncing from '../components/Button_Bouncing.jsx';
@@ -185,7 +184,7 @@ export default function MealPlannerPage({ navigation }) {
           recipe={item}
           isAvailable
           isMealPlanner
-          onLongPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}
+          // onLongPress={() => handleRemoveRecipe(`${item.id}_${selectedDate}`)}
         />
       // </View>
     ),
@@ -228,6 +227,7 @@ export default function MealPlannerPage({ navigation }) {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View style={styles.MealPlannerPage}>
       <View style={styles.MealPlannerPage_ContentWrapper}>
 
@@ -244,6 +244,7 @@ export default function MealPlannerPage({ navigation }) {
             label={<Entypo name="arrow-long-right" size={30} />}/>
 
         </View>
+        
           {searchQuery.length > 0 ? (
             <FlatList
               data={[...filteredData]}
@@ -251,36 +252,17 @@ export default function MealPlannerPage({ navigation }) {
               keyboardShouldPersistTaps="always"
               renderItem={({ item }) => {
                 return (
-                  <ButtonBouncing 
-                    style={{borderRadius: 6}} 
-                    onPress={() => handleAddRecipe(item.id)}
-                    label={
-                      <View style={styles.mealItem}>
-                        <AppImage 
-                          style={styles.searchItem_Image}
-                          imageUri={item.imageUri}
-                          staticImagePath={item.staticImagePath}
-                        />
-                          <View style={styles.NameAndHint}>
-                            <Text style={styles.searchItem_Text}>{item.title}</Text>
-                            {
-                            item.categories && item.categories.length > 0 ? (
-                              item.categories.map((category, index) => (
-                                <Text key={index} style={styles.ItemCategoryHint}>
-                                  {category?.tagIcon || "No tag"}
-                                </Text>
-                              ))
-                            ) : (
-                              <Text style={styles.ItemCategoryHint}>No tag</Text>
-                            )
-                          }
-                        </View>
-                      </View>
-                    } toScale={0.95}
-                  />
+                  <Pressable style={{marginVertical: 6, paddingHorizontal: 10}}> 
+                    <MealCard
+                      recipe={item}
+                      isAvailable={true}
+                      isMealPlanner={true}
+                      handlePress={() => handleAddRecipe(item.id)}
+                    />
+                  </Pressable>
+
                 );
               }}
-
             />
         ) : (
         <SwipeListView
@@ -319,6 +301,8 @@ export default function MealPlannerPage({ navigation }) {
       />
 
     </View>
+
+    </TouchableWithoutFeedback>
   );
 
 }

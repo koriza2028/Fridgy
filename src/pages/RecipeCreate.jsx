@@ -16,8 +16,6 @@ import {
 } from "react-native";
 // import { InteractionManager } from 'react-native';
 import ImageWithUpload from "../components/ImageWithUpload";
-import { SwipeListView } from "react-native-swipe-list-view";
-const AnimatedSwipeListView = Animated.createAnimatedComponent(SwipeListView);
 
 import ButtonGoBack from "../components/ButtonGoBack";
 import IngredientItem from "../components/cooking/IngredientCard";
@@ -182,7 +180,10 @@ export default function RecipeCreatePage({ navigation, route }) {
       imageUri,
     })
       .then(() => {
-        navigation.navigate("CookingPage");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "CookingPage" }],
+        });
       })
       .catch((error) => {
         console.error("Failed to save recipe:", error);
@@ -272,10 +273,11 @@ export default function RecipeCreatePage({ navigation, route }) {
     (mandatoryFlag) => {
       setFilteredData(getAvailableProducts());
       setIsMandatoryFlag(mandatoryFlag);
-      setSearchModalVisible(true);
+      
       setTimeout(() => {
-        modalSearchRef.current?.focus();
-      }, 100);
+        // modalSearchRef.current?.focus();
+        setSearchModalVisible(true);
+      }, 0);
     },
     [getAvailableProducts]
   );
@@ -452,7 +454,7 @@ return (
           isRecipeCreate={true}
           addProduct={addIngredient}
           isMandatory={isMandatoryFlag}
-          modalSearchRef={modalSearchRef}
+          // modalSearchRef={modalSearchRef}
         />
 
         <ModalProductCategoryPicker
@@ -491,7 +493,7 @@ return (
         onPress={saveOrUpdateRecipe}
         isDisabled={isSaveDisabled}
         label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
-        toScale={0.95}
+        toScale={0.9}
       />
     </View>
 

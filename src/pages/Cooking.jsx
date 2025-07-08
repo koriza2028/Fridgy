@@ -174,6 +174,7 @@ export default function CookingPage({ navigation }) {
                         recipe={recipe}
                         key={recipe.id}
                         isAvailable={true}
+                        handlePress={() => navigation.navigate('RecipeCreatePage', { recipe })}
                       />
                     ))}
                 </View>

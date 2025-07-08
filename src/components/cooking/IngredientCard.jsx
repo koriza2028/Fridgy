@@ -31,10 +31,12 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
   };
 
 
-  const borderColor = ingredient.amount > 0 ? 'green' : 'red';
+  // const borderColor = ingredient.amount > 0 ? 'green' : 'red';
 
     return (
-        <View style={[styles.IngredientItem, { borderColor: borderColor }, !isAvailable && { borderWidth: 1 }]}>
+        <View style={[styles.IngredientItem, 
+          // { borderColor: borderColor }, !isAvailable && { borderWidth: 1 }
+        ]}>
 
              <AppImage 
               style={styles.IngredientItem_Picture}

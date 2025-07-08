@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, TextInput, View, Text, Pressable, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, TextInput, View, Text, Pressable, FlatList, Keyboard, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 
 import Modal from 'react-native-modal';
 import Entypo from 'react-native-vector-icons/Entypo';
 
+const { width, height } = Dimensions.get("window");
+
 // import SearchInput from './Search';
-import Tag from './cooking/Tag';
 
 import { useFonts } from 'expo-font';
 import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
@@ -31,6 +32,7 @@ const SearchModal = ({
       'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
+  
 
 
   const modalSearchRef = useRef(null);
@@ -46,99 +48,31 @@ const SearchModal = ({
   }, [isSearchModalVisible]);
 
   // Declare renderItem locally so that it’s defined based on the passed props.
-  let renderItem = () => null;
 
-  if (isBasket) {
-    renderItem = ({ item, index }) => {
-      // If the item is a string, then it represents a new item option.
-      if (typeof item === 'string') {
-        return (
-          <Pressable style={styles.newItem} onPress={() => addProduct(item, false)}>
-            <Text style={styles.searchItem_Text}>{item}</Text>
-            <Text style={styles.ItemCategoryHint}>Add new item</Text>
-          </Pressable>
-        );
+  const renderItem = ({ item }) => (
+    <ButtonBouncing 
+      onPress={() => {
+        addProduct(item, isMandatory)
       }
-      // Otherwise, it's an object from the fridge products.
-      return (
-        <Pressable style={styles.fridgeItem} onPress={() => addProduct(item, true)}>
-          <AppImage 
-            style={styles.searchItem_Image}
-            imageUri={item.imageUri}
-            staticImagePath={item.staticImagePath}
-          />
-          <View style={styles.NameAndHint}>
+        }
+      style={{borderRadius: 6}}  
+      toScale={0.95} label={
+      <View style={styles.fridgeItem}>
+        <AppImage 
+          style={styles.searchItem_Image}
+          imageUri={item.imageUri}
+          staticImagePath={item.staticImagePath}
+        />
+        <View style={styles.NameAndHint}>
             <Text style={styles.searchItem_Text}>{item.name}</Text>
             <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
-          </View>
-        </Pressable>
-      );
-    };
-  } else if (isRecipeCreate) {
-    renderItem = ({ item }) => (
-      <ButtonBouncing 
-        onPress={() => {
-          addProduct(item, isMandatory)
-        }
-          }
-        style={{borderRadius: 6}}  
-        toScale={0.95} label={
-        <View style={styles.fridgeItem}>
-          <AppImage 
-            style={styles.searchItem_Image}
-            imageUri={item.imageUri}
-            staticImagePath={item.staticImagePath}
-          />
-          <View style={styles.NameAndHint}>
-              <Text style={styles.searchItem_Text}>{item.name}</Text>
-              <Text style={styles.ItemCategoryHint}>{item.category ? item.category.tagName : ""}</Text>
-          </View>
-        </View>}
-      />
-    );
-  } else if (isMealPlanner) {
-    renderItem = ({ item }) => (
-      <Pressable style={styles.mealItem} onPress={() => addProduct(item.id)}>
-        <AppImage 
-          style={styles.searchItem_Image}
-          imageUri={item.imageUri}
-          staticImagePath={item.staticImagePath}
-        />
-        <View style={styles.NameAndHint}>
-          <Text style={styles.searchItem_Text}>{item.title}</Text>
-          {
-              item.categories && item.categories.length > 0 ? (
-                item.categories.map((category, index) => { 
-                  return <Text style={styles.ItemCategoryHint}>{category ? category.tagIcon : "No tag"}</Text>
-                }
-              )
-              ) : (
-                <Text style={styles.ItemCategoryHint}>No tag</Text>
-              )
-            }
         </View>
-      </Pressable>
-    );
-  } else {
-    renderItem = ({ item }) => (
-      <Pressable style={styles.fridgeItem} onPress={() => addProduct(item.id)}>
-        <AppImage 
-          style={styles.searchItem_Image}
-          imageUri={item.imageUri}
-          staticImagePath={item.staticImagePath}
-        />
-        <View style={styles.NameAndHint}>
-            <Text style={styles.searchItem_Text}>{item.title}</Text>
-        </View>
-      </Pressable>
-    );
-  }
+      </View>}
+    />
+  );
+
 
   // For basket modals, always add a new string item at the end (if search query is non-empty)
-  const modifiedData =
-    isBasket && !isRecipeCreate && searchQuery.trim() !== ''
-      ? [...filteredData, searchQuery]
-      : filteredData;
 
   return (
     <Modal
@@ -149,7 +83,7 @@ const SearchModal = ({
       animationIn="fadeIn"
       animationOut="fadeOut"
       animationInTiming={400}
-      animationOutTiming={300}
+      // animationOutTiming={0}
       style={styles.modal}
     >
       <Pressable onPress={() => {  Keyboard.dismiss(); closeSearchModal()}} 
@@ -167,45 +101,17 @@ const SearchModal = ({
         // нахер его, от него лишь проблемы с двойными кликами 
       />
       
+      <View style={styles.modalContent}>
+        <FlatList
+          data={filteredData}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderItem}
+          onScrollBeginDrag={Keyboard.dismiss}
+          keyboardShouldPersistTaps="always"
+          style={styles.flatList}
+        />
+      </View>
 
-      {/* {isBasket && !isRecipeCreate && (
-        <View style={styles.modalContent}>
-          {searchQuery.trim() !== '' && (
-            <FlatList
-              data={modifiedData}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderItem}
-              keyboardShouldPersistTaps="always"
-              style={styles.flatList}
-            />
-          )}
-        </View>
-      )} */}
-
-      {!isBasket && isRecipeCreate && (
-          <View style={styles.modalContent}>
-            <FlatList
-              data={filteredData}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderItem}
-              onScrollBeginDrag={Keyboard.dismiss}
-              keyboardShouldPersistTaps="always"
-              style={styles.flatList}
-            />
-          </View>
-      )}
-
-      {/* {!isBasket && !isRecipeCreate && (
-        <View style={styles.modalContent}>
-          <FlatList
-            data={filteredData}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderItem}
-            keyboardShouldPersistTaps="always"
-            style={styles.flatList}
-          />
-        </View>
-      )} */}
     </Modal>
   );
 };
@@ -218,8 +124,9 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   modalContent: {
-    padding: 10,
-    // width: '100%',
+    height: height,
+    // borderWidth: 1,
+    // borderColor: '#C0C0C0',
   },
   searchInput: {
     backgroundColor: '#fff',
@@ -244,7 +151,7 @@ const styles = StyleSheet.create({
     // marginBottom: 10,
   },
   flatList: {
-    marginTop: 8,
+    // marginTop: 8,
   },
   fridgeItem: {
     padding: 10,
@@ -252,22 +159,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
     flexDirection: 'row',
   },
-  newItem: {
-    padding: 10,
-    backgroundColor: '#eee',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  mealItem: {
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    flexDirection: 'row',
-    // backgroundColor: '#fff',
-    // alignItems: 'center',
-  },
+
   ItemCategoryTag: {
     height: 20,
   },
