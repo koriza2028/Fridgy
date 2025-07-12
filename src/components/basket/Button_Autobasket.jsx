@@ -1,5 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import ButtonBouncing from '../Button_Bouncing';
+
 import { addButtonColor } from '../../../assets/Styles/styleVariables';
 
 export default function AnimatedButtonColumn({onAClick, onGClick}) {
@@ -38,9 +41,13 @@ export default function AnimatedButtonColumn({onAClick, onGClick}) {
             },
           ]}
         >
-          <Pressable style={styles.secondaryButton} onPress={onAClick}>
-            <Text style={styles.buttonText}>A</Text>
-          </Pressable>
+
+          <ButtonBouncing 
+            innerStyle={styles.secondaryButton} style={{width: 50, height: 50, borderRadius: 30}}
+            onPress={onAClick}
+            label={<Text style={styles.buttonText}>A</Text>} toScale={0.9}
+          />
+
         </Animated.View>
   
         <Animated.View
@@ -52,9 +59,12 @@ export default function AnimatedButtonColumn({onAClick, onGClick}) {
             },
           ]}
         >
-          <Pressable style={styles.secondaryButton} onPress={onGClick}>
-            <Text style={styles.buttonText}>G</Text>
-          </Pressable>
+
+          <ButtonBouncing innerStyle={styles.secondaryButton} style={{width: 50, height: 50, borderRadius: 30}}
+            onPress={onGClick}
+            label={<Text style={styles.buttonText}>G</Text>} toScale={0.9}
+          />
+
         </Animated.View>
   
         <Pressable style={styles.mainButton} onPress={toggleButtons}>
@@ -73,25 +83,25 @@ const styles = StyleSheet.create({
     // paddingBottom: 100,
 
     position: 'absolute',
-        bottom: 20,
-        right: 10,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 50,
-        height: 50,
-        paddingVertical: 15,
-        paddingHorizontal: 15,
-        marginHorizontal: 10,
-        backgroundColor: '#FFF',
-        borderRadius: 60,
-        borderColor: addButtonColor,
-        borderWidth: 2,
-        shadowColor: '#007bff', 
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 2,
-        elevation: 2,        
+    bottom: 20,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 50,
+    height: 50,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    marginHorizontal: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 60,
+    borderColor: addButtonColor,
+    borderWidth: 2,
+    shadowColor: '#007bff', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 2,        
   },
   animatedWrapper: {
     position: 'absolute',
@@ -110,6 +120,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     color: 'white',

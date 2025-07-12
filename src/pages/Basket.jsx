@@ -199,7 +199,7 @@ export default function BasketPage({ navigation }) {
                         onPress={() => addProduct(item, false)}
                         label={
                           <View style={[styles.newItem, styles.searchItem]}>
-                            <Text style={styles.searchItem_Text}>{item}</Text>
+                            <Text style={styles.searchItem_Text}>{`${item}`}</Text>
                             <Text style={styles.ItemCategoryHint}>Add new item</Text>
                           </View>
                         } toScale={0.95}
@@ -258,9 +258,8 @@ export default function BasketPage({ navigation }) {
           </View>
 
           <ModalItemInfo 
-            isVisible={isInfoModalVisible} 
-            onClose={() => setIsInfoModalVisible(false)} 
-            selectedProduct={selectedProduct}
+            isVisible={isInfoModalVisible} selectedProduct={selectedProduct}
+            onClose={() => setIsInfoModalVisible(false)}
           />
 
         </View>
@@ -274,7 +273,11 @@ export default function BasketPage({ navigation }) {
              style={styles.basketButtonIcon}/>}
         />
 
-        <Button_Autobasket onAClick={() => navigation.navigate('AutoBasketPage')} onGClick={handleAddAutoBasketToBasket} />
+        <Button_Autobasket 
+          onAClick={() => navigation.navigate('AutoBasketPage')} 
+          onGClick={handleAddAutoBasketToBasket} 
+        />
+
       </View>
     </TouchableWithoutFeedback>
   );
@@ -370,7 +373,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
     },
     newItem: {
-      backgroundColor: '#eee',
+      backgroundColor: 'transparent',
     },
     mealItem: {
       padding: 10,

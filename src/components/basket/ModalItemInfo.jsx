@@ -6,7 +6,7 @@ import Modal from "react-native-modal";
 
 const { width, height } = Dimensions.get('window');
 import { useFonts } from 'expo-font';
-import { MainFont, MainFont_Bold, MainFont_Title, SecondTitleFontSize, TextFontSize } from "../../../assets/Styles/styleVariables";
+import { greyTextColor, greyTextColor2, MainFont, MainFont_Bold, MainFont_SemiBold, MainFont_Title, SecondTitleFontSize, TextFontSize } from "../../../assets/Styles/styleVariables";
 
 const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
 
@@ -76,8 +76,7 @@ useEffect(() => {
                 ? { uri: selectedProduct?.imageUri } 
                 : require('../../../assets/ProductImages/banana_test.png')
                   }/>
-        <Text style={styles.yourNotes}>{selectedProduct?.name}</Text>
-        <Text style={styles.yourNotes}>Your notes</Text>
+        <Text style={styles.productName}>{selectedProduct?.name}</Text>
         <Text style={styles.productNotes}>{selectedProduct?.notes}</Text>
             
       </View>
@@ -108,16 +107,28 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 16, 
         borderTopRightRadius: 16,
     },
-    yourNotes: {
+    productName: {
       fontFamily: MainFont_Title,
       fontSize: SecondTitleFontSize,
-      padding: 20,
+      fontSize: 24,
+      paddingHorizontal: 20,
+      marginVertical: 10,
+    },
+    yourNotes: {
+      fontFamily: MainFont_SemiBold,
+      fontSize: SecondTitleFontSize,
+      paddingHorizontal: 20,
+      marginBottom: 10,
     },
     productNotes: {
       fontFamily: MainFont,
       fontSize: TextFontSize,
+      color: greyTextColor2,
       paddingHorizontal: 20,
+      paddingBottom: 20,
       minHeight: 100,
+      maxHeight: 150,
+      overflow: 'hidden',
     }
 
 });
