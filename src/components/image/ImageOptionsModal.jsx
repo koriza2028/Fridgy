@@ -8,15 +8,43 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Dimensions,
+  FlatList
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import AppImage from './AppImage';
+
+const { width, height } = Dimensions.get('window');
 
 // Static images with keys
 const staticImageOptions = [
-  { key: 'banana_test', source: require('../../../assets/ProductImages/banana_test.png') },
-  { key: 'apple_test', source: require('../../../assets/ProductImages/apple_test.png') },
-  { key: 'milk_test', source: require('../../../assets/ProductImages/milk_test.png') },
+  { key: 'banana_test'},
+  { key: 'apple_test'},
+  { key: 'milk_test'},
+  { key: 'banana_test'},
+  { key: 'apple_test'},
+  { key: 'milk_test'},
 ];
+
+staticImageOptions.forEach((item) => {
+  // Force decoding ahead of time (triggers load when app starts)
+  Image.resolveAssetSource(item.source);
+});
+
+const MODAL_SIZE = width * 0.86;
+const IMAGE_SIZE = MODAL_SIZE * 0.31; // or whatever size you want
+const VERTICAL_SPACING = 10;
+
+const StaticImageItem = React.memo(({ item, onSelect }) => {
+  return (
+    <TouchableOpacity onPress={() => onSelect(item.key)} style={styles.imageBox}>
+      <AppImage
+        staticImagePath={item.key}
+        style={styles.imageThumb}
+      />
+    </TouchableOpacity>
+  );
+});
 
 const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose }) => {
   const requestPermissions = async () => {
@@ -77,15 +105,28 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
           </View>
 
           {/* Static Images */}
-          { enableStaticImages && 
-          (<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.staticImageScroll}>
-            {staticImageOptions.map((img, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(img.key)} style={styles.imageBox}>
-                <Image source={img.source} style={styles.imageThumb} resizeMode="cover" />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>)
-          }
+          {enableStaticImages && (
+            <View style={{ height: IMAGE_SIZE * 4 + VERTICAL_SPACING * 4 + 15, alignItems: 'center' }}>
+              <FlatList
+                data={staticImageOptions}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <StaticImageItem item={item} onSelect={onSelect} />
+                )}
+                numColumns={3}
+                scrollEnabled={true}
+                showsVerticalScrollIndicator={false}
+                initialNumToRender={9}
+                maxToRenderPerBatch={6}
+                contentContainerStyle={{
+                  paddingHorizontal: 0,
+                }}
+                columnWrapperStyle={{
+                  justifyContent: 'flex-start', // ← this ensures rows start from the left
+                }}
+              />
+            </View>
+          )}
 
           {/* Close Button */}
 
@@ -107,8 +148,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#FFF',
-    width: '85%',
-    padding: 16,
+    width: MODAL_SIZE,
+    padding: 12,
     borderRadius: 12,
   },
   title: {
@@ -136,15 +177,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   imageBox: {
-    marginHorizontal: 6,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    // margin: 5,
+    // alignItems: 'start',
+    // justifyContent: 'flex-start',
   },
   imageThumb: {
-    width: 70,
-    height: 70,
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    // borderRadius: 8,
   },
   closeButton: {
     marginTop: 10,
