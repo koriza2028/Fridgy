@@ -106,7 +106,7 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
 
           {/* Static Images */}
           {enableStaticImages && (
-            <View style={{ height: IMAGE_SIZE * 4 + VERTICAL_SPACING * 4 + 15, alignItems: 'center' }}>
+            <View style={{ height: IMAGE_SIZE * 3 + VERTICAL_SPACING * 4 + 15, alignItems: 'center' }}>
               <FlatList
                 data={staticImageOptions}
                 keyExtractor={(item, index) => index.toString()}

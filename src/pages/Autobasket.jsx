@@ -1,25 +1,40 @@
-// AutoBasketPage.js
+// Refactored AutoBasketPage to align with BasketPage styling and structure
+
 import React, { useState, useRef, useCallback } from 'react';
-import { View, ScrollView, Dimensions, StyleSheet, Pressable, TouchableWithoutFeedback, Keyboard, Text, LayoutAnimation } from 'react-native';
+import {
+  View,
+  Text,
+  Dimensions,
+  StyleSheet,
+  Pressable,
+  TouchableWithoutFeedback,
+  Keyboard,
+  FlatList,
+  LayoutAnimation,
+  Alert
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
 import useAuthStore from '../store/authStore';
-import { fetchAllProducts } from '../store/fridgeStore';
 import {
   fetchAutoBasketProducts,
   addProductToAutoBasket,
   updateProductAmountInAutoBasket,
   removeProductFromAutoBasket
 } from '../store/autoBasketStore';
+import { fetchAllProducts } from '../store/fridgeStore';
 
-import ModalItemInfo from '../components/basket/ModalItemInfo';
 import SearchInput from '../components/Search';
-import SearchModal from '../components/SearchModal';
 import BasketItem from '../components/basket/BasketItem';
-import { backgroundColor } from '../../assets/Styles/styleVariables';
+import ModalItemInfo from '../components/basket/ModalItemInfo';
+import ButtonBouncing from '../components/Button_Bouncing';
+import AppImage from '../components/image/AppImage';
 
-const { width } = Dimensions.get('window');
+import Entypo from 'react-native-vector-icons/Entypo';
+import { backgroundColor, deleteButtonColor, SecondTitleFontSize, MainFont } from '../../assets/Styles/styleVariables';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AutoBasketPage() {
   const ctx = useAuthStore((state) => {
@@ -28,15 +43,13 @@ export default function AutoBasketPage() {
     return { userId, familyId };
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredData, setFilteredData] = useState([]);
-  const [isSearchModalVisible, setSearchModalVisible] = useState(false);
   const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
-  const [editMode, setEditMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
-  const modalSearchRef = useRef(null);
+  const [openRowKey, setOpenRowKey] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -45,166 +58,140 @@ export default function AutoBasketPage() {
   );
 
   const refreshAutoBasket = async () => {
-      try {
-        if (ctx) {
-          const autoBasketItems = await fetchAutoBasketProducts(ctx);
-          const fridgeProducts = await fetchAllProducts(ctx);
-          setAutoBasket(autoBasketItems);
-          setProducts(fridgeProducts);
-        }
-      } catch (err) {
-        console.error("Failed to fetch basket products:", err);
-        setError("Failed to fetch basket.");
-      }
-    };
+    try {
+      const [autoItems, allProducts] = await Promise.all([
+        fetchAutoBasketProducts(ctx),
+        fetchAllProducts(ctx),
+      ]);
+      setAutoBasket(autoItems);
+      setProducts(allProducts);
+    } catch (err) {
+      console.error("Failed to fetch auto basket:", err);
+    }
+  };
 
   const handleSearch = (text) => {
     setSearchQuery(text);
     if (text) {
       const results = products.filter(
-        (p) =>
-          !autoBasket.some((a) => a.productId === p.id) &&
-          p.name.toLowerCase().includes(text.toLowerCase())
+        (p) => !autoBasket.some((a) => a.productId === p.id) &&
+               p.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredData(results);
     } else {
-      closeSearchModal();
+      setFilteredData([]);
     }
-  };
-
-  const openSearchModal = (text) => {
-    setSearchQuery(text);
-    setSearchModalVisible(true);
-    handleSearch(text);
-    setTimeout(() => {
-      modalSearchRef.current?.focus();
-    }, 100);
-  };
-
-  const closeSearchModal = () => {
-    setSearchModalVisible(false);
-    setSearchQuery('');
-    setFilteredData([]);
   };
 
   const addProduct = async (item) => {
     try {
       await addProductToAutoBasket(ctx, item);
-      closeSearchModal();
+      setSearchQuery('');
+      setFilteredData([]);
+      Keyboard.dismiss();
       await refreshAutoBasket();
     } catch (err) {
       console.error("Failed to add product:", err);
-      setError("Failed to add product. Please try again.");
-    }
-  };
-  
-  const handleIncrementProductAmount = async (autoBasketItemId, currentAmount) => {
-    try {
-      await updateProductAmountInAutoBasket(ctx, autoBasketItemId, currentAmount + 1);
-      await refreshAutoBasket();
-    } catch (err) {
-      console.error("Failed to increment product quantity:", err);
     }
   };
 
-const handleRemoveAutoBasketProduct = async (autoBasketItemId) => {
-  let prevAutoBasket = null;
+  const handleIncrementProductAmount = async (id, currentAmount) => {
+    await updateProductAmountInAutoBasket(ctx, id, currentAmount + 1);
+    await refreshAutoBasket();
+  };
 
-  try {
+  const handleRemoveAutoBasketProduct = async (id) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
-    setAutoBasket((prev) => {
-      prevAutoBasket = prev;
-      return prev.filter(item => item.autoBasketId !== autoBasketItemId);
-    });
-
-    await removeProductFromAutoBasket(ctx, autoBasketItemId);
-
-    await refreshAutoBasket(); // Optional but keeps UI in sync
-  } catch (err) {
-    console.error("Failed to remove auto basket product:", err);
-
-    // Rollback
-    if (prevAutoBasket) {
-      setAutoBasket(prevAutoBasket);
-    } else {
-      await refreshAutoBasket();
+    const prev = autoBasket;
+    setAutoBasket(prev.filter(item => item.autoBasketId !== id));
+    try {
+      await removeProductFromAutoBasket(ctx, id);
+    } catch (err) {
+      console.error(err);
+      setAutoBasket(prev);
     }
-  }
-};
-
-  const [openRowKey, setOpenRowKey] = useState(null);
-
-  // Render the hidden row with a delete button
-  const renderHiddenItem = ({ item }) => (
-    <View style={styles.rowBack}>
-      <Pressable
-        style={styles.deleteButton}
-        onPress={() => handleRemoveAutoBasketProduct(item.autoBasketId)}
-      >
-        <Text style={styles.deleteButtonText}>Delete</Text>
-      </Pressable>
-    </View>
-  );
+  };
 
   const handleItemPress = (product) => {
     setSelectedProduct(product);
     setIsInfoModalVisible(true);
   };
 
+  const renderHiddenItem = ({ item }) => (
+    <View style={styles.rowBack}>
+      <Pressable style={styles.deleteButton} onPress={() => handleRemoveAutoBasketProduct(item.autoBasketId)}>
+        <Entypo name="trash" size={28} style={styles.deleteButtonText} />
+      </Pressable>
+    </View>
+  );
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.BasketPage}>
-          <View style={styles.BasketPage_ContentWrapper}>
+        <View style={styles.BasketPage_ContentWrapper}>
 
-            <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={openSearchModal} />
-            
-            <SearchModal 
-              isSearchModalVisible={isSearchModalVisible}
-              closeSearchModal={closeSearchModal}
-              addProduct={addProduct}
-              searchQuery={searchQuery}
-              handleSearch={handleSearch}
-              filteredData={filteredData}
-              isRecipeCreate={true}
-            />
-            
+          <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
+
           <View style={styles.BasketPage_ListOfBasketItems}>
-
-            <SwipeListView
-              data={autoBasket}
-              keyExtractor={(item) => item.autoBasketId.toString()}
-              renderHiddenItem={renderHiddenItem}
-              rightOpenValue={-75}
-              disableRightSwipe={true}
-              onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
-              onRowClose={(rowKey) => setOpenRowKey(null)}
-              contentContainerStyle={styles.BasketPage_ListOfBasketItems}
-              renderItem={({ item }) => (
-                <View style={styles.rowFront}>
-                  <BasketItem
-                    product={item}
-                    onDecrement={() => handleRemoveAutoBasketProduct(item.autoBasketId)}
-                    onAdd={() => handleIncrementProductAmount(item.autoBasketId, item.amount)}
-                    onToggleCheckbox={(isChecked) => handleToggleCheckbox(item.autoBasketId, isChecked)}
-                    openInfoModal={() => handleItemPress(item)}
-                    swipeOpen={openRowKey === item.autoBasketId}
-                    autobasket={true}
+            {searchQuery.length > 0 ? (
+              <FlatList
+                data={filteredData}
+                keyExtractor={(item, index) => index.toString()}
+                keyboardShouldPersistTaps="always"
+                renderItem={({ item }) => (
+                  <ButtonBouncing
+                    style={{ borderRadius: 6 }}
+                    onPress={() => addProduct(item)}
+                    label={
+                      <View style={[styles.fridgeItem, styles.searchItem]}>
+                        <AppImage
+                          style={styles.searchItem_Image}
+                          imageUri={item.imageUri}
+                          staticImagePath={item.staticImagePath}
+                        />
+                        <View style={styles.NameAndHint}>
+                          <Text style={styles.searchItem_Text}>{item.name}</Text>
+                          <Text style={styles.ItemCategoryHint}>{item.category?.tagName || ''}</Text>
+                        </View>
+                      </View>
+                    }
+                    toScale={0.95}
                   />
-                </View>
-              )}          
-            />
-
+                )}
+              />
+            ) : (
+              <SwipeListView
+                data={autoBasket}
+                keyExtractor={(item) => item.autoBasketId.toString()}
+                renderHiddenItem={renderHiddenItem}
+                rightOpenValue={-75}
+                disableRightSwipe
+                onRowOpen={(rowKey) => setOpenRowKey(rowKey)}
+                onRowClose={() => setOpenRowKey(null)}
+                contentContainerStyle={styles.BasketPage_ListOfBasketItems}
+                renderItem={({ item }) => (
+                  <View style={styles.rowFront}>
+                    <BasketItem
+                      product={item}
+                      onDecrement={() => handleRemoveAutoBasketProduct(item.autoBasketId)}
+                      onAdd={() => handleIncrementProductAmount(item.autoBasketId, item.amount)}
+                      openInfoModal={() => handleItemPress(item)}
+                      swipeOpen={openRowKey === item.autoBasketId}
+                      autobasket={true}
+                    />
+                  </View>
+                )}
+              />
+            )}
           </View>
 
-          <ModalItemInfo 
-            isVisible={isInfoModalVisible} 
-            onClose={() => setIsInfoModalVisible(false)} 
+          <ModalItemInfo
+            isVisible={isInfoModalVisible}
             selectedProduct={selectedProduct}
+            onClose={() => setIsInfoModalVisible(false)}
           />
 
         </View>
-
       </View>
     </TouchableWithoutFeedback>
   );
@@ -215,43 +202,63 @@ const styles = StyleSheet.create({
     backgroundColor: backgroundColor,
   },
   rowBack: {
-    alignItems: 'center',
-    backgroundColor: 'red',
+    alignItems: 'flex-end',
     justifyContent: 'center',
-    width: 75,        // Fixed width matching rightOpenValue
+    width: 65,
     position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
   },
   deleteButton: {
-    // paddingHorizontal: 20,
-    // paddingVertical: 10,
+    paddingRight: 20,
+    width: 65,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    color: deleteButtonColor, // imported from styleVariables
   },
-
-  WholePage: {
+  BasketPage: {
     flex: 1,
     backgroundColor: backgroundColor,
     width: width,
     alignItems: 'center',
   },
-  WholePage_ContentWrapper: {
+  BasketPage_ContentWrapper: {
     width: width,
   },
   BasketPage_ListOfBasketItems: {
     marginTop: 10,
-    marginBottom: 20,
-    // marginHorizontal: 10,
+    height: height,
   },
-  // controlButtons: {
-  //   flexDirection: 'row',
-  //   justifyContent: 'space-between',
-  //   marginVertical: 10,
-  //   gap: 10,
-  // },
+  fridgeItem: {
+    flexDirection: 'row',
+  },
+  searchItem: {
+    padding: 10,
+    marginHorizontal: 10,
+    borderRadius: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  searchItem_Image: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+  },
+  NameAndHint: {
+    flexDirection: 'column',
+    marginLeft: 16,
+  },
+  searchItem_Text: {
+    fontSize: SecondTitleFontSize,
+    fontFamily: MainFont,
+  },
+  ItemCategoryHint: {
+    paddingTop: 10,
+    fontSize: 12,
+    fontFamily: MainFont,
+  },
 });

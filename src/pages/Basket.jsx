@@ -68,19 +68,6 @@ export default function BasketPage({ navigation }) {
     }, [ctx.userId, ctx.familyId])
   );
 
-  // const handleSearch = (text) => {
-  //   setSearchQuery(text);
-  //   if (text) {
-  //     const allProducts = [...available, ...archived];
-  //     const results = allProducts.filter(prod =>
-  //       !basket.some(b => b.productId === prod.id) &&
-  //       prod.name.toLowerCase().includes(text.toLowerCase())
-  //     );
-  //     setFilteredData(results);
-  //   } else {
-  //     closeSearchModal();
-  //   }
-  // };
 
   const handleSearch = (text) => {
   setSearchQuery(text);

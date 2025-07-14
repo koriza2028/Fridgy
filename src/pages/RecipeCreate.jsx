@@ -145,7 +145,7 @@ export default function RecipeCreatePage({ navigation, route }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(products);
   const [isSearchModalVisible, setSearchModalVisible] = useState(false);
-  const modalSearchRef = useRef(null);
+  // const modalSearchRef = useRef(null);
   const [isMandatoryFlag, setIsMandatoryFlag] = useState(null);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
@@ -456,7 +456,7 @@ return (
         </View>
 
         <SearchModal
-          isSearchModalVisible={isSearchModalVisible}
+          isVisible={isSearchModalVisible}
           closeSearchModal={closeSearchModal}
           handleSearch={handleSearchInput}
           filteredData={filteredData}

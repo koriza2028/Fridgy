@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, Text, Pressable, FlatList, Keyboard, Dimensions } from 'react-native';
 
 import Modal from 'react-native-modal';
@@ -15,7 +15,7 @@ import AppImage from './image/AppImage';
 import ButtonBouncing from './Button_Bouncing';
 
 const SearchModal = ({
-  isSearchModalVisible,
+  isVisible,
   closeSearchModal,
   searchQuery,
   handleSearch,
@@ -31,19 +31,30 @@ const SearchModal = ({
       'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
-  
 
-  const modalSearchRef = useRef(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (isSearchModalVisible && modalSearchRef.current) {
-      // A small delay ensures the modal is fully rendered before focusing the input.
-      setTimeout(() => {
-        modalSearchRef.current.focus();
-      }, 100);
-    }
-  }, [isSearchModalVisible]);
+  // const [shouldRender, setShouldRender] = useState(isVisible);
+  // useEffect(() => {
+  //   if (isVisible) {
+  //     setShouldRender(true);
+  //   } else {
+  //     const timeout = setTimeout(() => setShouldRender(false), 300); // match fadeOut
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [isVisible]);
+
+  // if (!shouldRender) return null;
+  
+
+  // useEffect(() => {
+  //   if (isSearchModalVisible && modalSearchRef.current) {
+  //     // A small delay ensures the modal is fully rendered before focusing the input.
+  //     setTimeout(() => {
+  //       modalSearchRef.current.focus();
+  //     }, 100);
+  //   }
+  // }, [isVisible]);
 
   // Declare renderItem locally so that it’s defined based on the passed props.
 
@@ -74,7 +85,7 @@ const SearchModal = ({
 
   return (
     <Modal
-      isVisible={isSearchModalVisible}
+      isVisible={isVisible}
       // onBackdropPress={Keyboard.dismiss}
       // avoidKeyboard={true}
       onBackButtonPress={closeSearchModal}
@@ -82,14 +93,17 @@ const SearchModal = ({
       animationOut="fadeOut"
       // animationInTiming={300}
       // animationOutTiming={0}
+      useNativeDriver={true}
       style={styles.modal}
     >
+      {/* {isVisible && (
+      <> */}
       <Pressable onPress={() => {  Keyboard.dismiss(); closeSearchModal()}} 
         style={styles.closeButton}>
         <Entypo name="chevron-left" size={30} />
       </Pressable>
 
-      {/* REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS */}
+      
       <TextInput
         style={styles.searchInput}
         placeholder="Find a product"
@@ -97,6 +111,7 @@ const SearchModal = ({
         onChangeText={handleSearch}
         // ref={modalSearchRef}
         // нахер его, от него лишь проблемы с двойными кликами 
+        // REVIEW: USE THE DEFAULT SEARCH COMPONENT FOR THIS
       />
       
       <View style={styles.modalContent}>
@@ -109,7 +124,8 @@ const SearchModal = ({
           style={styles.flatList}
         />
       </View>
-
+       {/* </>
+  )} */}
     </Modal>
   );
 };

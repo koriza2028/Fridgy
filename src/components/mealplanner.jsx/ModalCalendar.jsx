@@ -1,5 +1,5 @@
 // components/CalendarModal.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
 import Modal from 'react-native-modal';
 import { Calendar } from 'react-native-calendars';
@@ -18,6 +18,18 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
       'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
       'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
+
+    const [shouldRender, setShouldRender] = useState(isVisible);
+    useEffect(() => {
+      if (isVisible) {
+        setShouldRender(true);
+      } else {
+        const timeout = setTimeout(() => setShouldRender(false), 300); // match fadeOut
+        return () => clearTimeout(timeout);
+      }
+    }, [isVisible]);
+
+    if (!shouldRender) return null;
     
   return (
     <Modal
@@ -31,6 +43,7 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
       animationOutTiming={300}
       style={styles.modal}
     >
+      {isVisible && (
       <View style={styles.modalContent}>
         <Text style={styles.header}>Select a date</Text>
         <Calendar
@@ -79,6 +92,7 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
           <Text style={styles.closeButtonText}>Close</Text>
         </Pressable> */}
       </View>
+      )}
     </Modal>
   );
 }

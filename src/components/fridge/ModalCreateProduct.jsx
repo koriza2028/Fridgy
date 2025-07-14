@@ -322,12 +322,6 @@ export default function ModalCreateProduct({
                       label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
                     />
 
-                    {/* <Pressable 
-                      style={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
-                      onPress={createOrUpdateProduct} disabled={isSaveDisabled}>
-                      <Text style={styles.Button_UpdateProduct_Text}>Save</Text>
-                    </Pressable> */}
-
                   </View>
                 </View>
               </View>

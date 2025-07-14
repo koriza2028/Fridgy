@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import ButtonBouncing from '../Button_Bouncing';
 
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { addButtonColor } from '../../../assets/Styles/styleVariables';
 
 export default function AnimatedButtonColumn({onAClick, onGClick}) {
@@ -42,10 +43,12 @@ export default function AnimatedButtonColumn({onAClick, onGClick}) {
           ]}
         >
 
+        {/* CAN TURN OFF THE BORDERS BASED ON ITS STATE  */}
+
           <ButtonBouncing 
-            innerStyle={styles.secondaryButton} style={{width: 50, height: 50, borderRadius: 30}}
+            innerStyle={styles.secondaryButton} style={{width: 50, height: 50, borderRadius: 30,}}
             onPress={onAClick}
-            label={<Text style={styles.buttonText}>A</Text>} toScale={0.9}
+            label={<MaterialCommunityIcons name="cart-heart" size={28} style={styles.buttonText}/>} toScale={0.9}
           />
 
         </Animated.View>
@@ -62,13 +65,13 @@ export default function AnimatedButtonColumn({onAClick, onGClick}) {
 
           <ButtonBouncing innerStyle={styles.secondaryButton} style={{width: 50, height: 50, borderRadius: 30}}
             onPress={onGClick}
-            label={<Text style={styles.buttonText}>G</Text>} toScale={0.9}
+            label={<MaterialCommunityIcons name="cart-arrow-down" style={styles.buttonText}/>} toScale={0.9}
           />
 
         </Animated.View>
   
         <Pressable style={styles.mainButton} onPress={toggleButtons}>
-          <Text style={styles.buttonText}>A</Text>
+          <Text style={styles.mainButtonText}></Text>
         </Pressable>
       </View>
     );
@@ -114,7 +117,9 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   secondaryButton: {
-    backgroundColor: '#999',
+    // backgroundColor: '#999',
+    borderColor: addButtonColor,
+    borderWidth: 2,
     padding: 16,
     borderRadius: 30,
     width: 50,
@@ -123,7 +128,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 26,
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    width: 26,
+    height: 26,
+    marginLeft: 2,
+    // borderWidth: 2,
   },
 });

@@ -171,6 +171,7 @@ export default function MealPlannerPage({ navigation }) {
   // const handleSearch = (text) => {
   //   setSearchQuery(text);
   // };
+  
 
   const cards = useMemo(
     () => recipeBook.recipes.filter(r => plannedRecipeIds.includes(`${r.id}_${selectedDate}`)),
@@ -226,6 +227,16 @@ export default function MealPlannerPage({ navigation }) {
     }
   };
 
+  const listHeader = (
+  <View style={styles.navigation}>
+    <ButtonBouncing onPress={() => changeDate(-1)} style={styles.ButtonArrows}
+      label={<Entypo name="arrow-long-left" size={30} />}/>
+    <Text style={styles.TextDate}>{formatDateDisplay(selectedDate)}</Text>
+    <ButtonBouncing onPress={() => changeDate(1)} style={styles.ButtonArrows}
+      label={<Entypo name="arrow-long-right" size={30} />}/>
+  </View>
+);
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View style={styles.MealPlannerPage}>
@@ -233,7 +244,7 @@ export default function MealPlannerPage({ navigation }) {
 
         <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
 
-        <View style={styles.navigation}>
+        {/* <View style={styles.navigation}>
 
           <ButtonBouncing onPress={() => changeDate(-1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-left" size={30} />}/>
@@ -243,7 +254,8 @@ export default function MealPlannerPage({ navigation }) {
           <ButtonBouncing onPress={() => changeDate(1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-right" size={30} />}/>
 
-        </View>
+        </View> */}
+        
         
           {searchQuery.length > 0 ? (
             <FlatList
@@ -266,6 +278,8 @@ export default function MealPlannerPage({ navigation }) {
             />
         ) : (
         <SwipeListView
+          ListHeaderComponent={listHeader}
+          stickyHeaderIndices={[0]}
           data={cards}
           keyExtractor={(item) => `${item.id}_${selectedDate}`}
           key={listKey}
@@ -288,7 +302,7 @@ export default function MealPlannerPage({ navigation }) {
         )}
       </View>
 
-{/* calendar-month */}
+    {/* calendar-month */}
       <AddNewButton creativeAction={() => setIsCalendarVisible(v => !v)} 
         label={<MaterialIcons name={'calendar-month'} size={30} />}
         />
@@ -311,7 +325,6 @@ const styles = StyleSheet.create({
   MealPlannerPage: {
     flex: 1,
     backgroundColor: backgroundColor,
-    width: width,
     alignItems: 'center',
   },
   MealPlannerPage_ContentWrapper: {
@@ -326,21 +339,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 30,
     alignItems: 'center',
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     marginTop: 10,
     marginBottom: 30,
   },
-  // dailyContent: {
-  //   minHeight: width / 4,
-  //   width: '100%',
-  //   justifyContent: 'center',
-  //   marginTop: 20,
-
-  //   // backgroundColor: 'red',
-  //   // paddingHorizontal: 8,
-  //   // borderWidth: 2,
-  //   // borderColor: '#000',
-  // },
   addMore_Button: {
     // marginVertical: 20,
     position: 'static',
@@ -414,26 +416,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-
-  mealItem: {
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
-    flexDirection: 'row',
-    // backgroundColor: '#fff',
-    // alignItems: 'center',
-  },
   searchItem_Image: {
     width: 50,
     height: 50,
     borderRadius: 8,
-  },
-  NameAndHint: {
-    // alignContent: 'center',
-    // justifyContent: 'center',
-    marginLeft: 16,
-    // borderWidth: 1,
-    // borderColor: '#eee',
   },
   searchItem_Text: {
     fontSize: SecondTitleFontSize,
