@@ -491,7 +491,10 @@ return (
       )}
 
       <ButtonBouncing
-        innerStyle={styles.Button_SaveRecipe}
+        innerStyle={[
+          styles.Button_SaveRecipe,
+          isSaveDisabled && styles.Button_SaveRecipeDisabled,
+        ]}
         style={[
           styles.Button_SaveRecipe,
           isSaveDisabled && styles.Button_SaveRecipeDisabled,

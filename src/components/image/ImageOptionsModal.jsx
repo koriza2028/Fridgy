@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Modal,
   View,
@@ -12,12 +12,24 @@ import {
   FlatList
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+
 import AppImage from './AppImage';
+import SearchInput from '../Search';
+
+import { useFonts } from 'expo-font';
+import { MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
 
 const { width, height } = Dimensions.get('window');
 
 // Static images with keys
 const staticImageOptions = [
+  { key: 'banana_test'},
+  { key: 'apple_test'},
+  { key: 'milk_test'},
+  { key: 'banana_test'},
+  { key: 'apple_test'},
+  { key: 'milk_test'},
+
   { key: 'banana_test'},
   { key: 'apple_test'},
   { key: 'milk_test'},
@@ -32,7 +44,7 @@ staticImageOptions.forEach((item) => {
 });
 
 const MODAL_SIZE = width * 0.86;
-const IMAGE_SIZE = MODAL_SIZE * 0.31; // or whatever size you want
+const IMAGE_SIZE = MODAL_SIZE * 0.3; // or whatever size you want
 const VERTICAL_SPACING = 10;
 
 const StaticImageItem = React.memo(({ item, onSelect }) => {
@@ -47,6 +59,12 @@ const StaticImageItem = React.memo(({ item, onSelect }) => {
 });
 
 const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose }) => {
+  const [fontsLoaded] = useFonts({
+      'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+      'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+      'Inter-SemiBold': require('../../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+  });
+
   const requestPermissions = async () => {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
     const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -87,10 +105,15 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   return (
     <Modal visible={modalVisible} animationType="fade" transparent>
+
+      
       <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+        <View style={styles.modalContent}> 
+
           <Text style={styles.title}>Choose an Image</Text>
 
           {/* Upload Options */}
@@ -104,9 +127,11 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
             </TouchableOpacity>
           </View>
 
+          <SearchInput placeholder={'Find a photo'} query={searchQuery} onChangeText={setSearchQuery} />
+
           {/* Static Images */}
           {enableStaticImages && (
-            <View style={{ height: IMAGE_SIZE * 3 + VERTICAL_SPACING * 4 + 15, alignItems: 'center' }}>
+            <View style={styles.imageContainer}>
               <FlatList
                 data={staticImageOptions}
                 keyExtractor={(item, index) => index.toString()}
@@ -149,33 +174,44 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#FFF',
     width: MODAL_SIZE,
-    padding: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 16,
     borderRadius: 12,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
+    // paddingLeft: 6,
+    fontFamily: MainFont_Bold,
     textAlign: 'center',
   },
   uploadOptions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    // marginBottom: 16,
+    paddingHorizontal: 4,
   },
   uploadButton: {
-    padding: 10,
+    padding: 8,
     backgroundColor: '#f2f2f2',
     borderRadius: 6,
+    width: '48%',
+    alignItems: 'center',
   },
   uploadText: {
     color: '#007BFF',
-    fontWeight: '600',
+    fontFamily: MainFont_SemiBold,
   },
-  staticImageScroll: {
-    marginBottom: 20,
-    paddingHorizontal: 4,
+  imageContainer: {
+    height: IMAGE_SIZE * 3, 
+    alignItems: 'center',
+    marginTop: 4,
   },
+  // staticImageScroll: {
+  //   marginBottom: 20,
+  //   paddingHorizontal: 4,
+  // },
   imageBox: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
@@ -195,7 +231,7 @@ const styles = StyleSheet.create({
   closeText: {
     color: '#007BFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: MainFont_SemiBold,
   },
 });
 
