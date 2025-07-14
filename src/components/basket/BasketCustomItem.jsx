@@ -5,6 +5,7 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { MainFont, MainFont_Bold, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
+import AppImage from '../image/AppImage';
 
 export default function BasketCustomItem({ product, onDecrement, onAdd, isChecked, onToggleCheckbox, onChangeName, swipeOpen }) {
   const [fontsLoaded] = useFonts({
@@ -37,12 +38,6 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
     //   onClose();
     // }
 
-  const getImageSource = (product) => {
-    if (product.imageUri) return product.imageUri;
-    if (product.staticImagePath) return product.staticImagePath;
-    return require('../../../assets/ProductImages/banana_test.png');
-  };
-
   return (
       <View style={styles.BasketItem}>
         {/* <Pressable style={styles.BasketItem_Checkbox} onPress={handleToggle}>
@@ -60,9 +55,10 @@ export default function BasketCustomItem({ product, onDecrement, onAdd, isChecke
         />
 
         <View style={styles.BasketItem_Name}>
-          <Image 
+          <AppImage 
             style={styles.ProductPicture}
-            source={ getImageSource(product)}
+            imageUri={product.imageUri}
+            staticImagePath={product.staticImagePath}
           />
           <TextInput 
 

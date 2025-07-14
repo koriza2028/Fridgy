@@ -48,6 +48,7 @@ const IMAGE_SIZE = MODAL_SIZE * 0.3; // or whatever size you want
 const VERTICAL_SPACING = 10;
 
 const StaticImageItem = React.memo(({ item, onSelect }) => {
+  
   return (
     <TouchableOpacity onPress={() => onSelect(item.key)} style={styles.imageBox}>
       <AppImage
@@ -59,6 +60,8 @@ const StaticImageItem = React.memo(({ item, onSelect }) => {
 });
 
 const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [fontsLoaded] = useFonts({
       'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
       'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
@@ -105,8 +108,9 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
     }
   };
 
-  const [searchQuery, setSearchQuery] = useState("");
-
+  const filteredStaticImages = staticImageOptions.filter((item) =>
+    item.key.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   return (
     <Modal visible={modalVisible} animationType="fade" transparent>
 
@@ -133,7 +137,7 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
           {enableStaticImages && (
             <View style={styles.imageContainer}>
               <FlatList
-                data={staticImageOptions}
+                data={filteredStaticImages}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
                   <StaticImageItem item={item} onSelect={onSelect} />

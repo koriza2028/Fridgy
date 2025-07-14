@@ -7,6 +7,7 @@ import Modal from "react-native-modal";
 const { width, height } = Dimensions.get('window');
 import { useFonts } from 'expo-font';
 import { greyTextColor, greyTextColor2, MainFont, MainFont_Bold, MainFont_SemiBold, MainFont_Title, SecondTitleFontSize, TextFontSize } from "../../../assets/Styles/styleVariables";
+import AppImage from "../image/AppImage";
 
 const ModalItemInfo = ({ isVisible, onClose, selectedProduct }) => {
 
@@ -71,11 +72,10 @@ useEffect(() => {
       <Animated.View style={[styles.modalContainer]} >
             <View style={styles.container}>      
          
-         <Image style={styles.productImage}
-                source={ selectedProduct?.imageUri 
-                ? { uri: selectedProduct?.imageUri } 
-                : require('../../../assets/ProductImages/banana_test.png')
-                  }/>
+         <AppImage
+          style={styles.productImage}
+          imageUri={selectedProduct?.imageUri}
+        />
         <Text style={styles.productName}>{selectedProduct?.name}</Text>
         <Text style={styles.productNotes}>{selectedProduct?.notes}</Text>
             

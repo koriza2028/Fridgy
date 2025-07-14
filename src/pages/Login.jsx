@@ -1,6 +1,6 @@
 // src/screens/LoginScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Dimensions } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Dimensions, Pressable } from 'react-native';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -12,21 +12,20 @@ const { width } = Dimensions.get('window');
 import { backgroundColor } from '../../assets/Styles/styleVariables';
 
 const LoginPage = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const [emailLogin, setEmailLogin] = useState('');
+  const [passwordLogin, setPasswordLogin] = useState('');
+  const [emailSignup, setEmailSignup] = useState('');
+  const [passwordSignup, setPasswordSignup] = useState('');
   const [error, setError] = useState('');
 
   const setUser = useAuthStore((state) => state.setUser);
 
-  useEffect(() => {
-    setError(null);
-  }, []);
-
   const handleLogin = async () => {
     try {
-      // Sign out any existing user before logging in
+      setError('');
       await auth.signOut();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, emailLogin, passwordLogin);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
     } catch (err) {
@@ -36,9 +35,9 @@ const LoginPage = ({ navigation }) => {
 
   const handleSignup = async () => {
     try {
-      // Sign out any existing user before signing up
+      setError('');
       await auth.signOut();
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, emailSignup, passwordSignup);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
     } catch (err) {
@@ -48,52 +47,80 @@ const LoginPage = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.LoginPage}>
+        <View style={styles.container}>
 
-    <View style={styles.LoginPage}>
+          {/* Tabs */}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              onPress={() => {
+                setIsLogin(true);
+                setError('');
+              }}
+              style={[styles.tab, isLogin && styles.activeTab]}
+            >
+              <Text style={[styles.tabText, isLogin && styles.activeTabText]}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsLogin(false);
+                setError('');
+              }}
+              style={[styles.tab, !isLogin && styles.activeTab]}
+            >
+              <Text style={[styles.tabText, !isLogin && styles.activeTabText]}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.container}>
+          {/* Login Form */}
+          {isLogin && (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={emailLogin}
+                onChangeText={setEmailLogin}
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry
+                value={passwordLogin}
+                onChangeText={setPasswordLogin}
+              />
+              {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
+              <Pressable style={styles.buttonContinue} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Continue</Text>
+              </Pressable>
+            </>
+          )}
 
-        {/* <Text style={styles.title}>Login / Sign Up</Text> */}
-        <View style={styles.theButtons}>
-          <TouchableOpacity onPress={handleLogin} style={styles.button}> 
-            <Text style={styles.textInButtons}>Login</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.textBetweenButtons}> / </Text>
-
-          <TouchableOpacity  onPress={handleSignup} style={styles.button}> 
-            <Text style={styles.textInButtons}>Sign Up</Text>  
-          </TouchableOpacity>
+          {/* Signup Form */}
+          {!isLogin && (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={emailSignup}
+                onChangeText={setEmailSignup}
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry
+                value={passwordSignup}
+                onChangeText={setPasswordSignup}
+              />
+              {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
+              <Pressable style={styles.buttonContinue} onPress={handleSignup}>
+                <Text style={styles.buttonText}>Continue</Text>
+              </Pressable>
+            </>
+          )}
         </View>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : (
-          <View style={{ height: 16 }} />
-        )}
-
-        <TouchableOpacity style={styles.buttonContinue}>
-          <Text style={[styles.textInButtons, {fontSize: 20, color: 'white'}]}>Continue</Text>
-        </TouchableOpacity>
-
       </View>
-
-    </View>  
-    
     </TouchableWithoutFeedback>
   );
 };
@@ -158,13 +185,38 @@ const styles = StyleSheet.create({
   buttonContinue: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 6,
-    backgroundColor: 'black'
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: 'black',
   },
-
-
-
+  buttonText: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+  },
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderBottomWidth: 2,
+    borderColor: 'transparent',
+    marginHorizontal: 10,
+  },
+  activeTab: {
+    borderColor: 'black',
+  },
+  tabText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#aaa',
+  },
+  activeTabText: {
+    color: 'black',
+  },
   errorText: {
     color: 'red',
     textAlign: 'center',
