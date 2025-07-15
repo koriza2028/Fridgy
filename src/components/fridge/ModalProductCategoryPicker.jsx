@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable, TouchableOpacity } from "react-native";
 import Modal from 'react-native-modal';
 import { BlurView } from 'expo-blur';
 
@@ -114,9 +114,9 @@ export default function ModalProductCategoryPicker({
           </View>
 
           {multiSelect && (
-            <Pressable style={styles.confirmButton} onPress={handleConfirmSelection}>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmSelection}>
               <Text style={styles.confirmButtonText}>Confirm selection</Text>
-            </Pressable>
+            </TouchableOpacity>
           )}
         </View>
       </BlurView>
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
       // marginLeft: '6%',
       position: 'absolute',
       bottom: '5%',
-      right: '5%',
+      right: '11%',
       padding: 10,
       width: '90%',
       borderRadius: 60,

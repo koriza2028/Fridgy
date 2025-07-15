@@ -17,7 +17,7 @@ import AppImage from './AppImage';
 import SearchInput from '../Search';
 
 import { useFonts } from 'expo-font';
-import { MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
+import { backgroundColor, MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
 
 const { width, height } = Dimensions.get('window');
 
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFF',
+    backgroundColor: backgroundColor,
     width: MODAL_SIZE,
     paddingHorizontal: 10,
     paddingVertical: 16,
@@ -211,14 +211,15 @@ const styles = StyleSheet.create({
     height: IMAGE_SIZE * 3, 
     alignItems: 'center',
     marginTop: 4,
+    // borderRadius: 6,
   },
   // staticImageScroll: {
   //   marginBottom: 20,
   //   paddingHorizontal: 4,
   // },
   imageBox: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
+    // width: IMAGE_SIZE,
+    // height: IMAGE_SIZE,
     // margin: 5,
     // alignItems: 'start',
     // justifyContent: 'flex-start',
