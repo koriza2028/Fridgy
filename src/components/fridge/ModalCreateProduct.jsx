@@ -248,7 +248,10 @@ export default function ModalCreateProduct({
                       style={[styles.productName, styles.productDataEntryInput]}
                       autoCapitalize="sentences"
                       value={name || ''}
-                      onChangeText={text => setName(text)}
+                      onChangeText={text => {
+                        const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
+                        setName(capitalized);
+                      }}
                       placeholder='Name of a product...'
                       placeholderTextColor={'#9e9e9e'}
                     />
@@ -312,7 +315,7 @@ export default function ModalCreateProduct({
                     )}
 
                     <ButtonBouncing 
-                      innerStyle={[styles.Button_UpdateProduct]}
+                      innerStyle={[styles.Button_UpdateProduct, isSaveDisabled && styles.Button_UpdateProductDisabled]}
                       style={[styles.Button_UpdateProduct, 
                       isSaveDisabled && styles.Button_UpdateProductDisabled, isCreatingNew && styles.Button_UpdateProductAlone]}
                       isDisabled={isSaveDisabled}
@@ -399,6 +402,7 @@ const styles = StyleSheet.create({
     fontFamily: MainFont_Title,
     width: '100%',
     color: blackTextColor,
+    marginTop: 4,
   },
   productAmountWrapper: {
     flexDirection: 'row',
@@ -431,7 +435,7 @@ const styles = StyleSheet.create({
   productCategory: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    marginTop: -10,
+    marginTop: -6,
     // minHeight: 30,
   },
   productNotes: {

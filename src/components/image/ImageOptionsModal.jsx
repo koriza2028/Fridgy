@@ -23,19 +23,39 @@ const { width, height } = Dimensions.get('window');
 
 // Static images with keys
 const staticImageOptions = [
-  { key: 'banana_test'},
-  { key: 'apple_test'},
-  { key: 'milk_test'},
-  { key: 'banana_test'},
-  { key: 'apple_test'},
-  { key: 'milk_test'},
 
-  { key: 'banana_test'},
-  { key: 'apple_test'},
+  //fruits
+  { key: 'apple'},
+  { key: 'banana'},
+  { key: 'orange'},
+  { key: 'pineapple'},
+  { key: 'berries'},
+  { key: 'avocado'},
+  { key: 'grape'},
+  { key: 'lemon'},
+  { key: 'lime'},
+  { key: 'pear'},
+  
+
+  // vegetables
+  { key: 'broccoli'},
+  { key: 'cabbage'},
+  { key: 'carrot'},
+  { key: 'garlic'},
+  { key: 'lettuce'},
+  { key: 'onion'},
+  { key: 'pepper'},
+  { key: 'pickle'},
+  { key: 'potato_anime'},
+  { key: 'tomato'},
+  { key: 'zucchini'},
+
+  // drinks
   { key: 'milk_test'},
-  { key: 'banana_test'},
-  { key: 'apple_test'},
-  { key: 'milk_test'},
+  { key: 'juice'},
+
+  // meet
+  
 ];
 
 staticImageOptions.forEach((item) => {
@@ -45,7 +65,7 @@ staticImageOptions.forEach((item) => {
 
 const MODAL_SIZE = width * 0.86;
 const IMAGE_SIZE = MODAL_SIZE * 0.3; // or whatever size you want
-const VERTICAL_SPACING = 10;
+// const VERTICAL_SPACING = 10;
 
 const StaticImageItem = React.memo(({ item, onSelect }) => {
   

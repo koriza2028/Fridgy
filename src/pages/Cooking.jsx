@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Keyboard, Text, View, Pressable, ScrollView, RefreshControl, StyleSheet, Dimensions } from 'react-native';
+import { Keyboard, Text, View, Pressable, ScrollView, RefreshControl, StyleSheet, Dimensions, Image } from 'react-native';
 
 import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';
@@ -16,7 +16,7 @@ import useAuthStore from '../store/authStore';
 import { fetchEnrichedRecipes } from '../store/cookingStore';
 import { fetchAvailableProducts } from '../store/fridgeStore';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function CookingPage({ navigation }) {
 
@@ -161,7 +161,7 @@ export default function CookingPage({ navigation }) {
 
           {/* <SecondDropdownComponent/> */}
 
-          <View style={styles.MealList_Wrapper}>
+          {/* <View style={styles.MealList_Wrapper}>
             <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
             {filteredData.length > 0 || searchQuery !== "" ? (
               <>
@@ -178,6 +178,7 @@ export default function CookingPage({ navigation }) {
                       />
                     ))}
                 </View>
+
                 <View style={styles.UnavailableMeals_Section}>
                   <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
                   {filteredData
@@ -191,9 +192,72 @@ export default function CookingPage({ navigation }) {
                       />
                     ))}
                 </View>
+
               </>
             ) : (<View />)}
+          </View> */}
+
+          <View style={styles.MealList_Wrapper}>
+            {/* Show empty state if there's nothing and no search */}
+            {filteredData.length === 0 && searchQuery === '' ? (
+              <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.17, paddingRight: 10,}}>
+                <Image
+                  source={require('../../assets/ProductImages/emptyBook.png')}
+                  style={{ width: 184, height: 184, resizeMode: 'contain' }}
+                />
+                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+              </View>
+            ) : (
+              <>
+                {/* Available meals section */}
+                {filteredData.some(recipe => checkMandatoryIngredientsAreAvailable(recipe.id)) && (
+                  <>
+                    <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
+                    <View style={styles.AvailableMeals_Section}>
+                      {filteredData
+                        .filter(recipe => checkMandatoryIngredientsAreAvailable(recipe.id))
+                        .map(recipe => (
+                          <MealCard
+                            key={recipe.id}
+                            navigation={navigation}
+                            recipe={recipe}
+                            isAvailable={true}
+                            handlePress={() =>
+                              navigation.navigate('RecipeCreatePage', { recipe })
+                            }
+                          />
+                        ))}
+                    </View>
+                  </>
+                )}
+
+                {/* Unavailable meals section */}
+                {filteredData.some(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id)) && (
+                  <>
+                    <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
+                    <View style={styles.UnavailableMeals_Section}>
+                      {filteredData
+                        .filter(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id))
+                        .map(recipe => (
+                          <MealCard
+                            key={recipe.id}
+                            navigation={navigation}
+                            recipe={recipe}
+                            isAvailable={false}
+                            handlePress={() =>
+                              navigation.navigate('RecipeCreatePage', { recipe })
+                            }
+                          />
+                        ))}
+                    </View>
+                  </>
+                )}
+              </>
+            )}
           </View>
+
+
+
         </View>
       </ScrollView>
       <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} label={'+'} />

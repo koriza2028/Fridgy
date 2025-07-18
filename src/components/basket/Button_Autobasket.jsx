@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   secondaryButton: {
-    // backgroundColor: '#999',
+    backgroundColor: 'black',
     borderColor: addButtonColor,
     borderWidth: 2,
     padding: 16,
@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     // alignItems: 'center',
     // justifyContent: 'center',
+    color: 'white',
     width: 26,
     height: 26,
     marginLeft: 2,

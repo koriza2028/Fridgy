@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable, Alert, 
-  Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation, FlatList,
+  Animated, TouchableWithoutFeedback, Keyboard, LayoutAnimation, FlatList, Image
  } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -272,33 +272,43 @@ export default function MealPlannerPage({ navigation }) {
                       handlePress={() => handleAddRecipe(item.id)}
                     />
                   </Pressable>
-
                 );
               }}
             />
         ) : (
-        <SwipeListView
-          ListHeaderComponent={listHeader}
-          stickyHeaderIndices={[0]}
-          data={cards}
-          keyExtractor={(item) => `${item.id}_${selectedDate}`}
-          key={listKey}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-75}
-          disableRightSwipe={false}
-          disableScrollOnSwipe
-          contentContainerStyle={{ flexGrow: 1, gap: 14, paddingHorizontal: 10,  }}
-          recalculateHiddenLayout
-          closeOnRowOpen={false}
-          closeOnScroll={false}
-          closeOnRowPress={false}
-          getItemLayout={(_, index) => ({
-            length: 120,
-            offset: 120 * index,
-            index,
-          })}
-        />
+        cards.length > 0 ? (
+            
+          <SwipeListView
+            ListHeaderComponent={listHeader}
+            stickyHeaderIndices={[0]}
+            data={cards}
+            keyExtractor={(item) => `${item.id}_${selectedDate}`}
+            key={listKey}
+            renderItem={renderItem}
+            renderHiddenItem={renderHiddenItem}
+            rightOpenValue={-75}
+            disableRightSwipe={false}
+            disableScrollOnSwipe
+            contentContainerStyle={{ flexGrow: 1, gap: 14, paddingHorizontal: 10,  }}
+            recalculateHiddenLayout
+            closeOnRowOpen={false}
+            closeOnScroll={false}
+            closeOnRowPress={false}
+            getItemLayout={(_, index) => ({
+              length: 120,
+              offset: 120 * index,
+              index,
+            })}
+          />
+          ) : (
+          <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.3, paddingLeft: 10,}}>
+            <Image
+              source={require('../../assets/ProductImages/emptyPlanner.png')}
+              style={{ width: 184, height: 184, resizeMode: 'contain' }}
+            />
+            <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+          </View>
+        )
         )}
       </View>
 

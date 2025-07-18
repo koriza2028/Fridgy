@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { View, Text, Dimensions, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, Text, Dimensions, ScrollView, Pressable, StyleSheet, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
 
@@ -17,7 +17,7 @@ import useAuthStore from '../store/authStore';
 import useProductStore from '../store/productStore';
 import { fetchUserData } from "../store/basketStore";
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function FridgePage({ navigation }) {
   const ctx = useAuthStore((state) => {
@@ -113,39 +113,50 @@ export default function FridgePage({ navigation }) {
             ))}
           </View>
 
-          <CollapsibleSection title="Available Products">
-            {filteredAvailable.length > 0 ? (
-              filteredAvailable.map(product => (
-                <ProductCard
-                  key={product.id}
-                  onOpenModal={openModal}
-                  product={product}
-                  navigation={navigation}
-                  onChange={() => refreshProducts(ctx)}
-                  onMoveToBasket={refreshUsedIngredients}
-                />
-              ))
-            ) : (
-              <Text style={{ fontFamily: MainFont, marginBottom: 10 }}>No available products found.</Text>
-            )}
-          </CollapsibleSection>
 
-          <CollapsibleSection title="Currently not in fridge">
-            {filteredArchived.length > 0 ? (
-              filteredArchived.map(product => (
-                <ProductCard
-                  key={product.id}
-                  onOpenModal={openModal}
-                  product={product}
-                  navigation={navigation}
-                  onChange={() => refreshProducts(ctx)}
-                  onMoveToBasket={refreshUsedIngredients}
-                />
-              ))
-            ) : (
-              <Text style={{ fontFamily: MainFont, marginBottom: 10 }}>No archived products found.</Text>
-            )}
-          </CollapsibleSection>
+          {filteredAvailable.length === 0 && filteredArchived.length === 0 ? (
+                <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.3, paddingLeft: 10 }}>
+                  <Image
+                    source={require('../../assets/ProductImages/emptyFridge.png')}
+                    style={{ width: 204, height: 200, resizeMode: 'contain' }}
+                  />
+                  <Text style={{ fontFamily: MainFont, marginTop: 10 }}>
+                    Your fridge is empty. Start adding some products!
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {filteredAvailable.length > 0 && (
+                    <CollapsibleSection title="Available Products">
+                      {filteredAvailable.map(product => (
+                        <ProductCard
+                          key={product.id}
+                          onOpenModal={openModal}
+                          product={product}
+                          navigation={navigation}
+                          onChange={() => refreshProducts(ctx)}
+                          onMoveToBasket={refreshUsedIngredients}
+                        />
+                      ))}
+                    </CollapsibleSection>
+                  )}
+
+                  {filteredArchived.length > 0 && (
+                    <CollapsibleSection title="Currently not in fridge">
+                      {filteredArchived.map(product => (
+                        <ProductCard
+                          key={product.id}
+                          onOpenModal={openModal}
+                          product={product}
+                          navigation={navigation}
+                          onChange={() => refreshProducts(ctx)}
+                          onMoveToBasket={refreshUsedIngredients}
+                        />
+                      ))}
+                    </CollapsibleSection>
+                  )}
+                </>
+              )}
 
           {/* {isModalVisible && ( */}
             <ModalCreateProduct

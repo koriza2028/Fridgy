@@ -75,6 +75,7 @@ useEffect(() => {
          <AppImage
           style={styles.productImage}
           imageUri={selectedProduct?.imageUri}
+          staticImagePath={selectedProduct?.staticImagePath}
         />
         <Text style={styles.productName}>{selectedProduct?.name}</Text>
         <Text style={styles.productNotes}>{selectedProduct?.notes}</Text>

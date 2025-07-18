@@ -1,15 +1,23 @@
-// src/screens/LoginScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Dimensions, Pressable } from 'react-native';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  StyleSheet,
+} from 'react-native';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 
-const { width } = Dimensions.get('window');
-import { backgroundColor } from '../../assets/Styles/styleVariables';
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginPage = ({ navigation }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,8 +26,49 @@ const LoginPage = ({ navigation }) => {
   const [emailSignup, setEmailSignup] = useState('');
   const [passwordSignup, setPasswordSignup] = useState('');
   const [error, setError] = useState('');
-
   const setUser = useAuthStore((state) => state.setUser);
+
+  // Google Auth setup
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: '338150974075-5lvt63tugdg63dmh6hujm9uup49fis4v.apps.googleusercontent.com',
+    iosClientId: '338150974075-fu1sgu03htefoep78frj3nnomgt5o3o4.apps.googleusercontent.com',
+    webClientId: '338150974075-5lvt63tugdg63dmh6hujm9uup49fis4v.apps.googleusercontent.com',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential)
+        .then((userCredential) => {
+          setUser(userCredential.user);
+          navigation.navigate('FridgePage');
+        })
+        .catch(() => setError('Google sign-in failed'));
+    }
+  }, [response]);
+
+  // const handleAppleSignIn = async () => {
+  //   try {
+  //     const appleCredential = await AppleAuthentication.signInAsync({
+  //       requestedScopes: [
+  //         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+  //         AppleAuthentication.AppleAuthenticationScope.EMAIL,
+  //       ],
+  //     });
+
+  //     const provider = new firebase.auth.OAuthProvider('apple.com');
+  //     const credential = provider.credential({
+  //       idToken: appleCredential.identityToken,
+  //     });
+
+  //     const userCredential = await signInWithCredential(auth, credential);
+  //     setUser(userCredential.user);
+  //     navigation.navigate('FridgePage');
+  //   } catch (err) {
+  //     setError('Apple sign-in failed');
+  //   }
+  // };
 
   const handleLogin = async () => {
     try {
@@ -28,7 +77,7 @@ const LoginPage = ({ navigation }) => {
       const userCredential = await signInWithEmailAndPassword(auth, emailLogin, passwordLogin);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     }
   };
@@ -40,7 +89,7 @@ const LoginPage = ({ navigation }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, emailSignup, passwordSignup);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
-    } catch (err) {
+    } catch {
       setError('Error creating account');
     }
   };
@@ -72,53 +121,44 @@ const LoginPage = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Login Form */}
-          {isLogin && (
+          {/* Form */}
+          {isLogin ? (
             <>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={emailLogin}
-                onChangeText={setEmailLogin}
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={passwordLogin}
-                onChangeText={setPasswordLogin}
-              />
+              <TextInput style={styles.input} placeholder="Email" value={emailLogin} onChangeText={setEmailLogin} autoCapitalize="none" />
+              <TextInput style={styles.input} placeholder="Password" secureTextEntry value={passwordLogin} onChangeText={setPasswordLogin} />
               {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
               <Pressable style={styles.buttonContinue} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Continue</Text>
               </Pressable>
             </>
-          )}
-
-          {/* Signup Form */}
-          {!isLogin && (
+          ) : (
             <>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={emailSignup}
-                onChangeText={setEmailSignup}
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={passwordSignup}
-                onChangeText={setPasswordSignup}
-              />
+              <TextInput style={styles.input} placeholder="Email" value={emailSignup} onChangeText={setEmailSignup} autoCapitalize="none" />
+              <TextInput style={styles.input} placeholder="Password" secureTextEntry value={passwordSignup} onChangeText={setPasswordSignup} />
               {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
-              <Pressable style={styles.buttonContinue} onPress={handleSignup}>
+              <TouchableOpacity style={styles.buttonContinue} onPress={handleSignup}>
                 <Text style={styles.buttonText}>Continue</Text>
-              </Pressable>
+              </TouchableOpacity>
             </>
           )}
+
+          {/* Social Login */}
+          <View style={{ marginTop: 20 }}>
+            <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
+              <Text style={styles.buttonText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            {/* {Platform.OS === 'ios' && (
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={5}
+                style={{ width: '100%', height: 44, marginTop: 12 }}
+                onPress={handleAppleSignIn}
+              />
+            )} */}
+          </View>
+
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -128,98 +168,58 @@ const LoginPage = ({ navigation }) => {
 const styles = StyleSheet.create({
   LoginPage: {
     flex: 1,
-    // backgroundColor: backgroundColor,
-    alignItems: 'center',
-    width: width,
-  },
-  container: {
-    flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     padding: 20,
-    width: width * 0.96,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  container: {
+    gap: 14,
   },
   input: {
-    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
     borderRadius: 8,
-    borderColor: '#ccc',
-    backgroundColor: backgroundColor,
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingLeft: 8,
-  },
-
-  theButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    // borderWidth: 1,
-    // borderColor: '#007BFF',
-    width: 160,
-    marginBottom: 20,
-    alignSelf: 'center'
-  },
-  button: {
-    // borderWidth: 1,
-    // borderColor: '#007BFF',
-    borderRadius: 6,
-    // padding: 6,
-    marginTop: 10,
-  },
-  textBetweenButtons: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  textInButtons: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  buttonContinue: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: 'black',
-  },
-  buttonText: {
-    fontSize: 18,
-    color: 'white',
-    textAlign: 'center',
   },
   tabs: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-around',
+    marginBottom: 12,
   },
   tab: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 2,
-    borderColor: 'transparent',
-    marginHorizontal: 10,
+    padding: 10,
   },
   activeTab: {
-    borderColor: 'black',
+    borderBottomWidth: 2,
+    borderBottomColor: 'blue',
   },
   tabText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#aaa',
+    fontSize: 16,
+    color: '#888',
   },
   activeTabText: {
-    color: 'black',
+    color: 'blue',
+    fontWeight: 'bold',
   },
   errorText: {
     color: 'red',
-    textAlign: 'center',
+    marginTop: 6,
+  },
+  buttonContinue: {
+    backgroundColor: '#1E90FF',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  googleButton: {
+    backgroundColor: '#4285F4',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

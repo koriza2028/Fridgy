@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Pressable, Text, FlatList,
+import { View, Pressable, Text, FlatList, Image,
   Dimensions, TouchableWithoutFeedback, Keyboard, StyleSheet, Alert, LayoutAnimation } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
@@ -215,7 +215,7 @@ export default function BasketPage({ navigation }) {
                   }
                 }}
               />
-            ) : (
+            ) : basket.length > 0 ? (
             <SwipeListView
               data={basket}
               keyExtractor={item => item.basketId.toString()}
@@ -241,6 +241,14 @@ export default function BasketPage({ navigation }) {
                 </View>
               )}
             />
+            ) : (
+            <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.218, paddingLeft: 10,}}>
+              <Image
+                source={require('../../assets/ProductImages/emptyBasket.png')}
+                style={{ width: 184, height: 184, resizeMode: 'contain' }}
+              />
+              <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+            </View>
           )}
           </View>
 

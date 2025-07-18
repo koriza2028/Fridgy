@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Fridgy",
+    "owner": "fridgyminds",
     "slug": "Fridgy",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -28,6 +29,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ddd686eb-12a8-4392-a854-0393f7ef8ede"
+      }
+    }
   }
 }
