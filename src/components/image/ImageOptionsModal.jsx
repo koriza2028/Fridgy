@@ -46,15 +46,52 @@ const staticImageOptions = [
   { key: 'onion'},
   { key: 'pepper'},
   { key: 'pickle'},
-  { key: 'potato_anime'},
+  { key: 'potatos'},
   { key: 'tomato'},
   { key: 'zucchini'},
 
   // drinks
-  { key: 'milk_test'},
-  { key: 'juice'},
+{ key: 'milk' },
+{ key: 'cola' },
+{ key: 'icedTea' },
+{ key: 'juiceOrange' },
+{ key: 'lemonade' },
 
-  // meet
+// meat
+{ key: 'bacon' },
+{ key: 'chicken' },
+{ key: 'ham' },
+{ key: 'meatballs' },
+{ key: 'nuggets' },
+{ key: 'steak' },
+{ key: 'sausages' },
+{ key: 'salmon' },
+{ key: 'shrimps' },
+
+// pasta
+{ key: 'pasta1' },
+{ key: 'pasta2' },
+{ key: 'pasta3' },
+
+// cheese
+{ key: 'cheese' },
+{ key: 'cheeseFeta' },
+{ key: 'cheeseMozarella' },
+{ key: 'cheeseParmesan' },
+{ key: 'cheeseShredded' },
+{ key: 'butter' },
+
+// other
+{ key: 'baguette' },
+{ key: 'bread' },
+{ key: 'egg' },
+{ key: 'ketchup' },
+{ key: 'mayonaise' },
+{ key: 'rice' },
+{ key: 'wraps' },
+{ key: 'yogurtPink' },
+{ key: 'yogurtWhite' },
+
   
 ];
 
@@ -151,11 +188,12 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
             </TouchableOpacity>
           </View>
 
-          <SearchInput placeholder={'Find a photo'} query={searchQuery} onChangeText={setSearchQuery} />
+          
 
           {/* Static Images */}
           {enableStaticImages && (
             <View style={styles.imageContainer}>
+              <SearchInput placeholder={'Find a photo'} query={searchQuery} onChangeText={setSearchQuery} />
               <FlatList
                 data={filteredStaticImages}
                 keyExtractor={(item, index) => index.toString()}
