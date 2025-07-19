@@ -113,7 +113,6 @@ export default function FridgePage({ navigation }) {
             ))}
           </View>
 
-
           {filteredAvailable.length === 0 && filteredArchived.length === 0 ? (
                 <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.3, paddingLeft: 10 }}>
                   <Image

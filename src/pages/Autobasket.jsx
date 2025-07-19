@@ -189,7 +189,7 @@ export default function AutoBasketPage() {
                     style={{ width: 184, height: 184, resizeMode: 'contain' }}
                   />
                   <Text style={{ fontFamily: MainFont, marginTop: 10 }}
-                    >Add some items that you always want to have in your basket
+                    >Add some items that you always want to have in your basket!
                   </Text>
                 </View>
             )}

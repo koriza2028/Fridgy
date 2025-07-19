@@ -40,7 +40,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
               await signOut(auth);
               logout();
               // onLogout();
-              navigation.navigate('Login');
+              // navigation.navigate('LoginPage');
             } catch (error) {
               console.error('Error logging out:', error);
             }

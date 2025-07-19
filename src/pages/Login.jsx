@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   container: {
-    gap: 14,
+    gap: 12,
   },
   input: {
     borderWidth: 1,
@@ -281,7 +281,6 @@ const styles = StyleSheet.create({
   },
   buttonContinue: {
     backgroundColor: addButtonColor,
-    padding: 12,
     borderRadius: 10,
     padding: 10,
   },
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
   googleButton: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    paddingVertical: 12,
+    paddingVertical: 10,
     // paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
@@ -337,8 +336,10 @@ const styles = StyleSheet.create({
   googleButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     color: 'black',
     fontSize: 18,
+    width: '100%',
   },
   googleImage: {
     width: 20,
