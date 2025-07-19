@@ -1,0 +1,9 @@
+{
+  "Fridge": {
+    "emptyFridgeText": "Your fridge is empty. Let's add some products!",
+    "productNamePlaceholder": "Name of a product...",
+    "category": "Category",
+    "productDetailsPlaceholder": "Product details...",
+    "saveButton": "Save"
+  }
+}

@@ -1,4 +1,5 @@
 // App.js
+import '../src/store/i18n';
 import React, { useEffect } from "react";
 import { View, Alert, StyleSheet } from 'react-native';
 

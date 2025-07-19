@@ -17,9 +17,13 @@ import useAuthStore from '../store/authStore';
 import useProductStore from '../store/productStore';
 import { fetchUserData } from "../store/basketStore";
 
+import { useTranslation } from 'react-i18next';
+
 const { width, height } = Dimensions.get('window');
 
 export default function FridgePage({ navigation }) {
+  const { t } = useTranslation();
+
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
     const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
@@ -120,7 +124,7 @@ export default function FridgePage({ navigation }) {
                     style={{ width: 204, height: 200, resizeMode: 'contain' }}
                   />
                   <Text style={{ fontFamily: MainFont, marginTop: 10 }}>
-                    Your fridge is empty. Let's add some products!
+                    {t('Fridge.emptyFridgeText')}
                   </Text>
                 </View>
               ) : (
