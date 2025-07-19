@@ -75,7 +75,7 @@ const staticImageMap = {
   'wraps': require('../../../assets/ProductImages/other/wraps.png'),
   'yogurtPink': require('../../../assets/ProductImages/other/yogurtPink.png'),
   'yogurtWhite': require('../../../assets/ProductImages/other/yogurtWhite.png'),
-
+  'olives': require('../../../assets/ProductImages/other/olives.png'),
 };
 
 const fallbackImage = staticImageMap['banana_test'];

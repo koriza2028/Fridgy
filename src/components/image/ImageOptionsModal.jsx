@@ -91,8 +91,7 @@ const staticImageOptions = [
 { key: 'wraps' },
 { key: 'yogurtPink' },
 { key: 'yogurtWhite' },
-
-  
+{ key: 'olives' },
 ];
 
 staticImageOptions.forEach((item) => {

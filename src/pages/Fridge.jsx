@@ -121,7 +121,7 @@ export default function FridgePage({ navigation }) {
                     style={{ width: 204, height: 200, resizeMode: 'contain' }}
                   />
                   <Text style={{ fontFamily: MainFont, marginTop: 10 }}>
-                    Your fridge is empty. Start adding some products!
+                    Your fridge is empty. Let's add some products!
                   </Text>
                 </View>
               ) : (

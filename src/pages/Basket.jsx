@@ -247,7 +247,7 @@ export default function BasketPage({ navigation }) {
                 source={require('../../assets/ProductImages/emptyBasket.png')}
                 style={{ width: 184, height: 184, resizeMode: 'contain' }}
               />
-              <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+              <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Here you can add some items to your shopping list!</Text>
             </View>
           )}
           </View>

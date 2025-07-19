@@ -306,7 +306,7 @@ export default function MealPlannerPage({ navigation }) {
               source={require('../../assets/ProductImages/emptyPlanner.png')}
               style={{ width: 184, height: 184, resizeMode: 'contain' }}
             />
-            <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+            <Text style={{ fontFamily: MainFont, marginTop: 10 }}>What do you want to cook this week?</Text>
           </View>
         )
         )}

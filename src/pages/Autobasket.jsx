@@ -188,7 +188,9 @@ export default function AutoBasketPage() {
                     source={require('../../assets/ProductImages/emptyBasket.png')}
                     style={{ width: 184, height: 184, resizeMode: 'contain' }}
                   />
-                  <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+                  <Text style={{ fontFamily: MainFont, marginTop: 10 }}
+                    >Add some items that you always want to have in your basket
+                  </Text>
                 </View>
             )}
           </View>

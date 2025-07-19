@@ -205,7 +205,7 @@ export default function CookingPage({ navigation }) {
                   source={require('../../assets/ProductImages/emptyBook.png')}
                   style={{ width: 184, height: 184, resizeMode: 'contain' }}
                 />
-                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Add products to unlock suggestions!</Text>
+                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Here you can create your recipes!</Text>
               </View>
             ) : (
               <>

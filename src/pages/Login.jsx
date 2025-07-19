@@ -9,17 +9,32 @@ import {
   Keyboard,
   Platform,
   StyleSheet,
+  Image
 } from 'react-native';
+
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
+
 import { GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 
+import { useFonts } from 'expo-font';
+import { addButtonColor, buttonColor, MainFont, MainFont_Bold } from '../../assets/Styles/styleVariables';
+
 WebBrowser.maybeCompleteAuthSession();
 
 const LoginPage = ({ navigation }) => {
+
+  const [fontsLoaded] = useFonts({
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    // 'Inter-Bold': require('../../assets/fonts/Grotesk/SpaceGrotesk-Light.ttf'),
+  });
+
+
   const [isLogin, setIsLogin] = useState(true);
   const [emailLogin, setEmailLogin] = useState('');
   const [passwordLogin, setPasswordLogin] = useState('');
@@ -27,6 +42,10 @@ const LoginPage = ({ navigation }) => {
   const [passwordSignup, setPasswordSignup] = useState('');
   const [error, setError] = useState('');
   const setUser = useAuthStore((state) => state.setUser);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword1, setShowPassword1] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
+  const [showPasswordLogin, setShowPasswordLogin] = useState(false);
 
   // Google Auth setup
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -48,28 +67,6 @@ const LoginPage = ({ navigation }) => {
     }
   }, [response]);
 
-  // const handleAppleSignIn = async () => {
-  //   try {
-  //     const appleCredential = await AppleAuthentication.signInAsync({
-  //       requestedScopes: [
-  //         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-  //         AppleAuthentication.AppleAuthenticationScope.EMAIL,
-  //       ],
-  //     });
-
-  //     const provider = new firebase.auth.OAuthProvider('apple.com');
-  //     const credential = provider.credential({
-  //       idToken: appleCredential.identityToken,
-  //     });
-
-  //     const userCredential = await signInWithCredential(auth, credential);
-  //     setUser(userCredential.user);
-  //     navigation.navigate('FridgePage');
-  //   } catch (err) {
-  //     setError('Apple sign-in failed');
-  //   }
-  // };
-
   const handleLogin = async () => {
     try {
       setError('');
@@ -84,6 +81,10 @@ const LoginPage = ({ navigation }) => {
 
   const handleSignup = async () => {
     try {
+      if (passwordSignup !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
       setError('');
       await auth.signOut();
       const userCredential = await createUserWithEmailAndPassword(auth, emailSignup, passwordSignup);
@@ -110,6 +111,7 @@ const LoginPage = ({ navigation }) => {
             >
               <Text style={[styles.tabText, isLogin && styles.activeTabText]}>Login</Text>
             </TouchableOpacity>
+            
             <TouchableOpacity
               onPress={() => {
                 setIsLogin(false);
@@ -125,27 +127,95 @@ const LoginPage = ({ navigation }) => {
           {isLogin ? (
             <>
               <TextInput style={styles.input} placeholder="Email" value={emailLogin} onChangeText={setEmailLogin} autoCapitalize="none" />
-              <TextInput style={styles.input} placeholder="Password" secureTextEntry value={passwordLogin} onChangeText={setPasswordLogin} />
-              {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
-              <Pressable style={styles.buttonContinue} onPress={handleLogin}>
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  secureTextEntry={!showPasswordLogin}
+                  value={passwordLogin}
+                  onChangeText={setPasswordLogin}
+                />
+                <Pressable
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPasswordLogin(prev => !prev)}
+                >
+                  <Ionicons name={showPasswordLogin ? 'eye-off' : 'eye'} size={22} color="#555" />
+                </Pressable>
+              </View>
+
+              {error ? (
+                <View style={{ height: 16 }} >
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : (
+                <View style={{ height: 16 }} />
+              )}
+
+              <TouchableOpacity style={styles.buttonContinue} onPress={handleLogin}>
                 <Text style={styles.buttonText}>Continue</Text>
-              </Pressable>
+              </TouchableOpacity>
             </>
           ) : (
             <>
               <TextInput style={styles.input} placeholder="Email" value={emailSignup} onChangeText={setEmailSignup} autoCapitalize="none" />
-              <TextInput style={styles.input} placeholder="Password" secureTextEntry value={passwordSignup} onChangeText={setPasswordSignup} />
-              {error ? <Text style={styles.errorText}>{error}</Text> : <View style={{ height: 16 }} />}
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  secureTextEntry={!showPassword1}
+                  value={passwordSignup}
+                  onChangeText={setPasswordSignup}
+                />
+                <Pressable
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword1(prev => !prev)}
+                >
+                  <Ionicons name={showPassword1 ? 'eye-off' : 'eye'} size={22} color="#555" />
+                </Pressable>
+              </View>
+
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Repeat Password"
+                  secureTextEntry={!showPassword2}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <Pressable
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword2(prev => !prev)}
+                >
+                  <Ionicons name={showPassword2 ? 'eye-off' : 'eye'} size={22} color="#555" />
+                </Pressable>
+              </View>
+
+              {error ? (
+                <Text style={styles.errorText}>{error}</Text>
+              ) : (
+                <View style={{ height: 16 }} />
+              )}
+
               <TouchableOpacity style={styles.buttonContinue} onPress={handleSignup}>
                 <Text style={styles.buttonText}>Continue</Text>
               </TouchableOpacity>
             </>
           )}
+          
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            <Text style={{ fontFamily: MainFont_Bold, fontSize: 16}}>or</Text>
+          </View>
 
           {/* Social Login */}
-          <View style={{ marginTop: 20 }}>
+          <View>
             <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
-              <Text style={styles.buttonText}>Continue with Google</Text>
+              <View style={styles.googleButtonContent}>
+                <Image
+                  source={require('../../assets/googleIcon.png')}
+                  style={styles.googleImage}
+                />
+                <Text style={{color: "black", fontFamily: MainFont, fontSize: 18,}}>Continue with Google</Text>
+              </View>
             </TouchableOpacity>
 
             {/* {Platform.OS === 'ios' && (
@@ -196,31 +266,86 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     color: '#888',
+    fontFamily: MainFont,
   },
   activeTabText: {
     color: 'blue',
     fontWeight: 'bold',
+    fontFamily: MainFont,
   },
   errorText: {
     color: 'red',
-    marginTop: 6,
+    // marginTop: 6,
+    fontSize: 14,
+    fontFamily: MainFont,
   },
   buttonContinue: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: addButtonColor,
     padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  googleButton: {
-    backgroundColor: '#4285F4',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    borderRadius: 10,
+    padding: 10,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+    fontFamily: MainFont,
   },
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderBottomWidth: 2,
+    borderColor: 'transparent',
+    marginHorizontal: 10,
+  },
+  activeTab: {
+    borderColor: addButtonColor,
+  },
+  tabText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#aaa',
+  },
+  activeTabText: {
+    color: 'black',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    alignItems: 'center',
+    right: 0,
+    top: '30%',
+    zIndex: 1,
+    width: 50,
+    height: 50
+  },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    // paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'black'
+  },
+  googleButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    color: 'black',
+    fontSize: 18,
+  },
+  googleImage: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+
 });
 
 export default LoginPage;
