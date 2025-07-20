@@ -15,6 +15,7 @@ import BasketPage from './pages/Basket';
 import RecipeCreatePage from './pages/RecipeCreate';
 import LoginPage from './pages/Login';
 import UserSettingsPage from './pages/UserSettings';
+import FamilyModePage from './pages/FamilyMode';
 import AutoBasketPage from './pages/AutoBasket';
 import MealPlannerPage from "./pages/MealPlanner";
 import TopNavigationButtons from "./components/TopNavigationButtons";
@@ -79,6 +80,17 @@ const FridgeStack = () => (
         gestureEnabled: false,
       }}
     />
+
+    <Stack.Screen
+      name="FamilyModePage"
+      component={FamilyModePage}
+      options={{
+        title: 'Family Mode',
+        headerShown: true,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -118,6 +130,16 @@ const CookingStack = () => (
         gestureEnabled: false,
       }}
     />
+    <Stack.Screen
+      name="FamilyModePage"
+      component={FamilyModePage}
+      options={{
+        title: 'Family Mode',
+        headerShown: true,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
   </Stack.Navigator>
 );
 
@@ -142,6 +164,16 @@ const MealPlannerStack = () => (
       component={UserSettingsPage}
       options={{
         title: 'Premium Features',
+        headerShown: true,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
+    <Stack.Screen
+      name="FamilyModePage"
+      component={FamilyModePage}
+      options={{
+        title: 'Family Mode',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,
@@ -179,6 +211,16 @@ const BasketStack = () => (
       component={UserSettingsPage}
       options={{
         title: 'Premium Features',
+        headerShown: true,
+        detachPreviousScreen: false,
+        gestureEnabled: false,
+      }}
+    />
+    <Stack.Screen
+      name="FamilyModePage"
+      component={FamilyModePage}
+      options={{
+        title: 'Family Mode',
         headerShown: true,
         detachPreviousScreen: false,
         gestureEnabled: false,

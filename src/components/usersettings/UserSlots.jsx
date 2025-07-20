@@ -6,7 +6,7 @@ import ButtonBouncing from '../Button_Bouncing';
 
 import { useFonts } from 'expo-font';
 
-import { addButtonColor, buttonColor, greyTextColor, MainFont, MainFont_Bold } from '../../../assets/Styles/styleVariables';
+import { addButtonColor, buttonColor, greyTextColor, greyTextColor2, MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
 
 
 import { setUsername } from '../../store/userAccountStore';
@@ -92,10 +92,10 @@ const UserSlot = ({ user, isCurrentUser, createInvite, loadFamilyMembers}) => {
 
   return (
 
-    <View style={[styles.userBox, { backgroundColor: '#10b981', justifyContent: "start" }]}>
+    <View style={[styles.userBox, { backgroundColor: buttonColor, justifyContent: "start" }]}>
       {isCurrentUser ? (
         <>
-          <Text style={styles.staticPrefix}>You, {user.email} </Text>
+          <Text style={styles.userText}>You, {user.email} </Text>
           {/* <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
             <MaterialIcons name={isEditable ? 'check' : 'edit'} size={20} color="white" />
           </Pressable> */}
@@ -170,10 +170,10 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 10,
   },
-  staticPrefix: {
-    fontFamily: MainFont,
-    color: 'white',
+  userText: {
     fontSize: 16,
+    color: greyTextColor2,
+    fontFamily: MainFont_SemiBold,
   },
   userName_Input: {
     flex: 1,
@@ -214,11 +214,7 @@ const styles = StyleSheet.create({
     alignItems: 'start',
     justifyContent: 'center',
   },
-  userText: {
-    fontSize: 16,
-    color: 'white',
-    fontFamily: MainFont,
-  },
+  
 });
 
 export default UserSlots;

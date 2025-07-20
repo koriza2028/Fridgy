@@ -3,11 +3,8 @@ import {
   View,
   Text,
   ScrollView,
-  Button,
   Pressable,
-  Share,
-  Alert,
-  TextInput,
+  TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -51,7 +48,9 @@ import {
   TextFontSize,
 } from '../../assets/Styles/styleVariables';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+
+
 
 export default function UserSettingsPage() {
 
@@ -61,265 +60,47 @@ export default function UserSettingsPage() {
       'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
-  // ── auth context ──────────────────────────────────────────────────────
-  const { userId, familyId, user } = useAuthStore((s) => ({
-    userId: s.user?.uid,
-    familyId: s.lastUsedMode === 'family' ? s.familyId : undefined,
-    user: s.user,
-  }));
-  const lastUsedMode = useAuthStore((s) => s.lastUsedMode);
-  const setFamilyId = useAuthStore((s) => s.setFamilyId);
-  const setLastUsedMode = useAuthStore((s) => s.setLastUsedMode);
-  // ───────────────────────────────────────────────────────────────────────
+  const premiumFeatures = [
+  {
+    icon: <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon} />,
+    label: 'Invite up to 5 members to your family account',
+    base: '–',
+    premium: '✓',
+  },
+  {
+    icon: <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon} />,
+    label: 'Upload own pictures',
+    base: '–',
+    premium: '✓',
+  },
+  {
+    icon: <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon} />,
+    label: 'Meal planner max days',
+    base: '7',
+    premium: '∞',
+  },
+  {
+    icon: <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon} />,
+    label: 'Autobasket size',
+    base: '5',
+    premium: '∞',
+  },
+  {
+    icon: <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon} />,
+    label: 'Secure future premium features for the same price',
+    base: '–',
+    premium: '✓',
+  },
+];
 
-  // ── family store ───────────────────────────────────────────────────────
-  const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
-  const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
-  const ownerId = useFamilyStore((state) => state.ownerId);
-
-  const familyMembers = useFamilyStore((state) => state.familyMembers);
-  const setFamilyMembers = useFamilyStore((state) => state.setFamilyMembers);
-  const fetchFamilyMembers = useFamilyStore((state) => state.fetchFamilyMembers);
-
-  const isOwner = ownerId === userId;
-
-  // usage
-  useEffect(() => {
-    fetchFamilyMembers(familyId);
-  }, [familyId]);
-
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── username editing local state ──────────────────────────────────────
-  // Store username inputs locally by userId to allow editing
-  const [usernameEdits, setUsernameEdits] = useState({});
-  // To track which usernames are being edited (show TextInput or Text)
-  const [editingUserIds, setEditingUserIds] = useState(new Set());
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── invite state ──────────────────────────────────────────────────────
-  const [invites, setInvites] = useState([]);
-  const [loadingInvites, setLoadingInvites] = useState(false);
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── load invites ──────────────────────────────────────────────────────
-  const loadInvites = async () => {
-    if (!familyId) return;
-    setLoadingInvites(true);
-    try {
-      const items = await listInvites({ familyId });
-      setInvites(items);
-    } catch (err) {
-      console.error('Failed to load invites', err);
-      Alert.alert('Error', 'Could not load invites');
-    } finally {
-      setLoadingInvites(false);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── load family members ───────────────────────────────────────────────
-  const loadFamilyMembers = async () => {
-    if (!familyId) {
-      setFamilyMembers([]);
-      return;
-    }
-    try {
-      const members = await fetchFamilyMembers(familyId);
-      setFamilyMembers(members);
-      // Initialize usernameEdits for editing UI
-      const initialEdits = {};
-      members.forEach((m) => {
-        initialEdits[m.userId] = m.username || '';
-      });
-      setUsernameEdits(initialEdits);
-    } catch (err) {
-      console.error('Failed to load family members', err);
-      Alert.alert('Error', 'Could not load family members');
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── fetch ownerId and members on familyId change ───────────────────────
-  useEffect(() => {
-    if (!familyId) {
-      clearOwnerId();
-      setFamilyMembers([]);
-      return;
-    }
-    fetchOwnerId(familyId);
-    loadFamilyMembers();
-  }, [familyId]);
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── create & share invite ─────────────────────────────────────────────
-  const handleCreateInvite = async () => {
-    if (!familyId) {
-      Alert.alert('Error', 'You must be in family mode to invite.');
-      return;
-    }
-    try {
-      const code = await createInvite({ familyId, ownerId });
-      const link = Linking.createURL('invite', { queryParams: { code } });
-      await Share.share({
-        title: 'Join my family',
-        message: `Use this link to join: ${link}`,
-      });
-      loadInvites();
-    } catch (err) {
-      console.error('Create invite failed', err);
-      Alert.alert('Error', err.message);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── revoke invite ─────────────────────────────────────────────────────
-  const handleRevoke = (inviteId) => async () => {
-    try {
-      await revokeInvite(inviteId);
-      loadInvites();
-    } catch (err) {
-      console.error('Revoke failed', err);
-      Alert.alert('Error', 'Could not revoke invite');
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── toggle personal/family ────────────────────────────────────────────
-  const handleToggle = async () => {
-    const { user, lastUsedMode: mode } = useAuthStore.getState();
-    if (!user?.uid) {
-      Alert.alert('Not logged in');
-      return;
-    }
-    try {
-      const res = await toggleUserMode({
-        userId: user.uid,
-        currentMode: mode,
-      });
-      setFamilyId(res.familyId);
-      setLastUsedMode(res.mode);
-      Alert.alert(
-        'Success',
-        res.mode === 'family'
-          ? `Switched to Family ID: ${res.familyId}`
-          : 'Switched to Personal Mode'
-      );
-      loadInvites();
-      if (res.mode === 'family') {
-        loadFamilyMembers();
-      } else {
-        setFamilyMembers([]);
-      }
-    } catch (e) {
-      console.error('Toggle failed:', e);
-      Alert.alert('Error', e.message);
-    }
-  };
-  const changeMode =
-    lastUsedMode === 'family'
-      ? 'Switch to Personal Mode'
-      : 'Switch to Family Mode';
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── leave family (any member) ────────────────────────────────────────
-  const handleLeaveFamily = async () => {
-    try {
-      await exitFamilyMembership({ userId, familyId });
-      setFamilyId(null);
-      setLastUsedMode('personal');
-      Alert.alert('Success', 'You have left the family');
-      setFamilyMembers([]);
-    } catch (err) {
-      console.error('Leave family failed', err);
-      Alert.alert('Error', err.message);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── username editing handlers ────────────────────────────────────────
-  const startEditing = (editUserId) => {
-    setEditingUserIds((prev) => new Set(prev).add(editUserId));
-  };
-  const cancelEditing = (editUserId) => {
-    setUsernameEdits((prev) => ({
-      ...prev,
-      [editUserId]: familyMembers.find((m) => m.userId === editUserId)?.username || '',
-    }));
-    setEditingUserIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(editUserId);
-      return newSet;
-    });
-  };
-  const onUsernameChange = (editUserId, newUsername) => {
-    setUsernameEdits((prev) => ({ ...prev, [editUserId]: newUsername }));
-  };
-  const saveUsername = async (editUserId) => {
-    const newUsername = usernameEdits[editUserId]?.trim();
-    if (!newUsername) {
-      Alert.alert('Username cannot be empty');
-      return;
-    }
-    try {
-      await setUsername({ userId: editUserId, username: newUsername });
-      Alert.alert('Success', 'Username updated');
-      // Update local family members username too
-      loadFamilyMembers();
-      setEditingUserIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(editUserId);
-        return newSet;
-      });
-    } catch (err) {
-      console.error('Username change failed', err);
-      Alert.alert('Error', err.message);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
 
   return (
     <View style={styles.UserSettingsPage}>
       <ScrollView>
         <View style={styles.UserSettingsPage_ContentWrapper}>
-          {/* mode toggle */}
-            <Pressable title={changeMode} onPress={handleToggle}>
-            <Text style={styles.Text_SwitchMode}>
-              {lastUsedMode === 'family'
-                ? 'You are in Family Mode'
-                : 'You are in Personal Mode'}
-            </Text>
-            </Pressable>
 
-
-          {/* Leave family */}
-          {familyId && !isOwner && (
-            <View style={{ marginBottom: 24 }}>
-              <Button
-                title="Leave Family"
-                color="red"
-                onPress={() =>
-                  Alert.alert(
-                    'Leave Family',
-                    'Are you sure you want to leave the family?',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Leave', style: 'destructive', onPress: handleLeaveFamily },
-                    ]
-                  )
-                }
-              />
-            </View>
-          )}
-
-          {/* Username editing for current user (duplicate, optional) */}
-          <UserSlots currentUser={user} members={familyMembers} createInvite={handleCreateInvite}/>
-
-          {/* Premium Features placeholder (keep your original) */}
-          <View style={styles.listOfPremiumFeatures}>
+          
+          {/* <View style={styles.listOfPremiumFeatures}>
 
             <View style={styles.PremiumFeature}>
               <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
@@ -346,16 +127,48 @@ export default function UserSettingsPage() {
               <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
             </View>
 
-            <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text>
-            {/* Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
-            <Pressable style={styles.upgradeButton}>
-              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-              <Text style={styles.upgradeText}>Upgrade to Premium</Text>
-              <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-            </Pressable>
+         
+
+          </View>    */}
+
+          <View style={styles.listOfPremiumFeatures}>
+            {/* Table Header */}
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableHeaderCell, styles.featureCol]}></Text>
+              <Text style={styles.tableHeaderCell}>Base</Text>
+              <Text style={styles.tableHeaderCell}>Premium</Text>
+            </View>
+
+            {/* Table Rows */}
+            {premiumFeatures.map((feature, index) => (
+              <View key={index} style={styles.tableRow}>
+                <View style={[styles.tableCell, styles.featureCol]}>
+                  {feature.icon}
+                  <Text style={styles.PremiumFeature_Text}>{feature.label}</Text>
+                </View>
+                <Text style={[styles.tableCell,]}>{feature.base}</Text>
+                <Text style={[styles.tableCell, styles.featureIcon]}>{feature.premium}</Text>
+              </View>
+            ))}
           </View>
+
+          
+          {/* <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text> */}
+            {/* Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
+
+
+            {/* OR: MANAGE SUBSCRIPTION */}
+
+          
+          
         </View>
       </ScrollView>
+
+      <Pressable style={styles.upgradeButton}>
+        <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
+        <Text style={styles.upgradeText}>Upgrade to Premium</Text>
+        <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
+      </Pressable>
     </View>
   );
 }
@@ -364,10 +177,16 @@ const styles = StyleSheet.create({
   UserSettingsPage: {
     flex: 1,
     backgroundColor: backgroundColor,
+    // alignItems: 'center',
+    // justifyContent: 'center'
   },
   UserSettingsPage_ContentWrapper: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingHorizontal: 6,
+    // paddingVertical: 24,
+    height: height*0.6,
+    // alignItems: 'center',
+    justifyContent: 'center',
+    // borderWidth: 1,
   },
   sectionHeader: {
     fontFamily: MainFont_Bold,
@@ -375,60 +194,42 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#222',
   },
-  memberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  usernameText: {
-    flex: 1,
-    fontFamily: MainFont,
-    fontSize: 16,
-    color: '#000',
-  },
-  usernameInput: {
-    flex: 1,
-    borderColor: '#888',
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    fontSize: 16,
-    fontFamily: MainFont,
-    height: 36,
-  },
-  editButtons: {
-    flexDirection: 'row',
-    marginLeft: 8,
-  },
-  editIcon: {
-    paddingHorizontal: 8,
-  },
-  removeButton: {
-    marginLeft: 12,
-    padding: 4,
-  },
-  inviteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  SectionHeader: {
-    fontSize: SecondTitleFontSize + 2,
-    fontWeight: SecondTitleFontWeight,
+  explanationHint: {
     marginTop: 10,
-    fontFamily: MainFont_Bold
-  },
-  PremiumSubHeader: {
-    fontSize: 14,
+    fontSize: TextFontSize,
     fontFamily: MainFont,
     color: greyTextColor2,
   },
-  Text_SwitchMode: {
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: addButtonColor,
+    height: 42,
+    width: width*0.84,
+    borderRadius: 20,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center'
+  },
+  upgradeText: {
     fontSize: TextFontSize + 2,
     fontFamily: MainFont_SemiBold,
+    color: 'white',
   },
+  upgradeIcon: {
+    color: 'white',
+    marginHorizontal: 10,
+    fontSize: TextFontSize + 4,
+  },
+
   listOfPremiumFeatures: {
     marginTop: 10,
+    padding: 10,
+    // borderWidth: 1,
   },
   PremiumFeature: {
     flexDirection: 'row',
@@ -444,35 +245,39 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     flexShrink: 1,
     fontFamily: MainFont_SemiBold,
-    fontSize: TextFontSize + 2,
+    fontSize: TextFontSize,
     color: blackTextColor,
   },
-  explanationHint: {
-    marginTop: 10,
-    fontSize: TextFontSize,
-    fontFamily: MainFont,
-    color: greyTextColor2,
-  },
-  upgradeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    backgroundColor: addButtonColor,
-    height: 42,
-    borderRadius: 20,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    paddingHorizontal: 10,
-  },
-  upgradeText: {
-    fontSize: TextFontSize + 2,
+  featureIcon: {
+    fontSize: 16,
     fontFamily: MainFont_Bold,
-    color: 'white',
+    color: addButtonColor,
   },
-  upgradeIcon: {
-    color: 'white',
-    marginHorizontal: 10,
-    fontSize: TextFontSize + 4,
-  },
+
+
+tableRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginVertical: 12,
+},
+
+tableHeaderCell: {
+  fontFamily: MainFont_Bold,
+  fontSize: TextFontSize,
+  flex: 1,
+  textAlign: 'center',
+},
+
+tableCell: {
+  flex: 1,
+  textAlign: 'center',
+},
+
+featureCol: {
+  flex: 2,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 4, // if using React Native 0.71+
+},
+
 });

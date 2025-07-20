@@ -80,6 +80,22 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
           />
 
           <ButtonBouncing 
+            onPress={() => {
+              onClose(); // close modal first
+              navigation.navigate('FamilyModePage');
+            }}
+
+            style={{borderRadius: 8, borderBottomLeftRadius: 0, borderBottomRightRadius: 0}}
+          
+            label={
+              <View style={styles.menuItem}>
+                <MaterialIcons name="group" size={20} style={styles.icon}/>
+                <Text style={styles.menuText}>Family Mode</Text>
+              </View>
+            } toScale={1}
+          />
+
+          <ButtonBouncing 
             onPress={handleLogout}
 
             style={{borderRadius: 8, borderTopLeftRadius: 0, borderTopRightRadius: 0}}
