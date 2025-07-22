@@ -100,7 +100,7 @@ const SearchModal = ({
       <> */}
       <Pressable onPress={() => {  Keyboard.dismiss(); closeSearchModal()}} 
         style={styles.closeButton}>
-        <Entypo name="chevron-left" size={30} />
+        <Entypo name="chevron-left" size={34} />
       </Pressable>
 
       
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     height: height,
+    // paddingHorizontal: 10,
     // borderWidth: 1,
     // borderColor: '#C0C0C0',
   },
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     paddingHorizontal: 44,
     marginBottom: 10,
-    marginTop: 20,
+    marginTop: 16,
     fontFamily: MainFont,
 
     shadowColor: "darkgrey", 
@@ -198,9 +199,9 @@ const styles = StyleSheet.create({
 
   closeButton: {
     position: 'absolute',
-    top: 60,
-    left: 10,
-    backgroundColor: '#fff',
+    top: 55,
+    left: 5,
+    // backgroundColor: '#fff',
     borderRadius: 20,
     padding: 5,
     zIndex: 1,

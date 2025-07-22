@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 
 const staticImageMap = {
   //fruits
-  'banana_test': require('../../../assets/ProductImages/banana_test.png'),
+  'banana_test': require('../../../assets/ProductImages/banana_test2.png'),
   'banana': require('../../../assets/ProductImages/fruits/banana.png'),
   'apple': require('../../../assets/ProductImages/fruits/apple.png'),
   'berries': require('../../../assets/ProductImages/fruits/berries.png'),

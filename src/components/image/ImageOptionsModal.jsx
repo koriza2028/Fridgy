@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontFamily: MainFont_SemiBold,
   },
   imageContainer: {
-    height: IMAGE_SIZE * 3, 
+    height: IMAGE_SIZE * 3.5, 
     alignItems: 'center',
     marginTop: 4,
     // borderRadius: 6,

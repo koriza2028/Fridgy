@@ -6,7 +6,7 @@ import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';
 import FiltersRecipeCategory from '../components/cooking/FiltersRecipeCategory';
 import AddNewButton from '../components/Button_AddNew';
-import SecondDropdownComponent from '../components/cooking/SecondDropdownComponent';
+import CookbookCard from '../components/cooking/CookbookCard';
 
 import { buttonColor, backgroundColor, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, addButtonColor } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -159,44 +159,6 @@ export default function CookingPage({ navigation }) {
             onFilterChange={setSelectedFilters} 
           />
 
-          {/* <SecondDropdownComponent/> */}
-
-          {/* <View style={styles.MealList_Wrapper}>
-            <Text style={styles.SuggestedMeals_Text}>Available meals</Text>
-            {filteredData.length > 0 || searchQuery !== "" ? (
-              <>
-                <View style={styles.AvailableMeals_Section}>
-                  {filteredData
-                    .filter((recipe) => checkMandatoryIngredientsAreAvailable(recipe.id))
-                    .map((recipe) => (
-                      <MealCard
-                        navigation={navigation}
-                        recipe={recipe}
-                        key={recipe.id}
-                        isAvailable={true}
-                        handlePress={() => navigation.navigate('RecipeCreatePage', { recipe })}
-                      />
-                    ))}
-                </View>
-
-                <View style={styles.UnavailableMeals_Section}>
-                  <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
-                  {filteredData
-                    .filter((recipe) => !checkMandatoryIngredientsAreAvailable(recipe.id))
-                    .map((recipe) => (
-                      <MealCard
-                        navigation={navigation}
-                        recipe={recipe}
-                        key={recipe.id}
-                        isAvailable={false}
-                      />
-                    ))}
-                </View>
-
-              </>
-            ) : (<View />)}
-          </View> */}
-
           <View style={styles.MealList_Wrapper}>
             {/* Show empty state if there's nothing and no search */}
             {filteredData.length === 0 && searchQuery === '' ? (
@@ -205,7 +167,7 @@ export default function CookingPage({ navigation }) {
                   source={require('../../assets/ProductImages/emptyBook.png')}
                   style={{ width: 184, height: 184, resizeMode: 'contain' }}
                 />
-                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>Here you can create your recipes!</Text>
+                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>You don't have recipes yet. But let's create some!</Text>
               </View>
             ) : (
               <>
@@ -231,8 +193,7 @@ export default function CookingPage({ navigation }) {
                   </>
                 )}
 
-                {/* Unavailable meals section */}
-                {filteredData.some(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id)) && (
+                {/* {filteredData.some(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id)) && (
                   <>
                     <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
                     <View style={styles.UnavailableMeals_Section}>
@@ -251,7 +212,8 @@ export default function CookingPage({ navigation }) {
                         ))}
                     </View>
                   </>
-                )}
+                )} */}
+
               </>
             )}
           </View>
@@ -261,6 +223,7 @@ export default function CookingPage({ navigation }) {
         </View>
       </ScrollView>
       <AddNewButton creativeAction={() => navigation.navigate('RecipeCreatePage')} label={'+'} />
+        
     </View>
   );
 }

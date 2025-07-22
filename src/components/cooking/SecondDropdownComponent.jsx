@@ -10,7 +10,7 @@ const { width } = Dimensions.get('window');
 
 export default function SecondDropdownComponent({
   allOptions,
-  placeholder = 'Select filters',
+  placeholder = 'Select tag',
   globalReset,
   onSelect,
 }) {
@@ -86,7 +86,7 @@ export default function SecondDropdownComponent({
         iconStyle={styles.iconStyle}
         data={mappedOptions}
         search
-        searchPlaceholder="Search filters..."
+        searchPlaceholder="Search tag..."
         inputSearchStyle={{
           height: 40,
           fontSize: 14,
@@ -192,6 +192,7 @@ const getLabelForTagType = (tagType) => {
       fontSize: 12,
       borderTopRightRadius: 8,
       borderTopLeftRadius: 8,
+      fontFamily: MainFont,
     },
     placeholderStyle: {
       fontSize: 14,
@@ -206,6 +207,7 @@ const getLabelForTagType = (tagType) => {
     inputSearchStyle: {
       height: 40,
       fontSize: 14,
+      fontFamily: MainFont,
     },
     dropdownOption: {
       flexDirection: 'row',
@@ -216,7 +218,7 @@ const getLabelForTagType = (tagType) => {
       // borderBottomWidth: 1,
       borderColor: 'lightgrey',
       backgroundColor: 'white',
-      borderRadius: 20,
+      borderRadius: 6,
     },
     
     dropdownOptionSelected: {

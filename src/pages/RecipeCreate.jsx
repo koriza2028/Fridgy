@@ -23,6 +23,7 @@ import Tag from "../components/cooking/Tag";
 import ModalProductCategoryPicker from "../components/fridge/ModalProductCategoryPicker";
 import SearchModal from "../components/SearchModal";
 import ButtonBouncing from "../components/Button_Bouncing";
+import CookbookPickerModal from "../components/cooking/ModalCookbookPicker";
 
 import Entypo from "react-native-vector-icons/Entypo";
 
@@ -148,6 +149,8 @@ export default function RecipeCreatePage({ navigation, route }) {
   // const modalSearchRef = useRef(null);
   const [isMandatoryFlag, setIsMandatoryFlag] = useState(null);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+
+  const [isModalCookbookPickerVisible, setModalCookbookPickerVisible] = useState(false);
 
   const openCategoryModal = useCallback(() => {
     setIsCategoryModalVisible(true);
@@ -355,7 +358,17 @@ useEffect(() => {
 
   
 return (
-  <Animated.View style={[styles.RecipeCreatePage, { transform: [{ translateY: Animated.multiply(keyboardHeight, -0.6) }] } ]}>
+  <Animated.View style={[styles.RecipeCreatePage, { 
+    // transform: [{ translateY: Animated.multiply(keyboardHeight, -0.6) }] 
+    transform: [
+        {
+          translateY: isModalCookbookPickerVisible
+            ? 0
+            : Animated.multiply(keyboardHeight, -0.6),
+        },
+      ],
+    
+    } ]}>
     <Animated.ScrollView
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollA } } }],
@@ -394,6 +407,18 @@ return (
               ))}
             </View>
           </View>
+
+          <View style={styles.productDataEntry}>
+            <View style={[styles.productDataEntryInput, styles.productTags]}>
+              <ButtonBouncing label="Cookbook +" toScale={0.95} onPress={setModalCookbookPickerVisible}
+                style={styles.innerTagStyle} textStyle={styles.innerTextStyle}/> 
+            </View>
+          </View>
+
+          <CookbookPickerModal
+            isVisible={isModalCookbookPickerVisible}
+            onClose={() => setModalCookbookPickerVisible(false)}
+          />
 
             <View style={styles.ListOfIngredients}>
               <View style={styles.IngredientsHeader}>

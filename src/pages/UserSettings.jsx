@@ -43,6 +43,7 @@ import {
   MainFont,
   MainFont_Bold,
   MainFont_SemiBold,
+  ReceiptFont,
   SecondTitleFontSize,
   SecondTitleFontWeight,
   TextFontSize,
@@ -133,6 +134,7 @@ export default function UserSettingsPage() {
 
           <View style={styles.listOfPremiumFeatures}>
             {/* Table Header */}
+            <Text style={{fontFamily: ReceiptFont, fontSize: 20, marginTop: -20, marginBottom: 20}}>Why upgrading to premium?</Text>
             <View style={styles.tableRow}>
               <Text style={[styles.tableHeaderCell, styles.featureCol]}></Text>
               <Text style={styles.tableHeaderCell}>Base</Text>
@@ -166,7 +168,7 @@ export default function UserSettingsPage() {
 
       <Pressable style={styles.upgradeButton}>
         <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-        <Text style={styles.upgradeText}>Upgrade to Premium</Text>
+        <Text style={styles.upgradeText}>Get Premium</Text>
         <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
       </Pressable>
     </View>
@@ -252,6 +254,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: MainFont_Bold,
     color: addButtonColor,
+    // color: '#14db71'
   },
 
 

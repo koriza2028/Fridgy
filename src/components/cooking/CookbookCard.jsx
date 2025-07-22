@@ -12,20 +12,12 @@ import ButtonBouncing from '../Button_Bouncing';
 
 const { width } = Dimensions.get('window');
 
-export default function MealCard({ navigation, recipe, isAvailable, isMealPlanner, handlePress }) {
+export default function CookbookCard({ handlePress }) {
 
     const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
-
-    // const handlePress = !isMealPlanner
-    // ? () => navigation.navigate('RecipeCreatePage', { recipe })
-    // : undefined;
-
-    // const handlePress = !isMealPlanner
-    // ? onPress
-    // : undefined;
       
     return (
         <ButtonBouncing onPress={handlePress} style={{borderRadius: 8}}
