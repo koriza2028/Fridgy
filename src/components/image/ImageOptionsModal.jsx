@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+import { FlashList } from '@shopify/flash-list';
+
 import AppImage from './AppImage';
 import SearchInput from '../Search';
 
@@ -60,6 +62,7 @@ const staticImageOptions = [
 // meat
 { key: 'bacon' },
 { key: 'chicken' },
+{ key: 'chickenPackaged' },
 { key: 'ham' },
 { key: 'meatballs' },
 { key: 'nuggets' },
@@ -193,6 +196,7 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
           {enableStaticImages && (
             <View style={styles.imageContainer}>
               <SearchInput placeholder={'Find a photo'} query={searchQuery} onChangeText={setSearchQuery} />
+              {/* <FlashList */}
               <FlatList
                 data={filteredStaticImages}
                 keyExtractor={(item, index) => index.toString()}
@@ -204,6 +208,7 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
                 showsVerticalScrollIndicator={false}
                 initialNumToRender={9}
                 maxToRenderPerBatch={6}
+                // estimatedItemSize={100}
                 contentContainerStyle={{
                   paddingHorizontal: 0,
                 }}

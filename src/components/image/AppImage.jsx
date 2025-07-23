@@ -41,6 +41,7 @@ const staticImageMap = {
 
   'bacon': require('../../../assets/ProductImages/meat/bacon.png'),
   'chicken': require('../../../assets/ProductImages/meat/chicken.png'),
+  'chickenPackaged': require('../../../assets/ProductImages/meat/chickenPackaged.png'),
   'ham': require('../../../assets/ProductImages/meat/ham.png'),
   'meatballs': require('../../../assets/ProductImages/meat/meatballs.png'),
   'nuggets': require('../../../assets/ProductImages/meat/nuggets.png'),

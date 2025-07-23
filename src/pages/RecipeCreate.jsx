@@ -408,7 +408,7 @@ return (
             </View>
           </View>
 
-          <View style={styles.productDataEntry}>
+          {/* <View style={styles.productDataEntry}>
             <View style={[styles.productDataEntryInput, styles.productTags]}>
               <ButtonBouncing label="Cookbook +" toScale={0.95} onPress={setModalCookbookPickerVisible}
                 style={styles.innerTagStyle} textStyle={styles.innerTextStyle}/> 
@@ -418,7 +418,7 @@ return (
           <CookbookPickerModal
             isVisible={isModalCookbookPickerVisible}
             onClose={() => setModalCookbookPickerVisible(false)}
-          />
+          /> */}
 
             <View style={styles.ListOfIngredients}>
               <View style={styles.IngredientsHeader}>

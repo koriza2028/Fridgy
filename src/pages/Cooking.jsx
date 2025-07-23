@@ -6,7 +6,7 @@ import MealCard from '../components/cooking/MealCard';
 import SearchInput from '../components/Search';
 import FiltersRecipeCategory from '../components/cooking/FiltersRecipeCategory';
 import AddNewButton from '../components/Button_AddNew';
-import CookbookCard from '../components/cooking/CookbookCard';
+// import CookbookCard from '../components/cooking/CookbookCard';
 
 import { buttonColor, backgroundColor, MainFont, MainFont_Bold, SecondTitleFontSize, SecondTitleFontWeight, addButtonColor } from '../../assets/Styles/styleVariables';
 import { useFonts } from 'expo-font';
@@ -193,7 +193,7 @@ export default function CookingPage({ navigation }) {
                   </>
                 )}
 
-                {/* {filteredData.some(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id)) && (
+                {filteredData.some(recipe => !checkMandatoryIngredientsAreAvailable(recipe.id)) && (
                   <>
                     <Text style={styles.SuggestedMeals_Text}>Missing ingredients</Text>
                     <View style={styles.UnavailableMeals_Section}>
@@ -212,7 +212,7 @@ export default function CookingPage({ navigation }) {
                         ))}
                     </View>
                   </>
-                )} */}
+                )} 
 
               </>
             )}
