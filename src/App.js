@@ -34,7 +34,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptInvite } from './store/inviteStore';
 
 const linking = {
-  prefixes: ['com.anonymous.Fridgy://'],
+  prefixes: ['fridgy://'],
   config: {
     screens: {
       Invite: {
@@ -249,8 +249,14 @@ const App = () => {
     const handleUrl = async ({ url }) => {
       if (!url) return;
       const parsed = Linking.parse(url);
-      if (parsed.path === 'invite' || parsed.hostname === 'invite' && parsed.queryParams?.code) {
+      if ((parsed.path === 'invite' || parsed.hostname === 'invite') && parsed.queryParams?.code) {
         await AsyncStorage.setItem(PENDING_INVITE_KEY, parsed.queryParams.code);
+
+        // ✅ If user is already logged in, process the invite right away
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser?.uid) {
+          handleInvite(currentUser.uid); // <-- call this here
+        }
       }
     };
 
@@ -262,23 +268,37 @@ const App = () => {
     return () => sub.remove();
   }, []);
 
+  const handleInvite = async (uid) => {
+    try {
+      const code = await AsyncStorage.getItem(PENDING_INVITE_KEY);
+      if (!code) return;
+
+      const currentFamilyId = useAuthStore.getState().familyId;
+
+      if (currentFamilyId) {
+        // 🚫 Already in a family — prevent joining another
+        Alert.alert("Already in a Family", "You are already a member of a family and cannot join a new one.");
+        await AsyncStorage.removeItem(PENDING_INVITE_KEY);
+        return;
+      }
+
+      const newFamilyId = await acceptInvite({ userId: uid }, code);
+
+      useAuthStore.getState().setFamilyId(newFamilyId);
+      useAuthStore.getState().setLastUsedMode("family");
+      await AsyncStorage.removeItem(PENDING_INVITE_KEY);
+    } catch (err) {
+      console.error("Invite accept failed", err);
+      Alert.alert("Invite Error", err.message);
+    }
+  };
+
   // Consume invite code after login
   useEffect(() => {
     if (!user?.uid) return;
-    (async () => {
-      const code = await AsyncStorage.getItem(PENDING_INVITE_KEY);
-      if (!code) return;
-      try {
-        const familyId = await acceptInvite({ userId: user.uid }, code);
-        setFamilyId(familyId);
-        setLastUsedMode('family');
-        await AsyncStorage.removeItem(PENDING_INVITE_KEY);
-      } catch (err) {
-        console.error('Invite accept failed', err);
-        Alert.alert('Invite Error', err.message);
-      }
-    })();
+    handleInvite(user.uid);
   }, [user?.uid]);
+
 
   if (user === null) {
     return (

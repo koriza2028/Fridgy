@@ -20,6 +20,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
+import { ensureUserAccount } from '../store/userAccountStore';
 
 import { useFonts } from 'expo-font';
 import { addButtonColor, buttonColor, MainFont, MainFont_Bold } from '../../assets/Styles/styleVariables';
@@ -58,9 +59,17 @@ const LoginPage = ({ navigation }) => {
     if (response?.type === 'success') {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
+
       signInWithCredential(auth, credential)
-        .then((userCredential) => {
-          setUser(userCredential.user);
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+
+          // 🔐 Ensure Firestore user document exists
+          await ensureUserAccount({ userId: user.uid }, user.email);
+
+          // 🧠 Set Zustand store user
+          setUser(user);
+
           navigation.navigate('FridgePage');
         })
         .catch(() => setError('Google sign-in failed'));

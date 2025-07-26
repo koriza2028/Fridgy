@@ -63,6 +63,13 @@ export default function BasketPage({ navigation }) {
   };
 
   useFocusEffect(
+    useCallback(() => {
+      refreshBasket();
+      setCheckedItems({}); // Reset selection when page is focused
+    }, [ctx.userId, ctx.familyId])
+  );
+
+  useFocusEffect(
     React.useCallback(() => {
       refreshBasket();
     }, [ctx.userId, ctx.familyId])
@@ -262,7 +269,7 @@ export default function BasketPage({ navigation }) {
         <ButtonBouncing style={[styles.Button_ShowReceipt, { borderWidth: isAnyChecked ? 2 : 0 }]} 
           innerStyle={{height: "100%", justifyContent: 'center', alignItems: 'center', }}
           isDisabled={!isAnyChecked}
-          // onPress={handleDisplayCheckedItems}
+          onPress={handleDisplayCheckedItems}
           label={<MaterialCommunityIcons name="basket-check" 
             // color={isAnyChecked ? addButtonColor : 'black'}
              style={styles.basketButtonIcon}/>}

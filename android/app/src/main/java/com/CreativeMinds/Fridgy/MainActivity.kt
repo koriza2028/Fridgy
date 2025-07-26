@@ -1,4 +1,4 @@
-package com.anonymous.Fridgy
+package com.CreativeMinds.Fridgy
 
 import android.os.Build
 import android.os.Bundle

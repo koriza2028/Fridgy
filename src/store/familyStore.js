@@ -2,13 +2,16 @@ import {
   doc,
   getDoc,
   updateDoc,
-  arrayRemove
+  arrayRemove,
+  deleteDoc, getDocs, collection, 
+  query, where, writeBatch
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import create from "zustand";
 
 /**
  * Let a member leave their family.
+ * Owner cannot leave.
  */
 export async function exitFamilyMembership({ userId, familyId }) {
   if (!userId || !familyId) {
@@ -24,10 +27,12 @@ export async function exitFamilyMembership({ userId, familyId }) {
     throw new Error("Family owner cannot leave the family");
   }
 
+  // Remove member from family
   await updateDoc(famRef, {
     members: arrayRemove(userId),
   });
 
+  // Update user doc to remove family association
   const acctRef = doc(db, "users", userId);
   await updateDoc(acctRef, {
     familyId: null,
@@ -37,6 +42,8 @@ export async function exitFamilyMembership({ userId, familyId }) {
 
 /**
  * Owner removes a member from the family.
+ * Owner cannot remove themselves.
+ * Only owner can remove members.
  */
 export async function removeFamilyMember({ ownerId, familyId, memberId }) {
   if (!ownerId || !familyId || !memberId) {
@@ -48,19 +55,82 @@ export async function removeFamilyMember({ ownerId, familyId, memberId }) {
   if (!famSnap.exists()) throw new Error("Family not found");
 
   const data = famSnap.data();
-  if (data.createdBy !== ownerId) {
-    throw new Error("Only the family owner can remove members");
+  const creatorId = data.createdBy;
+
+  if (ownerId === memberId) {
+    // A user is trying to remove themselves
+    await updateDoc(famRef, {
+      members: arrayRemove(memberId),
+    });
+
+    const acctRef = doc(db, "users", memberId);
+    await updateDoc(acctRef, {
+      familyId: null,
+      lastUsedMode: "personal",
+    });
+
+    return;
+  }
+
+  // A user is trying to remove someone else → must be the owner
+  if (ownerId !== creatorId) {
+    throw new Error("Only the family owner can remove other members");
+  }
+
+  if (memberId === creatorId) {
+    throw new Error("Owner cannot remove themselves");
   }
 
   await updateDoc(famRef, {
     members: arrayRemove(memberId),
   });
 
-  const targetAcctRef = doc(db, "users", memberId);
-  await updateDoc(targetAcctRef, {
+  const acctRef = doc(db, "users", memberId);
+  await updateDoc(acctRef, {
     familyId: null,
     lastUsedMode: "personal",
   });
+}
+
+export async function deleteFamilyIfOwner({ familyId, requesterId }) {
+  if (!familyId || !requesterId) {
+    throw new Error("Missing familyId or requesterId");
+  }
+
+  const famRef = doc(db, "families", familyId);
+  const famSnap = await getDoc(famRef);
+  if (!famSnap.exists()) throw new Error("Family not found");
+
+  const familyData = famSnap.data();
+
+  if (familyData.createdBy !== requesterId) {
+    throw new Error("Only the family owner can delete the family");
+  }
+
+  const batch = writeBatch(db);
+
+  // Update all members (reset familyId + mode)
+  const memberIds = Array.isArray(familyData.members) ? familyData.members : [];
+  memberIds.forEach((uid) => {
+    const userRef = doc(db, "users", uid);
+    batch.update(userRef, {
+      familyId: null,
+      lastUsedMode: "personal",
+    });
+  });
+
+  // Update owner separately
+  const ownerRef = doc(db, "users", requesterId);
+  batch.update(ownerRef, {
+    familyId: null,
+    lastUsedMode: "personal",
+    families: arrayRemove(familyId), // optional — only if you use this field
+  });
+
+  // Delete family
+  batch.delete(famRef);
+
+  await batch.commit();
 }
 
 const useFamilyStore = create((set) => ({
@@ -69,9 +139,11 @@ const useFamilyStore = create((set) => ({
 
   setFamilyMembers: (members) => set({ familyMembers: members }),
 
-  // Existing methods...
   clearOwnerId: () => set({ ownerId: null }),
 
+  /**
+   * Fetch and set the ownerId of the family
+   */
   fetchOwnerId: async (familyId) => {
     if (!familyId) {
       set({ ownerId: null });
@@ -85,19 +157,32 @@ const useFamilyStore = create((set) => ({
     set({ ownerId });
   },
 
-  // For example, a method to fetch and update familyMembers:
-  fetchFamilyMembers: async (familyId) => {
+  /**
+   * Fetch family members excluding the current user.
+   * @param {string} familyId
+   * @param {string} currentUserId
+   */
+  fetchFamilyMembers: async (familyId, currentUserId) => {
+    console.log("I AM", currentUserId);
     const famRef = doc(db, "families", familyId);
     const famSnap = await getDoc(famRef);
     if (!famSnap.exists()) throw new Error("Family not found");
 
     const data = famSnap.data();
     const memberIds = Array.isArray(data.members) ? data.members : [];
+    const ownerId = data.createdBy;
 
-    const memberDocs = await Promise.all(
-      memberIds.map((id) => getDoc(doc(db, "users", id)))
+    // Combine member IDs and owner ID, removing duplicates and current user
+    const uniqueIds = Array.from(
+      new Set([ownerId, ...memberIds].filter((id) => id !== currentUserId))
     );
 
+    // Fetch user documents
+    const memberDocs = await Promise.all(
+      uniqueIds.map((id) => getDoc(doc(db, "users", id)))
+    );
+
+    // Format user data
     const members = memberDocs
       .filter((snap) => snap.exists())
       .map((snap) => {
@@ -111,8 +196,9 @@ const useFamilyStore = create((set) => ({
 
     set({ familyMembers: members });
 
-    return members; // ← THIS is the missing line
+    return members;
   },
+
 }));
 
 export default useFamilyStore;

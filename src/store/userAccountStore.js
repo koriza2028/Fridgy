@@ -2,6 +2,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  addDoc,
   updateDoc,
   collection,
   query,
@@ -63,33 +64,6 @@ export const setLastUsedMode = async ({ userId }, mode) => {
   await updateDoc(ref, { lastUsedMode: mode });
 };
 
-/**
- * Create a new family (if needed) and assign it to this user
- */
-export const assignOrCreateFamily = async ({ userId }) => {
-  const userRef = doc(db, "users", userId);
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) throw new Error("User account not found");
-
-  let familyId = userSnap.data().familyId;
-  if (!familyId) {
-    familyId = `fam-${Date.now()}`;
-    const familyRef = doc(db, "families", familyId);
-    await setDoc(familyRef, {
-      createdAt: Date.now(),
-      createdBy: userId,
-      members: [userId],
-    });
-    await updateDoc(userRef, { familyId });
-  }
-
-  await updateDoc(userRef, { lastUsedMode: "family" });
-  return familyId;
-};
-
-/**
- * Toggle between personal and family modes
- */
 export const toggleUserMode = async ({ userId, currentMode }) => {
   const userRef = doc(db, "users", userId);
 
@@ -112,10 +86,19 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
       shouldCreateNewFamily = true;
     } else {
       const familyData = famSnap.data();
-      const isMember = Array.isArray(familyData.members) && familyData.members.includes(userId);
+      const isMember =
+        Array.isArray(familyData.members) &&
+        familyData.members.includes(userId);
 
-      if (!isMember) {
-        shouldCreateNewFamily = true;
+      if (!isMember && familyData.createdBy === userId) {
+        // Re-add user as member if they are the owner
+        await updateDoc(familyRef, {
+          members: [...(familyData.members || []), userId],
+        });
+      }
+
+      if (!isMember && familyData.createdBy !== userId) {
+        throw new Error("You are not a member of this family");
       }
     }
   } else {
@@ -123,17 +106,21 @@ export const toggleUserMode = async ({ userId, currentMode }) => {
   }
 
   if (shouldCreateNewFamily) {
-    familyId = `fam-${Date.now()}`;
-    const familyRef = doc(db, "families", familyId);
-    await setDoc(familyRef, {
+    const newFamilyRef = await addDoc(collection(db, "families"), {
       createdAt: Date.now(),
       createdBy: userId,
       members: [],
+      debugSource: "toggleUserMode", // Optional: helpful for tracking
     });
-    await updateDoc(userRef, { familyId });
+
+    familyId = newFamilyRef.id;
+
+    await updateDoc(userRef, {
+      familyId,
+    });
   }
 
   await updateDoc(userRef, { lastUsedMode: "family" });
   return { mode: "family", familyId };
-
 };
+

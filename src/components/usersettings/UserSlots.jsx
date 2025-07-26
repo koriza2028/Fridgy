@@ -8,11 +8,8 @@ import { useFonts } from 'expo-font';
 
 import { addButtonColor, buttonColor, greyTextColor, greyTextColor2, MainFont, MainFont_Bold, MainFont_SemiBold } from '../../../assets/Styles/styleVariables';
 
-
-import { setUsername } from '../../store/userAccountStore';
 import {
-  exitFamilyMembership,
-  removeFamilyMember,
+  removeFamilyMember
 } from '../../store/familyStore';
 
 import useFamilyStore from '../../store/familyStore';
@@ -29,36 +26,14 @@ import useAuthStore from '../../store/authStore';
 
 const MAX_SLOTS = 5;
 
-const UserSlot = ({ user, isCurrentUser, createInvite, loadFamilyMembers}) => {
-    const familyId = useAuthStore((s) => s.familyId);
-
-  const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
-  const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
-  const ownerId = useFamilyStore((state) => state.ownerId);
+const UserSlot = ({ user, isCurrentUser, isOwner, loadFamilyMembers}) => {
+  const familyId = useAuthStore((s) => s.familyId);
+  const ownerId = useAuthStore((s) => s.ownerId);
 
   const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
         'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
     });
-
-  if (!user) {
-    return (
-      <ButtonBouncing scale={0.95} onPress={createInvite} style={[styles.userBox, styles.emptyBox]} innerStyle={styles.innerPress}
-        label={<Text style={styles.plusSign}>+ Add member</Text>}
-      />
-      // <Pressable style={[styles.userBox, styles.emptyBox]} onPress={createInvite}>
-        
-      // </Pressable>
-    );
-  }
-
-  useEffect(() => {
-    if (!familyId) {
-      clearOwnerId();
-      return;
-    }
-    fetchOwnerId(familyId);
-  }, [familyId]);
 
   const handleRemoveMember = (memberId) => () => {
     Alert.alert(
@@ -89,80 +64,82 @@ const UserSlot = ({ user, isCurrentUser, createInvite, loadFamilyMembers}) => {
     );
   };
 
-
   return (
-
     <View style={[styles.userBox, { backgroundColor: buttonColor, justifyContent: "start" }]}>
       {isCurrentUser ? (
-        <>
-          <Text style={styles.userText}>You, {user.email} </Text>
-          {/* <Pressable onPress={() => setIsEditable(!isEditable)} style={styles.editButton}>
-            <MaterialIcons name={isEditable ? 'check' : 'edit'} size={20} color="white" />
-          </Pressable> */}
-        </>
+        <Text style={styles.userText}>You, {user.email} </Text>
       ) : (
         <>
-        <Text style={[styles.userText]}>{user.email}</Text>
-        <Pressable style={styles.editButton} onPress={handleRemoveMember(user.userId)}>
-          <MaterialIcons name={'remove-circle'} size={20} color="white" />
-        </Pressable>
+          <Text style={styles.userText}>{user.email}</Text>
+          {isOwner && (
+            <Pressable style={styles.editButton} onPress={handleRemoveMember(user.userId)}>
+              <MaterialIcons name={'remove-circle'} size={20} color="white" />
+            </Pressable>
+          )}
         </>
-        
       )}
     </View>
   );
 };
 
-const UserSlots = ({currentUser, createInvite}) => {
+const UserSlots = ({ currentUser, createInvite }) => {
   const familyId = useAuthStore((s) => s.familyId);
+  const ownerId = useFamilyStore((s) => s.ownerId);
+  const fetchOwnerId = useFamilyStore((s) => s.fetchOwnerId);
+  const clearOwnerId = useFamilyStore((s) => s.clearOwnerId);
 
-  const familyMembers = useFamilyStore((state) => state.familyMembers);
-  const setFamilyMembers = useFamilyStore((state) => state.setFamilyMembers);
-  const fetchFamilyMembers = useFamilyStore((state) => state.fetchFamilyMembers);
+  const familyMembers = useFamilyStore((s) => s.familyMembers);
+  const setFamilyMembers = useFamilyStore((s) => s.setFamilyMembers);
+  const fetchFamilyMembers = useFamilyStore((s) => s.fetchFamilyMembers);
+
+  const isOwner = currentUser?.uid === ownerId;
 
   const loadFamilyMembers = async () => {
-      if (!familyId) {
-        setFamilyMembers([]);
-        return;
-      }
-      try {
-        const members = await fetchFamilyMembers(familyId);
-        setFamilyMembers(members);
-      } catch (err) {
-        console.error('Failed to load family members', err);
-        Alert.alert('Error', 'Could not load family members');
-      }
-    };
-
-  useEffect(() => {
     if (!familyId) {
       setFamilyMembers([]);
       return;
     }
+    try {
+      const members = await fetchFamilyMembers(familyId, currentUser.uid);
+      setFamilyMembers(members);
+    } catch (err) {
+      console.error('Failed to load family members', err);
+      Alert.alert('Error', 'Could not load family members');
+    }
+  };
+
+  useEffect(() => {
+    if (!familyId) {
+      clearOwnerId();
+      setFamilyMembers([]);
+      return;
+    }
+    fetchOwnerId(familyId);
     loadFamilyMembers();
   }, [familyId]);
 
   return (
     <View style={styles.container}>
-        <UserSlot user={currentUser} isCurrentUser={true} />
-        {familyMembers.map((user, index) => (
-          <UserSlot key={index} user={user} isCurrentUser={false} loadFamilyMembers={loadFamilyMembers}/>
-        ))}
-        {familyMembers.length < MAX_SLOTS - 1 && (
-          <UserSlot
-            user={null}
-            isCurrentUser={false}
-            createInvite={async () => {
-              await createInvite();
-              await loadFamilyMembers();
-            }}
-            loadFamilyMembers={loadFamilyMembers}
-          />
-        )}
-        {/* <UserSlot user={null} isCurrentUser={false} createInvite={createInvite}/> */}
+      <UserSlot user={currentUser} isCurrentUser={true} isOwner={isOwner} />
+      {familyMembers.map((user, index) => (
+        <UserSlot key={index} user={user} isCurrentUser={false} isOwner={isOwner} loadFamilyMembers={loadFamilyMembers} />
+      ))}
+      {isOwner && familyMembers.length < MAX_SLOTS - 1 && (
+        <ButtonBouncing
+          scale={0.95}
+          onPress={async () => {
+            await createInvite();
+            await loadFamilyMembers();
+          }}
+          style={[styles.userBox, styles.emptyBox]}
+          innerStyle={styles.innerPress}
+          label={<Text style={styles.plusSign}>+ Add member</Text>}
+        />
+      )}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -201,7 +178,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     backgroundColor: 'transparent',
     alignItems: 'center',
-    justifyContent: 'start',
+    justifyContent: 'flex-start',
   },
   plusSign: {
     fontSize: 16,

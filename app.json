@@ -3,11 +3,13 @@
     "name": "Fridgy",
     "owner": "fridgyminds",
     "slug": "Fridgy",
+    "scheme": "fridgy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "deepLinking": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,14 +17,24 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Fridgy"
+      "bundleIdentifier": "com.CreativeMinds.Fridgy",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "fridgy"
+            ]
+          }
+        ]
+      },
+      "appleTeamId": "SY9H89HY87"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.Fridgy"
+      "package": "com.CreativeMinds.Fridgy"
     },
     "web": {
       "favicon": "./assets/favicon.png"

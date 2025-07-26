@@ -81,8 +81,8 @@ export const acceptInvite = async ({ userId }, inviteId) => {
   const { familyId } = invite;
 
   // Assign user to family
-  const accountRef = doc(db, "users", userId);
-  await updateDoc(accountRef, {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
     familyId,
     lastUsedMode: "family",
   });
@@ -106,6 +106,7 @@ export const acceptInvite = async ({ userId }, inviteId) => {
 
   return familyId;
 };
+
 
 /**
  * Revoke (delete) an invite.

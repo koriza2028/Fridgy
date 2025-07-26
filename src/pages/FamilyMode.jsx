@@ -28,12 +28,8 @@ import {
   revokeInvite,
 } from '../store/inviteStore';
 
-import {
-  exitFamilyMembership,
-} from '../store/familyStore';
-
 import useFamilyStore from '../store/familyStore';
-
+import { deleteFamilyIfOwner } from '../store/familyStore'
 import { useFonts } from 'expo-font';
 
 import {
@@ -77,17 +73,6 @@ export default function FamilyModePage() {
   const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
 
-  const familyMembers = useFamilyStore((state) => state.familyMembers);
-  const setFamilyMembers = useFamilyStore((state) => state.setFamilyMembers);
-  const fetchFamilyMembers = useFamilyStore((state) => state.fetchFamilyMembers);
-
-  const isOwner = ownerId === userId;
-
-  // usage
-  useEffect(() => {
-    fetchFamilyMembers(familyId);
-  }, [familyId]);
-
   // ───────────────────────────────────────────────────────────────────────
 
   // ── username editing local state ──────────────────────────────────────
@@ -118,38 +103,18 @@ export default function FamilyModePage() {
   };
   // ───────────────────────────────────────────────────────────────────────
 
-  // ── load family members ───────────────────────────────────────────────
-  const loadFamilyMembers = async () => {
-    if (!familyId) {
-      setFamilyMembers([]);
-      return;
-    }
-    try {
-      const members = await fetchFamilyMembers(familyId);
-      setFamilyMembers(members);
-      // Initialize usernameEdits for editing UI
-      const initialEdits = {};
-      members.forEach((m) => {
-        initialEdits[m.userId] = m.username || '';
-      });
-      setUsernameEdits(initialEdits);
-    } catch (err) {
-      console.error('Failed to load family members', err);
-      Alert.alert('Error', 'Could not load family members');
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
   // ── fetch ownerId and members on familyId change ───────────────────────
   useEffect(() => {
     if (!familyId) {
       clearOwnerId();
-      setFamilyMembers([]);
       return;
     }
-    fetchOwnerId(familyId);
-    loadFamilyMembers();
+    const load = async () => {
+      await fetchOwnerId(familyId);
+    };
+    load();
   }, [familyId]);
+
   // ───────────────────────────────────────────────────────────────────────
 
   // ── create & share invite ─────────────────────────────────────────────
@@ -163,7 +128,7 @@ export default function FamilyModePage() {
       const link = Linking.createURL('invite', { queryParams: { code } });
       await Share.share({
         title: 'Join my family',
-        message: `Use this link to join: ${link}`,
+        message: `${link}`,
       });
       loadInvites();
     } catch (err) {
@@ -173,146 +138,107 @@ export default function FamilyModePage() {
   };
   // ───────────────────────────────────────────────────────────────────────
 
-  // ── revoke invite ─────────────────────────────────────────────────────
-  const handleRevoke = (inviteId) => async () => {
-    try {
-      await revokeInvite(inviteId);
-      loadInvites();
-    } catch (err) {
-      console.error('Revoke failed', err);
-      Alert.alert('Error', 'Could not revoke invite');
+  const handleToggle = async (targetMode) => {
+    const currentMode = useAuthStore.getState().lastUsedMode;
+    if (!user?.uid) {
+      Alert.alert('Not logged in');
+      return;
+    }
+
+    if (targetMode === currentMode) return;
+
+    if (targetMode === 'family') {
+      if (familyId) {
+        // User already in a family, switch directly
+        try {
+          const res = await toggleUserMode({
+            userId: user.uid,
+            currentMode,
+          });
+          setFamilyId(res.familyId);
+          setLastUsedMode(res.mode);
+        } catch (e) {
+          console.error('Toggle failed:', e);
+          Alert.alert('Error', e.message);
+        }
+      } else {
+        // Ask to create family if not in one
+        Alert.alert(
+          'Create Family?',
+          'You are not in a family yet. Do you want to create one?',
+          [
+            {
+              text: 'No',
+              style: 'cancel',
+              onPress: () => {},
+            },
+            {
+              text: 'Yes',
+              onPress: async () => {
+                try {
+                  const res = await toggleUserMode({
+                    userId: user.uid,
+                    currentMode,
+                  });
+                  setFamilyId(res.familyId);
+                  setLastUsedMode(res.mode);
+                } catch (e) {
+                  console.error('Toggle failed:', e);
+                  Alert.alert('Error', e.message);
+                }
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    } else {
+      // Switching to solo mode
+      try {
+        const res = await toggleUserMode({
+          userId: user.uid,
+          currentMode,
+        });
+        setFamilyId(res.familyId);
+        setLastUsedMode(res.mode);
+      } catch (e) {
+        console.error('Toggle failed:', e);
+        Alert.alert('Error', e.message);
+      }
     }
   };
-  // ───────────────────────────────────────────────────────────────────────
 
-  // ── toggle personal/family ────────────────────────────────────────────
-  // const handleToggle = async () => {
-  //   const { user, lastUsedMode: mode } = useAuthStore.getState();
-  //   if (!user?.uid) {
-  //     Alert.alert('Not logged in');
-  //     return;
-  //   }
-  //   try {
-  //     const res = await toggleUserMode({
-  //       userId: user.uid,
-  //       currentMode: mode,
-  //     });
-  //     setFamilyId(res.familyId);
-  //     setLastUsedMode(res.mode);
-  //     Alert.alert(
-  //       'Success',
-  //       res.mode === 'family'
-  //         ? `Switched to Family ID: ${res.familyId}`
-  //         : 'Switched to Personal Mode'
-  //     );
-  //     loadInvites();
-  //     if (res.mode === 'family') {
-  //       loadFamilyMembers();
-  //     } else {
-  //       setFamilyMembers([]);
-  //     }
-  //   } catch (e) {
-  //     console.error('Toggle failed:', e);
-  //     Alert.alert('Error', e.message);
-  //   }
-  // };
-
-const handleToggle = async (targetMode) => {
-  const { user, lastUsedMode: currentMode } = useAuthStore.getState();
-  if (!user?.uid) {
-    Alert.alert('Not logged in');
-    return;
-  }
-
-  if (targetMode === currentMode) {
-    return; // Already in this mode
-  }
-
-  try {
-    const res = await toggleUserMode({
-      userId: user.uid,
-      currentMode,
-    });
-    setFamilyId(res.familyId);
-    setLastUsedMode(res.mode);
-    if (res.mode === 'family') {
-      await loadFamilyMembers();
-    } else {
-      setFamilyMembers([]);
-    }
-  } catch (e) {
-    console.error('Toggle failed:', e);
-    Alert.alert('Error', e.message);
-  }
-};
-
+  const handleDeleteFamily = async () => {
+    Alert.alert(
+      "Delete Family",
+      "Are you sure you want to delete the entire family?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteFamilyIfOwner({ familyId, requesterId: user.uid });
+              clearOwnerId();
+              setFamilyId(null); // ⬅️ Clear local familyId
+              setLastUsedMode('personal'); // ⬅️ Switch to personal mode
+              Alert.alert("Deleted", "Family has been deleted.");
+            } catch (err) {
+              console.error("Failed to delete family", err);
+              Alert.alert("Error", "Failed to delete family");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const changeMode =
     lastUsedMode === 'family'
       ? 'Switch to Personal Mode'
       : 'Switch to Family Mode';
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── leave family (any member) ────────────────────────────────────────
-  const handleLeaveFamily = async () => {
-    try {
-      await exitFamilyMembership({ userId, familyId });
-      setFamilyId(null);
-      setLastUsedMode('personal');
-      Alert.alert('Success', 'You have left the family');
-      setFamilyMembers([]);
-    } catch (err) {
-      console.error('Leave family failed', err);
-      Alert.alert('Error', err.message);
-    }
-  };
-  // ───────────────────────────────────────────────────────────────────────
-
-
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── username editing handlers ────────────────────────────────────────
-  // const startEditing = (editUserId) => {
-  //   setEditingUserIds((prev) => new Set(prev).add(editUserId));
-  // };
-  // const cancelEditing = (editUserId) => {
-  //   setUsernameEdits((prev) => ({
-  //     ...prev,
-  //     [editUserId]: familyMembers.find((m) => m.userId === editUserId)?.username || '',
-  //   }));
-  //   setEditingUserIds((prev) => {
-  //     const newSet = new Set(prev);
-  //     newSet.delete(editUserId);
-  //     return newSet;
-  //   });
-  // };
-  // const onUsernameChange = (editUserId, newUsername) => {
-  //   setUsernameEdits((prev) => ({ ...prev, [editUserId]: newUsername }));
-  // };
-  // const saveUsername = async (editUserId) => {
-  //   const newUsername = usernameEdits[editUserId]?.trim();
-  //   if (!newUsername) {
-  //     Alert.alert('Username cannot be empty');
-  //     return;
-  //   }
-  //   try {
-  //     await setUsername({ userId: editUserId, username: newUsername });
-  //     Alert.alert('Success', 'Username updated');
-  //     // Update local family members username too
-  //     loadFamilyMembers();
-  //     setEditingUserIds((prev) => {
-  //       const newSet = new Set(prev);
-  //       newSet.delete(editUserId);
-  //       return newSet;
-  //     });
-  //   } catch (err) {
-  //     console.error('Username change failed', err);
-  //     Alert.alert('Error', err.message);
-  //   }
-  // };
-  // ───────────────────────────────────────────────────────────────────────
-
-
+  const isOwner = user?.uid === ownerId;
   return (
   <View style={styles.UserSettingsPage}>
     {/* Mode toggle buttons */}
@@ -368,58 +294,22 @@ const handleToggle = async (targetMode) => {
         <View style={styles.UserSettingsPage_ContentWrapper}>
           <UserSlots
             currentUser={user}
-            members={familyMembers}
             createInvite={handleCreateInvite}
           />
+          {/* Delete Family button at the bottom */}
+          {isOwner && (
+            <Pressable
+              style={styles.deleteFamilyButton}
+              onPress={handleDeleteFamily}
+            >
+              <Text style={styles.deleteFamilyText}>Delete Family</Text>
+            </Pressable>
+          )}
         </View>
       </ScrollView>
     )}
   </View>
   );
-
-
-
-  // return (
-  //   <View style={styles.UserSettingsPage}>
-  //     <ScrollView>
-  //       <View style={styles.UserSettingsPage_ContentWrapper}>
-  //         {/* mode toggle */}
-  //           <Pressable title={changeMode} onPress={handleToggle}>
-  //           <Text style={styles.Text_SwitchMode}>
-  //             {lastUsedMode === 'family'
-  //               ? 'You are in Family Mode'
-  //               : 'You are in Personal Mode'}
-  //           </Text>
-  //           </Pressable>
-
-
-  //         {/* Leave family */}
-  //         {familyId && !isOwner && (
-  //           <View style={{ marginBottom: 24 }}>
-  //             <Button
-  //               title="Leave Family"
-  //               color="red"
-  //               onPress={() =>
-  //                 Alert.alert(
-  //                   'Leave Family',
-  //                   'Are you sure you want to leave the family?',
-  //                   [
-  //                     { text: 'Cancel', style: 'cancel' },
-  //                     { text: 'Leave', style: 'destructive', onPress: handleLeaveFamily },
-  //                   ]
-  //                 )
-  //               }
-  //             />
-  //           </View>
-  //         )}
-
-          
-  //         <UserSlots currentUser={user} members={familyMembers} createInvite={handleCreateInvite}/>
-          
-  //       </View>
-  //     </ScrollView>
-  //   </View>
-  // );
 
 }
 
