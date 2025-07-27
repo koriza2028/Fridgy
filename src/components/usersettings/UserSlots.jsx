@@ -27,8 +27,8 @@ import useAuthStore from '../../store/authStore';
 const MAX_SLOTS = 5;
 
 const UserSlot = ({ user, isCurrentUser, isOwner, loadFamilyMembers}) => {
-  const familyId = useAuthStore((s) => s.familyId);
-  const ownerId = useAuthStore((s) => s.ownerId);
+  const familyId = useAuthStore.getState().familyId;
+  const ownerId = useFamilyStore((s) => s.ownerId);
 
   const [fontsLoaded] = useFonts({
         'Inter': require('../../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),

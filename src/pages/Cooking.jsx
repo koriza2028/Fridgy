@@ -27,11 +27,11 @@ export default function CookingPage({ navigation }) {
 
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
+    const familyId = state.familyId;
+    const currentMode = state.lastUsedMode; // 'user' or 'family'
+    return { userId, familyId, currentMode };
   });
-
-
+  
   // recipeBook stores the full list of enriched recipes.
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +64,7 @@ export default function CookingPage({ navigation }) {
             console.error("Failed to fetch available products", error);
           });
       }
-    }, [ctx.userId, ctx.familyId])
+    }, [ctx.userId, ctx.familyId, ctx.currentMode])
   );
 
   // Debounce search input.
@@ -125,7 +125,7 @@ export default function CookingPage({ navigation }) {
   //         setRefreshing(false);
   //       });
   //   }
-  // }, [ctx.userId, ctx.familyId]);
+  // }, [ctx.userId, ctx.familyId, ctx.currentMode]);
 
   // Check if an ingredient (by its reference) is available in the fridge.
   const checkIngredientIsAvailable = (ingredient) => {

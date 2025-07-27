@@ -7,7 +7,7 @@ import { deleteButtonColor } from '../../../assets/Styles/styleVariables';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-export default function IngredientItem({ ingredient, isAvailable, onRemove, isMandatory, isEditing, isCreatingNew }) {
+export default function IngredientItem({ ingredient, isRemovable = true, onRemove, isMandatory, isEditing, isCreatingNew }) {
 
   const removeProduct = () => {
     const id = ingredient._id || ingredient.productId;
@@ -50,10 +50,10 @@ export default function IngredientItem({ ingredient, isAvailable, onRemove, isMa
                 <Text style={styles.IngredientItem_Name_Text}>{ingredient.name} </Text>
               </View>
 
-              <Pressable style={styles.removeIcon} onPress={removeProduct}> 
+              {(isRemovable && <Pressable style={styles.removeIcon} onPress={removeProduct}> 
                 {/* <Text>-</Text> */}
                 <MaterialIcons name={'remove-circle'} size={22} color={deleteButtonColor} />
-              </Pressable>
+              </Pressable>)}
             </View>
 
 

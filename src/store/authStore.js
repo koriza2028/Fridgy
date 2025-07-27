@@ -1,49 +1,61 @@
 import create from 'zustand';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getDoc, doc } from 'firebase/firestore';
-import app, { db } from '../firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '../firebaseConfig';
 
-const useAuthStore = create((set) => {
-  const auth = getAuth(app);
+const useAuthStore = create((set) => ({
+  user: undefined,
+  email: null,
+  familyId: null,
+  lastUsedMode: 'personal',
+  unsubscribeUserDoc: null, // zum Abmelden des Listeners
 
-  // Watch for Firebase login state
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userDocRef);
+  setUser: (user) => set({ user }),
+  setFamilyId: (familyId) => set({ familyId }),
+  setLastUsedMode: (mode) => set({ lastUsedMode: mode }),
+  setUnsubscribeUserDoc: (fn) => set({ unsubscribeUserDoc: fn }),
 
-      const familyId = userSnap.exists() ? userSnap.data().familyId : null;
-      const lastUsedMode = userSnap.exists() ? userSnap.data().lastUsedMode || 'personal' : 'personal';
-      const email = userSnap.exists() ? userSnap.data().email : null;
+  logout: () => set({ user: null, familyId: null, lastUsedMode: 'personal' }),
+}));
 
-      set({
-        user,
-        email,
-        familyId,
-        lastUsedMode,
-      });
-    } else {
-      set({
-        user: null,
-        email: null,
-        familyId: null,
-        lastUsedMode: 'personal',
-      });
-    }
-  });
+// Beobachte Firebase-Auth-Status
+onAuthStateChanged(auth, async (user) => {
+  console.log('🔥 Firebase auth state changed:', user);
 
-  return {
-    user: undefined, // undefined = loading, null = logged out
-    email: null,
-    familyId: null,
-    lastUsedMode: 'personal',
+  const unsubscribeOld = useAuthStore.getState().unsubscribeUserDoc;
+  if (unsubscribeOld) {
+    unsubscribeOld(); // alten Listener abmelden, falls vorhanden
+  }
 
-    setUser: (user) => set({ user }),
-    setFamilyId: (familyId) => set({ familyId }),
-    setLastUsedMode: (mode) => set({ lastUsedMode: mode }),
+  if (user) {
+    useAuthStore.setState({ user });
 
-    logout: () => set({ user: null, familyId: null, lastUsedMode: 'personal' }),
-  };
+    // Setze Echtzeit-Listener auf das User-Dokument
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        console.log('Firestore user snapshot update:', docSnap.exists(), docSnap.data());
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        useAuthStore.setState({
+          email: data.email ?? null,
+          familyId: data.familyId ?? null,
+          lastUsedMode: data.lastUsedMode ?? 'personal',
+        });
+      }
+    });
+
+    useAuthStore.setState({ unsubscribeUserDoc: unsubscribe });
+  } else {
+    // kein User mehr angemeldet
+    useAuthStore.setState({
+      user: null,
+      email: null,
+      familyId: null,
+      lastUsedMode: 'personal',
+      unsubscribeUserDoc: null,
+    });
+  }
 });
 
 export default useAuthStore;

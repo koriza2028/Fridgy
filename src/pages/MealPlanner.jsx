@@ -39,8 +39,9 @@ export default function MealPlannerPage({ navigation }) {
 
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
+    const familyId = state.familyId;
+    const currentMode = state.lastUsedMode; // 'user' or 'family'
+    return { userId, familyId, currentMode };
   });
 
   const [recipeBook, setRecipeBook] = useState({ recipes: [] });
@@ -68,7 +69,7 @@ export default function MealPlannerPage({ navigation }) {
     fetchAvailableProducts(ctx)
       .then(setFridgeProducts)
       .catch(console.error);
-  }, [ctx.userId, ctx.familyId]);
+  }, [ctx.userId, ctx.familyId, ctx.currentMode]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,7 +85,7 @@ export default function MealPlannerPage({ navigation }) {
       fetchAvailableProducts(ctx)
         .then(setFridgeProducts)
         .catch(console.error);
-    }, [ctx.userId, ctx.familyId])
+    }, [ctx.userId, ctx.familyId, ctx.currentMode])
   );
 
   useEffect(() => {

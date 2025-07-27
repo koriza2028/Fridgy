@@ -15,8 +15,8 @@ const normalizeProduct = (product) =>
     ? { id: product, name: product, amount: 1, isFromFridge: false }
     : { id: product.id, name: product.name, amount: 1, isFromFridge: true };
 
-export const fetchUserData = async ({ userId, familyId }) => {
-  const ref = getDataRef({ userId, familyId });
+export const fetchUserData = async (ctx) => {
+  const ref = getDataRef(ctx);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
     const data = { basket: { products: [] } };
@@ -26,7 +26,7 @@ export const fetchUserData = async ({ userId, familyId }) => {
   return { id: snap.id, ...snap.data() };
 };
 
-export const addProductToBasket = async ({ userId, familyId }, productInput, isFromFridge) => {
+export const addProductToBasket = async (ctx, productInput, isFromFridge) => {
   const product = isFromFridge
     ? { basketId: Date.now().toString(), productId: productInput.id, amount: 1, isFromFridge: true }
     : {
@@ -36,7 +36,7 @@ export const addProductToBasket = async ({ userId, familyId }, productInput, isF
         isFromFridge: false,
       };
 
-  const ref = getDataRef({ userId, familyId });
+  const ref = getDataRef(ctx);
   return await runTransaction(db, async (tx) => {
     const docSnap = await tx.get(ref);
     if (!docSnap.exists()) throw new Error("User/family not found");
@@ -59,8 +59,8 @@ export const addProductToBasket = async ({ userId, familyId }, productInput, isF
   });
 };
 
-export const updateProductAmountInBasket = async ({ userId, familyId }, basketItemId, newAmount) => {
-  const ref = getDataRef({ userId, familyId });
+export const updateProductAmountInBasket = async (ctx, basketItemId, newAmount) => {
+  const ref = getDataRef(ctx);
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error("User/family not found");
@@ -80,8 +80,8 @@ export const updateProductAmountInBasket = async ({ userId, familyId }, basketIt
   });
 };
 
-export const removeProductFromBasket = async ({ userId, familyId }, basketItemId) => {
-  const ref = getDataRef({ userId, familyId });
+export const removeProductFromBasket = async (ctx, basketItemId) => {
+  const ref = getDataRef(ctx);
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error("User/family not found");
@@ -92,9 +92,9 @@ export const removeProductFromBasket = async ({ userId, familyId }, basketItemId
   });
 };
 
-export const fetchBasketProducts = async ({ userId, familyId }) => {
+export const fetchBasketProducts = async (ctx) => {
   try {
-    const ref = getDataRef({ userId, familyId });
+    const ref = getDataRef(ctx);
     const snap = await getDoc(ref);
     if (!snap.exists()) return [];
 
@@ -112,8 +112,8 @@ export const fetchBasketProducts = async ({ userId, familyId }) => {
   }
 };
 
-export const addAutoBasketProductsToBasket = async ({ userId, familyId }) => {
-  const ref = getDataRef({ userId, familyId });
+export const addAutoBasketProductsToBasket = async (ctx) => {
+  const ref = getDataRef(ctx);
 
   const updated = await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
@@ -144,15 +144,15 @@ export const addAutoBasketProductsToBasket = async ({ userId, familyId }) => {
   });
 };
 
-export const clearBasket = async ({ userId, familyId }) => {
-  const ref = getDataRef({ userId, familyId });
+export const clearBasket = async (ctx) => {
+  const ref = getDataRef(ctx);
   await updateDoc(ref, { "basket.products": [] });
   return [];
 };
 
-export const moveProductsFromBasketToFridge = async ({ userId, familyId }, basketItemIds = []) => {
-  const ref = getDataRef({ userId, familyId });
-  const fridgeRef = getFridgeCollectionRef({ userId, familyId });
+export const moveProductsFromBasketToFridge = async (ctx, basketItemIds = []) => {
+  const ref = getDataRef(ctx);
+  const fridgeRef = getFridgeCollectionRef(ctx);
 
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);

@@ -58,7 +58,7 @@ const NotificationsModal = ({ isVisible, onClose }) => {
                         <IngredientItem
                           key={`${recipeId}-${ingredient.productId}-${index}`}
                           ingredient={ingredient}
-                          isAvailable={false}
+                          isRemovable={false}
                         />
                       ))}
                     </View>

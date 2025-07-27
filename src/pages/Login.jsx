@@ -79,7 +79,6 @@ const LoginPage = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       setError('');
-      await auth.signOut();
       const userCredential = await signInWithEmailAndPassword(auth, emailLogin, passwordLogin);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');
@@ -95,7 +94,6 @@ const LoginPage = ({ navigation }) => {
         return;
       }
       setError('');
-      await auth.signOut();
       const userCredential = await createUserWithEmailAndPassword(auth, emailSignup, passwordSignup);
       setUser(userCredential.user);
       navigation.navigate('FridgePage');

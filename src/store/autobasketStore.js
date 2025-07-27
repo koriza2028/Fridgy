@@ -9,7 +9,7 @@ import { getDataRef } from './utilsStore';
 
 // --- AUTO BASKET LOGIC ---
 
-export const addProductToAutoBasket = async ({ userId, familyId }, productInput) => {
+export const addProductToAutoBasket = async (ctx, productInput) => {
   const product = {
     autoBasketId: Date.now().toString(),
     productId: productInput.id,
@@ -17,7 +17,7 @@ export const addProductToAutoBasket = async ({ userId, familyId }, productInput)
     isFromFridge: true,
   };
 
-  const ref = getDataRef({ userId, familyId });
+  const ref = getDataRef(ctx);
 
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
@@ -37,9 +37,9 @@ export const addProductToAutoBasket = async ({ userId, familyId }, productInput)
   });
 };
 
-export const fetchAutoBasketProducts = async ({ userId, familyId }) => {
+export const fetchAutoBasketProducts = async (ctx) => {
   try {
-    const ref = getDataRef({ userId, familyId });
+    const ref = getDataRef(ctx);
     const snap = await getDoc(ref);
     if (!snap.exists()) return [];
 
@@ -57,8 +57,8 @@ export const fetchAutoBasketProducts = async ({ userId, familyId }) => {
   }
 };
 
-export const updateProductAmountInAutoBasket = async ({ userId, familyId }, autoBasketItemId, newAmount) => {
-  const ref = getDataRef({ userId, familyId });
+export const updateProductAmountInAutoBasket = async (ctx, autoBasketItemId, newAmount) => {
+  const ref = getDataRef(ctx);
 
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
@@ -79,8 +79,8 @@ export const updateProductAmountInAutoBasket = async ({ userId, familyId }, auto
   });
 };
 
-export const removeProductFromAutoBasket = async ({ userId, familyId }, autoBasketItemId) => {
-  const ref = getDataRef({ userId, familyId });
+export const removeProductFromAutoBasket = async (ctx, autoBasketItemId) => {
+  const ref = getDataRef(ctx);
 
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
@@ -94,8 +94,8 @@ export const removeProductFromAutoBasket = async ({ userId, familyId }, autoBask
   });
 };
 
-export const updateAutoBasketItemName = async ({ userId, familyId }, autoBasketItemId, newName) => {
-  const ref = getDataRef({ userId, familyId });
+export const updateAutoBasketItemName = async (ctx, autoBasketItemId, newName) => {
+  const ref = getDataRef(ctx);
 
   return await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);

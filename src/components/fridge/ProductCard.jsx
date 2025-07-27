@@ -87,10 +87,11 @@ const ReanimatedButton = ({
 
 export default function ProductCard(props) {
     const ctx = useAuthStore((state) => {
-    const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
-  });
+        const userId = state.user?.uid;
+        const familyId = state.familyId;
+        const currentMode = state.lastUsedMode; // 'user' or 'family'
+        return { userId, familyId, currentMode };
+    });
 
 
     const [fontsLoaded] = useFonts({

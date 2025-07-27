@@ -63,10 +63,10 @@ export default function ModalCreateProduct({
 
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
+    const familyId = state.familyId;
+    const currentMode = state.lastUsedMode; // 'user' or 'family'
+    return { userId, familyId, currentMode };
   });
-
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState(defaultCategory);
@@ -140,10 +140,11 @@ export default function ModalCreateProduct({
       imageUri,
       staticImagePath,
     };
-    onClose()
+    onClose();
     try {
+      console.log("CTX inside ModalCreateProduct:", ctx);
+
       await addOrUpdateProduct(ctx, id, productData);
-      ;
       // resetForm();
       onChange();
     } catch (error) {

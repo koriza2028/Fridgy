@@ -16,9 +16,9 @@ import {
   getDataRef
 } from "./utilsStore";
 
-export const fetchAllProducts = async ({ userId, familyId }) => {
+export const fetchAllProducts = async (ctx) => {
   try {
-    const productsColRef = getFridgeCollectionRef({ userId, familyId });
+    const productsColRef = getFridgeCollectionRef(ctx);
     const querySnapshot = await getDocs(productsColRef);
     return querySnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
   } catch (error) {
@@ -84,7 +84,7 @@ export const decrementProductAmount = async (ctx, productId) => {
       )
     }));
 
-    useNotificationsStore.getState().fetchNotifications(ctx.userId);
+    useNotificationsStore.getState().fetchNotifications(ctx);
   } catch (error) {
     console.error("Error decrementing product amount:", error);
   }
@@ -107,7 +107,7 @@ export const incrementProductAmount = async (ctx, productId) => {
       )
     }));
 
-    useNotificationsStore.getState().fetchNotifications(ctx.userId);
+    useNotificationsStore.getState().fetchNotifications(ctx);
   } catch (error) {
     console.error("Error incrementing product amount:", error);
   }

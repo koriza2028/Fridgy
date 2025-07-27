@@ -13,7 +13,7 @@ import create from "zustand";
  * Let a member leave their family.
  * Owner cannot leave.
  */
-export async function exitFamilyMembership({ userId, familyId }) {
+export async function exitFamilyMembership(ctx) {
   if (!userId || !familyId) {
     throw new Error("Must provide both userId and familyId");
   }
@@ -47,6 +47,9 @@ export async function exitFamilyMembership({ userId, familyId }) {
  */
 export async function removeFamilyMember({ ownerId, familyId, memberId }) {
   if (!ownerId || !familyId || !memberId) {
+    console.log(ownerId);
+    console.log(familyId);
+    console.log(memberId);
     throw new Error("Must provide ownerId, familyId, and memberId");
   }
 

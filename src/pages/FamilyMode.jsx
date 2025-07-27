@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ import {
 } from '../store/inviteStore';
 
 import useFamilyStore from '../store/familyStore';
-import { deleteFamilyIfOwner } from '../store/familyStore'
+import { deleteFamilyIfOwner, exitFamilyMembership } from '../store/familyStore'
 import { useFonts } from 'expo-font';
 
 import {
@@ -58,12 +58,13 @@ export default function FamilyModePage() {
   });
 
   // ── auth context ──────────────────────────────────────────────────────
-  const { userId, familyId, user } = useAuthStore((s) => ({
+  const { userId, familyId, user, lastUsedMode } = useAuthStore((s) => ({
     userId: s.user?.uid,
-    familyId: s.lastUsedMode === 'family' ? s.familyId : undefined,
+    familyId: s.familyId,
     user: s.user,
+    lastUsedMode: s.lastUsedMode,
   }));
-  const lastUsedMode = useAuthStore((s) => s.lastUsedMode);
+
   const setFamilyId = useAuthStore((s) => s.setFamilyId);
   const setLastUsedMode = useAuthStore((s) => s.setLastUsedMode);
   // ───────────────────────────────────────────────────────────────────────
@@ -138,14 +139,13 @@ export default function FamilyModePage() {
   };
   // ───────────────────────────────────────────────────────────────────────
 
-  const handleToggle = async (targetMode) => {
-    const currentMode = useAuthStore.getState().lastUsedMode;
+  const handleToggle = useCallback(async (targetMode) => {
     if (!user?.uid) {
       Alert.alert('Not logged in');
       return;
     }
 
-    if (targetMode === currentMode) return;
+    if (targetMode === lastUsedMode) return;
 
     if (targetMode === 'family') {
       if (familyId) {
@@ -153,7 +153,7 @@ export default function FamilyModePage() {
         try {
           const res = await toggleUserMode({
             userId: user.uid,
-            currentMode,
+            lastUsedMode,
           });
           setFamilyId(res.familyId);
           setLastUsedMode(res.mode);
@@ -178,10 +178,10 @@ export default function FamilyModePage() {
                 try {
                   const res = await toggleUserMode({
                     userId: user.uid,
-                    currentMode,
+                    lastUsedMode,
                   });
                   setFamilyId(res.familyId);
-                  setLastUsedMode(res.mode);
+                  setLastUsedMode(res.mode);    
                 } catch (e) {
                   console.error('Toggle failed:', e);
                   Alert.alert('Error', e.message);
@@ -197,7 +197,7 @@ export default function FamilyModePage() {
       try {
         const res = await toggleUserMode({
           userId: user.uid,
-          currentMode,
+          lastUsedMode,
         });
         setFamilyId(res.familyId);
         setLastUsedMode(res.mode);
@@ -206,7 +206,7 @@ export default function FamilyModePage() {
         Alert.alert('Error', e.message);
       }
     }
-  };
+  });
 
   const handleDeleteFamily = async () => {
     Alert.alert(
@@ -231,6 +231,32 @@ export default function FamilyModePage() {
           },
         },
       ]
+    );
+  };
+
+  const handleQuitFamily = () => {
+    Alert.alert(
+      'Quit Family',
+      'Are you sure you want to quit the family?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Quit',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await exitFamilyMembership({ userId: user.uid, familyId });
+              Alert.alert('Success', 'You have left the family.');
+              setFamilyId(null); // ⬅️ Clear local familyId
+              setLastUsedMode('personal'); // ⬅️ Switch to personal mode
+            } catch (err) {
+              console.error('Failed to quit family', err);
+              Alert.alert('Error', err.message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
     );
   };
 
@@ -303,6 +329,14 @@ export default function FamilyModePage() {
               onPress={handleDeleteFamily}
             >
               <Text style={styles.deleteFamilyText}>Delete Family</Text>
+            </Pressable>
+          )}
+          {!isOwner && (
+            <Pressable
+              style={styles.quitFamilyButton}
+              onPress={handleQuitFamily}
+            >
+              <Text style={styles.quitFamilyText}>Quit Family</Text>
             </Pressable>
           )}
         </View>

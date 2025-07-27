@@ -39,8 +39,9 @@ const { width, height } = Dimensions.get('window');
 export default function AutoBasketPage() {
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
+    const familyId = state.familyId;
+    const currentMode = state.lastUsedMode; // 'user' or 'family'
+    return { userId, familyId, currentMode };
   });
 
   const [autoBasket, setAutoBasket] = useState([]);
@@ -54,7 +55,7 @@ export default function AutoBasketPage() {
   useFocusEffect(
     useCallback(() => {
       refreshAutoBasket();
-    }, [ctx.userId, ctx.familyId])
+    }, [ctx.userId, ctx.familyId, ctx.currentMode])
   );
 
   const refreshAutoBasket = async () => {

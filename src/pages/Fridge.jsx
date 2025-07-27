@@ -26,8 +26,9 @@ export default function FridgePage({ navigation }) {
 
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
-    const familyId = state.lastUsedMode === 'family' ? state.familyId : undefined;
-    return { userId, familyId };
+    const familyId = state.familyId;
+    const currentMode = state.lastUsedMode; // 'user' or 'family'
+    return { userId, familyId, currentMode };
   });
 
   const { available, archived, refreshProducts } = useProductStore();
@@ -74,7 +75,7 @@ export default function FridgePage({ navigation }) {
         refreshProducts(ctx);
         refreshUsedIngredients();
       }
-    }, [ctx.userId, ctx.familyId])
+    }, [ctx.userId, ctx.familyId, ctx.currentMode])
   );
 
   const filteredAvailable = useMemo(() => {

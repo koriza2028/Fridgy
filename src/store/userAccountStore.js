@@ -64,19 +64,18 @@ export const setLastUsedMode = async ({ userId }, mode) => {
   await updateDoc(ref, { lastUsedMode: mode });
 };
 
-export const toggleUserMode = async ({ userId, currentMode }) => {
+export const toggleUserMode = async ({ userId, lastUsedMode }) => {
   const userRef = doc(db, "users", userId);
-
-  if (currentMode === "family") {
-    await updateDoc(userRef, { lastUsedMode: "personal" });
-    return { mode: "personal", familyId: null };
-  }
-
   const snap = await getDoc(userRef);
   if (!snap.exists()) throw new Error("User account not found");
 
   let familyId = snap.data().familyId;
   let shouldCreateNewFamily = false;
+
+  if (lastUsedMode === "family") {
+    await updateDoc(userRef, { lastUsedMode: "personal" });
+    return { mode: "personal", familyId: familyId };
+  }
 
   if (familyId) {
     const familyRef = doc(db, "families", familyId);
