@@ -3,6 +3,9 @@ import '../src/store/i18n';
 import React, { useEffect } from "react";
 import { View, Alert, StyleSheet, Text } from 'react-native';
 
+import Purchases from 'react-native-purchases';
+import { Platform } from 'react-native';
+
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome6';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -33,6 +36,12 @@ import { initAuthStore } from './store/initAuthStore';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptInvite } from './store/inviteStore';
+
+Purchases.configure({
+  apiKey: Platform.select({
+    ios: 'appl_DRjPbwCMfRjHzVNpvVFmyNQtMgA',
+  }),
+});
 
 const linking = {
   prefixes: ['fridgy://'],

@@ -71,6 +71,11 @@ PODS:
     - libavif/core
     - libdav1d (>= 0.6.0)
   - libdav1d (1.2.0)
+  - PurchasesHybridCommon (16.0.2):
+    - RevenueCat (= 5.33.1)
+  - PurchasesHybridCommonUI (16.0.2):
+    - PurchasesHybridCommon (= 16.0.2)
+    - RevenueCatUI (= 5.33.1)
   - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
@@ -1687,6 +1692,9 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
+  - RevenueCat (5.33.1)
+  - RevenueCatUI (5.33.1):
+    - RevenueCat (= 5.33.1)
   - RNCAsyncStorage (1.23.1):
     - DoubleConversion
     - glog
@@ -1771,6 +1779,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPaywalls (9.1.0):
+    - PurchasesHybridCommonUI (= 16.0.2)
+    - React-Core
+  - RNPurchases (9.1.0):
+    - PurchasesHybridCommon (= 16.0.2)
+    - React-Core
   - RNReactNativeHapticFeedback (2.3.3):
     - DoubleConversion
     - glog
@@ -2043,6 +2057,8 @@ DEPENDENCIES:
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNPaywalls (from `../node_modules/react-native-purchases-ui`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2053,6 +2069,10 @@ SPEC REPOS:
   trunk:
     - libavif
     - libdav1d
+    - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
+    - RevenueCat
+    - RevenueCatUI
     - SDWebImage
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
@@ -2228,6 +2248,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNPaywalls:
+    :path: "../node_modules/react-native-purchases-ui"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
@@ -2265,6 +2289,8 @@ SPEC CHECKSUMS:
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
+  PurchasesHybridCommon: ae7a0a6e105ecdde3e8816a004e57f0a2a7b9261
+  PurchasesHybridCommonUI: f94430070f5ec1cc9513666402871dc70f42ec36
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
@@ -2322,10 +2348,14 @@ SPEC CHECKSUMS:
   React-utils: ed818f19ab445000d6b5c4efa9d462449326cc9f
   ReactCodegen: f853a20cc9125c5521c8766b4b49375fec20648b
   ReactCommon: 300d8d9c5cb1a6cd79a67cf5d8f91e4d477195f9
+  RevenueCat: b0ed01125b05a45b8264a2951ad68acb61942038
+  RevenueCatUI: e6fad6a8bec67d910da78cd171328f1104afea77
   RNCAsyncStorage: 66991bb6672ed988a8c56289a08bf4fc3a29d4b3
   RNFlashList: 648e2273693600985aaa72a2ef4700e815500901
   RNGestureHandler: fffddeb8af59709c6d8de11b6461a6af63cad532
   RNLocalize: 7656712a8d03c9b9a394613d52f817331e8de2e6
+  RNPaywalls: eba34d47d5903c262171032a0eab0eba5dfba8f9
+  RNPurchases: 791e8c81fa5bbd192b77894740c63bd9f813a5ac
   RNReactNativeHapticFeedback: a4429a7c923cdd31d44c74417b8330d8e93737bd
   RNReanimated: 2e5069649cbab2c946652d3b97589b2ae0526220
   RNScreens: 362f4c861dd155f898908d5035d97b07a3f1a9d1

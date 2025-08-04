@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Alert
 } from 'react-native';
 import * as Linking from 'expo-linking';
+
+import Purchases from 'react-native-purchases';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -52,7 +55,6 @@ import {
 const { width, height } = Dimensions.get('window');
 
 
-
 export default function UserSettingsPage() {
 
   const [fontsLoaded] = useFonts({
@@ -61,6 +63,48 @@ export default function UserSettingsPage() {
       'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
+  const [offering, setOffering] = useState(null);
+
+  useEffect(() => {
+    const fetchOfferings = async () => {
+      try {
+        const offerings = await Purchases.getOfferings();
+        if (offerings.current) {
+          setOffering(offerings.current);
+        } else {
+          console.warn("No current offering available");
+        }
+      } catch (e) {
+        console.warn("Error fetching offerings", e);
+      }
+    };
+
+    fetchOfferings();
+  }, []);
+
+  const handlePurchase = async () => {
+    if (!offering) {
+      Alert.alert("Please try again later", "No subscription options available at the moment.");
+      return;
+    }
+
+    const packageToBuy = offering.availablePackages[0]; // Or pick by identifier
+
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(packageToBuy);
+
+      if (customerInfo.entitlements.active['com.CreativeMinds.Fridgy.Monthly']) {
+        Alert.alert("Success", "You're now a premium user!");
+        // optionally trigger update in state/store
+      }
+    } catch (e) { 
+      if (!e.userCancelled) {
+        Alert.alert("Purchase failed", e.message);
+      }
+    }
+  };
+
+  
   const premiumFeatures = [
   {
     icon: <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon} />,
@@ -166,9 +210,9 @@ export default function UserSettingsPage() {
         </View>
       </ScrollView>
 
-      <Pressable style={styles.upgradeButton}>
+      <Pressable style={styles.upgradeButton} onPress={handlePurchase}>
         <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-        <Text style={styles.upgradeText}>Get Premium</Text>
+        <Text style={styles.upgradeText}>Get Premium (3.99€)</Text>
         <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
       </Pressable>
     </View>

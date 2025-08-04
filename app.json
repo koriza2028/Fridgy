@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Fridgy",
+    "name": "Freedgy",
     "owner": "fridgyminds",
-    "slug": "Fridgy",
-    "scheme": "fridgy",
+    "slug": "Freedgy",
+    "scheme": "freedgy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,6 +19,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.CreativeMinds.Fridgy",
       "infoPlist": {
+        "NSUserTrackingUsageDescription": "We use this to offer subscriptions",
+        "SKAdNetworkItems": [],
+        "CFBundleURLTypes": [],
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
