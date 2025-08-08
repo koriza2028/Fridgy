@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -63,46 +63,46 @@ export default function UserSettingsPage() {
       'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
-  const [offering, setOffering] = useState(null);
+  // const [offering, setOffering] = useState(null);
 
-  useEffect(() => {
-    const fetchOfferings = async () => {
-      try {
-        const offerings = await Purchases.getOfferings();
-        if (offerings.current) {
-          setOffering(offerings.current);
-        } else {
-          console.warn("No current offering available");
-        }
-      } catch (e) {
-        console.warn("Error fetching offerings", e);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchOfferings = async () => {
+  //     try {
+  //       const offerings = await Purchases.getOfferings();
+  //       if (offerings.current) {
+  //         setOffering(offerings.current);
+  //       } else {
+  //         console.warn("No current offering available");
+  //       }
+  //     } catch (e) {
+  //       console.warn("Error fetching offerings", e);
+  //     }
+  //   };
 
-    fetchOfferings();
-  }, []);
+  //   fetchOfferings();
+  // }, []);
 
-  const handlePurchase = async () => {
-    if (!offering) {
-      Alert.alert("Please try again later", "No subscription options available at the moment.");
-      return;
-    }
+  // const handlePurchase = async () => {
+  //   if (!offering) {
+  //     Alert.alert("Please try again later", "No subscription options available at the moment.");
+  //     return;
+  //   }
 
-    const packageToBuy = offering.availablePackages[0]; // Or pick by identifier
+  //   const packageToBuy = offering.availablePackages[0]; // Or pick by identifier
 
-    try {
-      const { customerInfo } = await Purchases.purchasePackage(packageToBuy);
+  //   try {
+  //     const { customerInfo } = await Purchases.purchasePackage(packageToBuy);
 
-      if (customerInfo.entitlements.active['com.CreativeMinds.Fridgy.Monthly']) {
-        Alert.alert("Success", "You're now a premium user!");
-        // optionally trigger update in state/store
-      }
-    } catch (e) { 
-      if (!e.userCancelled) {
-        Alert.alert("Purchase failed", e.message);
-      }
-    }
-  };
+  //     if (customerInfo.entitlements.active['com.CreativeMinds.Fridgy.Monthly']) {
+  //       Alert.alert("Success", "You're now a premium user!");
+  //       // optionally trigger update in state/store
+  //     }
+  //   } catch (e) { 
+  //     if (!e.userCancelled) {
+  //       Alert.alert("Purchase failed", e.message);
+  //     }
+  //   }
+  // };
 
   
   const premiumFeatures = [
@@ -139,12 +139,97 @@ export default function UserSettingsPage() {
 ];
 
 
+const Feature = ({ icon, text, type = 'material' }) => (
+  <View style={styles.feature}>
+    {type === 'material'
+      ? <MaterialIcons name={icon} size={16} color={addButtonColor} />
+      : <Entypo name={icon} size={16} color={addButtonColor} />}
+    <Text style={styles.featureText}>{text}</Text>
+  </View>
+);
+
+const Plan = ({ title, price, detail, selected, onPress }) => (
+  <Pressable onPress={onPress} style={[styles.plan, selected && styles.planHighlight]}>
+    {selected && <Text style={styles.badge}>SELECTED</Text>}
+    <Text style={styles.planTitle}>{title}</Text>
+    <Text style={styles.planPrice}>{price}</Text>
+    <Text style={styles.planDetail}>{detail}</Text>
+  </Pressable>
+);
+
+
+const [selectedPlan, setSelectedPlan] = useState('yearly');
+
+  const handlePurchase = () => {
+    console.log('Purchasing plan:', selectedPlan);
+  };
+
+
   return (
     <View style={styles.UserSettingsPage}>
-      <ScrollView>
+      {/* <ScrollView > */}
         <View style={styles.UserSettingsPage_ContentWrapper}>
 
-          
+          {/* Title */}
+          <Text style={styles.title}>Unlock all Plus features</Text>
+          <Text style={styles.subtitle}>Use the app's full potential</Text>
+
+          {/* Feature list */}
+          {/* <View style={styles.features}>
+            <Feature icon="group" text="Unlock family account for up to 5 users" />
+            <Feature icon="photo-camera" text="Upload your own pictures" />
+            <Feature type="entypo" icon="calendar" text="Unlimited dates for Meal Planner" />
+            <Feature icon="shopping-basket" text="Unlimited Autobasket size" />
+            <Feature type="entypo" icon="infinity" text="Access to future premium features for the same price" />
+          </View> */}
+
+          <View style={styles.listOfPremiumFeatures}>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Create family account for up to 5 users</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Unlimited dates for Meal Planner</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Unlimited Autobasket size</Text>
+            </View>
+
+            <View style={styles.PremiumFeature}>
+              <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
+              <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
+            </View>
+
+          </View>   
+
+          {/* Plans */}
+          <View style={styles.plans}>
+            <Plan
+              title="Yearly"
+              price="-"
+              detail="Billed never yet"
+              selected={selectedPlan === 'yearly'}
+              onPress={() => setSelectedPlan('yearly')}
+            />
+            <Plan
+              title="Monthly"
+              price="€3.99"
+              detail="Billed monthly"
+              selected={selectedPlan === 'monthly'}
+              onPress={() => setSelectedPlan('monthly')}
+            />
+          </View>
+
           {/* <View style={styles.listOfPremiumFeatures}>
 
             <View style={styles.PremiumFeature}>
@@ -172,12 +257,10 @@ export default function UserSettingsPage() {
               <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
             </View>
 
-         
-
           </View>    */}
 
-          <View style={styles.listOfPremiumFeatures}>
-            {/* Table Header */}
+          {/* <View style={styles.listOfPremiumFeatures}>
+
             <Text style={{fontFamily: ReceiptFont, fontSize: 20, marginTop: -20, marginBottom: 20}}>Why upgrading to premium?</Text>
             <View style={styles.tableRow}>
               <Text style={[styles.tableHeaderCell, styles.featureCol]}></Text>
@@ -185,7 +268,6 @@ export default function UserSettingsPage() {
               <Text style={styles.tableHeaderCell}>Premium</Text>
             </View>
 
-            {/* Table Rows */}
             {premiumFeatures.map((feature, index) => (
               <View key={index} style={styles.tableRow}>
                 <View style={[styles.tableCell, styles.featureCol]}>
@@ -196,7 +278,7 @@ export default function UserSettingsPage() {
                 <Text style={[styles.tableCell, styles.featureIcon]}>{feature.premium}</Text>
               </View>
             ))}
-          </View>
+          </View> */}
 
           
           {/* <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text> */}
@@ -205,60 +287,157 @@ export default function UserSettingsPage() {
 
             {/* OR: MANAGE SUBSCRIPTION */}
 
-          
+          <Pressable style={styles.upgradeButton} onPress={handlePurchase}>
+            <Text style={styles.upgradeText}>Get Freedgy Plus</Text>
+          </Pressable>
+
+          <View style={styles.footer}>
+            <TouchableOpacity><Text>Terms</Text></TouchableOpacity>
+            <TouchableOpacity><Text>Privacy</Text></TouchableOpacity>
+          </View>
           
         </View>
-      </ScrollView>
+      {/* </ScrollView> */}
 
-      <Pressable style={styles.upgradeButton} onPress={handlePurchase}>
-        <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-        <Text style={styles.upgradeText}>Get Premium (3.99€)</Text>
-        <FontAwesomeIcons name="long-arrow-up" style={[styles.PremiumFeature_Icon, styles.upgradeIcon]}/>
-      </Pressable>
+      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  UserSettingsPage: {
-    flex: 1,
-    backgroundColor: backgroundColor,
-    // alignItems: 'center',
-    // justifyContent: 'center'
+  UserSettingsPage: { 
+    flex: 1, 
+    backgroundColor: '#fff',
   },
-  UserSettingsPage_ContentWrapper: {
-    paddingHorizontal: 6,
-    // paddingVertical: 24,
-    height: height*0.6,
-    // alignItems: 'center',
-    justifyContent: 'center',
+
+  UserSettingsPage_ContentWrapper: { 
+    padding: 20,
+    paddingTop: height*0.1,
+    height: height*0.8,
     // borderWidth: 1,
   },
-  sectionHeader: {
-    fontFamily: MainFont_Bold,
-    fontSize: 18,
-    marginBottom: 8,
-    color: '#222',
+
+  title: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginTop: 10 
   },
-  explanationHint: {
+
+  subtitle: { 
+    fontSize: 14, 
+    color: '#555', 
+    textAlign: 'center', 
+    marginVertical: 10 
+  },
+
+  features: { 
+    marginTop: 10 
+  },
+
+  feature: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 12 
+  },
+
+  featureText: { 
+    marginLeft: 8, 
+    fontSize: 14, 
+    color: '#333' 
+  },
+
+  plans: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    marginTop: 20 
+  },
+
+  plan: { 
+    borderWidth: 1, 
+    borderColor: '#ccc', 
+    borderRadius: 10, 
+    padding: 16, 
+    alignItems: 'center', 
+    width: '46%' 
+  },
+
+  planHighlight: { 
+    borderColor: addButtonColor, 
+    backgroundColor: '#F4F2FF' 
+  },
+
+  badge: { 
+    fontSize: 10, 
+    fontWeight: 'bold', 
+    color: '#fff', 
+    backgroundColor: addButtonColor, 
+    paddingHorizontal: 6, 
+    paddingVertical: 2, 
+    borderRadius: 4, 
+    position: 'absolute', 
+    top: -10 
+  },
+
+  planTitle: { 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginBottom: 4 
+  },
+
+  planPrice: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    marginBottom: 2 
+  },
+
+  planDetail: { 
+    fontSize: 12, 
+    color: '#666' 
+  },
+
+  listOfPremiumFeatures: {
     marginTop: 10,
-    fontSize: TextFontSize,
-    fontFamily: MainFont,
-    color: greyTextColor2,
+    padding: 10,
+    // borderWidth: 1,
   },
+  PremiumFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  PremiumFeature_Icon: {
+    marginRight: 10,
+    fontSize: 18,
+    color: addButtonColor,
+  },
+  PremiumFeature_Text: {
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    fontFamily: MainFont,
+    fontSize: TextFontSize,
+    color: blackTextColor,
+  },
+  featureIcon: {
+    fontSize: 16,
+    fontFamily: MainFont_Bold,
+    color: addButtonColor,
+    // color: '#14db71'
+  },
+
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: addButtonColor,
-    height: 42,
-    width: width*0.84,
+    height: 46,
+    width: width*0.8,
     borderRadius: 20,
     borderColor: '#ccc',
     borderWidth: 1,
     paddingHorizontal: 10,
     position: 'absolute',
-    bottom: 30,
+    bottom: 50,
     alignSelf: 'center'
   },
   upgradeText: {
@@ -272,59 +451,122 @@ const styles = StyleSheet.create({
     fontSize: TextFontSize + 4,
   },
 
-  listOfPremiumFeatures: {
-    marginTop: 10,
-    padding: 10,
-    // borderWidth: 1,
-  },
-  PremiumFeature: {
+  footer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  PremiumFeature_Icon: {
-    marginRight: 10,
-    fontSize: 18,
-    color: addButtonColor,
-  },
-  PremiumFeature_Text: {
-    flexWrap: 'wrap',
-    flexShrink: 1,
-    fontFamily: MainFont_SemiBold,
-    fontSize: TextFontSize,
-    color: blackTextColor,
-  },
-  featureIcon: {
-    fontSize: 16,
-    fontFamily: MainFont_Bold,
-    color: addButtonColor,
-    // color: '#14db71'
-  },
-
-
-tableRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginVertical: 12,
-},
-
-tableHeaderCell: {
-  fontFamily: MainFont_Bold,
-  fontSize: TextFontSize,
-  flex: 1,
-  textAlign: 'center',
-},
-
-tableCell: {
-  flex: 1,
-  textAlign: 'center',
-},
-
-featureCol: {
-  flex: 2,
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 4, // if using React Native 0.71+
-},
-
+    justifyContent: 'space-around',
+    position: 'absolute',
+    bottom: 20,
+    width: width*0.9,
+    alignSelf: 'center',
+  }
 });
+
+// const styles = StyleSheet.create({
+//   UserSettingsPage: {
+//     flex: 1,
+//     backgroundColor: backgroundColor,
+//     // alignItems: 'center',
+//     // justifyContent: 'center'
+//   },
+//   UserSettingsPage_ContentWrapper: {
+//     paddingHorizontal: 6,
+//     // paddingVertical: 24,
+//     height: height*0.6,
+//     // alignItems: 'center',
+//     justifyContent: 'center',
+//     // borderWidth: 1,
+//   },
+//   sectionHeader: {
+//     fontFamily: MainFont_Bold,
+//     fontSize: 18,
+//     marginBottom: 8,
+//     color: '#222',
+//   },
+//   explanationHint: {
+//     marginTop: 10,
+//     fontSize: TextFontSize,
+//     fontFamily: MainFont,
+//     color: greyTextColor2,
+//   },
+//   upgradeButton: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     backgroundColor: addButtonColor,
+//     height: 42,
+//     width: width*0.84,
+//     borderRadius: 20,
+//     borderColor: '#ccc',
+//     borderWidth: 1,
+//     paddingHorizontal: 10,
+//     position: 'absolute',
+//     bottom: 30,
+//     alignSelf: 'center'
+//   },
+//   upgradeText: {
+//     fontSize: TextFontSize + 2,
+//     fontFamily: MainFont_SemiBold,
+//     color: 'white',
+//   },
+//   upgradeIcon: {
+//     color: 'white',
+//     marginHorizontal: 10,
+//     fontSize: TextFontSize + 4,
+//   },
+
+//   listOfPremiumFeatures: {
+//     marginTop: 10,
+//     padding: 10,
+//     // borderWidth: 1,
+//   },
+//   PremiumFeature: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginTop: 16,
+//   },
+//   PremiumFeature_Icon: {
+//     marginRight: 10,
+//     fontSize: 18,
+//     color: addButtonColor,
+//   },
+//   PremiumFeature_Text: {
+//     flexWrap: 'wrap',
+//     flexShrink: 1,
+//     fontFamily: MainFont_SemiBold,
+//     fontSize: TextFontSize,
+//     color: blackTextColor,
+//   },
+//   featureIcon: {
+//     fontSize: 16,
+//     fontFamily: MainFont_Bold,
+//     color: addButtonColor,
+//     // color: '#14db71'
+//   },
+
+
+// tableRow: {
+//   flexDirection: 'row',
+//   alignItems: 'center',
+//   marginVertical: 12,
+// },
+
+// tableHeaderCell: {
+//   fontFamily: MainFont_Bold,
+//   fontSize: TextFontSize,
+//   flex: 1,
+//   textAlign: 'center',
+// },
+
+// tableCell: {
+//   flex: 1,
+//   textAlign: 'center',
+// },
+
+// featureCol: {
+//   flex: 2,
+//   flexDirection: 'row',
+//   alignItems: 'center',
+//   gap: 4, // if using React Native 0.71+
+// },
+
+// });
