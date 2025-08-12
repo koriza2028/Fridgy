@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Alert
+  Alert,
+  Linking
 } from 'react-native';
 import * as Linking from 'expo-linking';
 
@@ -62,6 +63,32 @@ export default function UserSettingsPage() {
       'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
       'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
+
+  const openTerms = () => {
+    const url = 'https://freedgytos.carrd.co/';
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          console.warn("Can't open URL:", url);
+        }
+      })
+      .catch((err) => console.error('An error occurred', err));
+  };
+
+  const openPrivacy = () => {
+    const url = 'https://freedgypp.carrd.co/';
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          console.warn("Can't open URL:", url);
+        }
+      })
+      .catch((err) => console.error('An error occurred', err));
+  };
 
   // const [offering, setOffering] = useState(null);
 
@@ -292,8 +319,8 @@ const [selectedPlan, setSelectedPlan] = useState('yearly');
           </Pressable>
 
           <View style={styles.footer}>
-            <TouchableOpacity><Text>Terms</Text></TouchableOpacity>
-            <TouchableOpacity><Text>Privacy</Text></TouchableOpacity>
+            <TouchableOpacity onPress={openTerms}><Text>Terms</Text></TouchableOpacity>
+            <TouchableOpacity onPress={openPrivacy}><Text>Privacy</Text></TouchableOpacity>
           </View>
           
         </View>
