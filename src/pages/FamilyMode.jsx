@@ -88,6 +88,37 @@ export default function FamilyModePage() {
   const [loadingInvites, setLoadingInvites] = useState(false);
   // ───────────────────────────────────────────────────────────────────────
 
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
+  const [deleting, setDeleting] = useState(false);
+
+  const onPressDelete = () => {
+    Alert.alert(
+      "Delete account?",
+      "This cannot be undone. If you own a family, deletion will be blocked.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteAccount();
+            } catch (e) {
+              Alert.alert(
+                "Could not delete account",
+                e && e.message ? e.message : "Unknown error"
+              );
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+
   // ── load invites ──────────────────────────────────────────────────────
   const loadInvites = async () => {
     if (!familyId) return;
@@ -311,6 +342,20 @@ export default function FamilyModePage() {
         <Text style={styles.personalModeInfoText}>
           You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
         </Text>
+
+        <TouchableOpacity
+          onPress={onPressDelete}
+          disabled={deleting}
+          style={styles.dangerTextButton}
+          accessibilityRole="button"
+          accessibilityLabel="Delete account"
+        >
+          {deleting ? (
+            <ActivityIndicator />
+          ) : (
+            <Text style={styles.dangerText}>Delete account</Text>
+          )}
+        </TouchableOpacity>
       </View>
     )}
 
@@ -449,5 +494,13 @@ personalModeInfoText: {
   // textAlign: 'center',
 },
 
-
+dangerTextButton: {
+  alignSelf: "flex-start",
+  paddingVertical: 8,
+},
+dangerText: {
+  color: "#D00",
+  fontSize: 16,
+  fontWeight: "600",
+},
 });

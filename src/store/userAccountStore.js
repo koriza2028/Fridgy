@@ -4,10 +4,9 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
+  arrayRemove,
   collection,
-  query,
-  where,
-  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
@@ -123,3 +122,37 @@ export const toggleUserMode = async ({ userId, lastUsedMode }) => {
   return { mode: "family", familyId };
 };
 
+/**
+ * Delete user account with single-family constraint:
+ * - If user owns their family (families/{familyId}.createdBy === userId) → block
+ * - If user is a member → remove from members[]
+ * - Then delete users/{userId}
+ */
+export const deleteUserAccount = async ({ userId }) => {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) throw new Error("User account not found");
+
+  const { familyId } = userSnap.data() || {};
+
+  if (familyId) {
+    const familyRef = doc(db, "families", familyId);
+    const familySnap = await getDoc(familyRef);
+
+    if (familySnap.exists()) {
+      const fam = familySnap.data();
+
+      if (fam.createdBy === userId) {
+        throw new Error(
+          "Account deletion blocked: you are the family owner. Transfer ownership or delete the family first."
+        );
+      }
+
+      // remove membership (no-op if not present)
+      await updateDoc(familyRef, { members: arrayRemove(userId) });
+    }
+  }
+
+  await deleteDoc(userRef);
+  return { ok: true };
+};

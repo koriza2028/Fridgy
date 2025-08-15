@@ -2,6 +2,7 @@ import create from 'zustand';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import { deleteUserAccount } from './userAccountStore';
 
 const useAuthStore = create((set) => ({
   user: undefined,
@@ -16,6 +17,43 @@ const useAuthStore = create((set) => ({
   setUnsubscribeUserDoc: (fn) => set({ unsubscribeUserDoc: fn }),
 
   logout: () => set({ user: null, familyId: null, lastUsedMode: 'personal' }),
+
+  // inside useAuthStore(...) actions
+  deleteAccount: async () => {
+    const { user, unsubscribeUserDoc } = get();
+    if (!user) throw new Error('No authenticated user');
+    const uid = user.uid;
+
+    if (unsubscribeUserDoc) {
+      unsubscribeUserDoc();
+      set({ unsubscribeUserDoc: null });
+    }
+
+    // 1) delete Firestore data (blocks if family owner; removes from members if needed)
+    await deleteUserAccount({ userId: uid });
+
+    // 2) delete Auth user (no non-null assertion)
+    const current = auth.currentUser;
+    if (!current) {
+      // already signed out or session invalidated — just clean local state
+      set({ user: null, email: null, familyId: null, lastUsedMode: 'personal' });
+      return;
+    }
+
+    try {
+      await deleteUser(current);
+    } catch (e) {
+      if (e?.code === 'auth/requires-recent-login') {
+        throw new Error('Reauthentication required to complete account deletion. Please sign in again, then delete your account.');
+      }
+      throw e;
+    }
+
+    try { await signOut(auth); } catch {}
+    set({ user: null, email: null, familyId: null, lastUsedMode: 'personal' });
+  },
+
+
 }));
 
 // Beobachte Firebase-Auth-Status
