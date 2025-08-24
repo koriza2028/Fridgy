@@ -6,12 +6,12 @@
     "scheme": "freedgy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon2.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "deepLinking": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon2.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,7 +21,6 @@
       "infoPlist": {
         "NSUserTrackingUsageDescription": "We use this to offer subscriptions",
         "SKAdNetworkItems": [],
-        "CFBundleURLTypes": [],
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -34,7 +33,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon2.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.CreativeMinds.Fridgy"
@@ -43,7 +42,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-apple-authentication"
     ],
     "extra": {
       "eas": {

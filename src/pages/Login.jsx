@@ -17,7 +17,8 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
-import { GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
+import * as Crypto from 'expo-crypto';
+import { GoogleAuthProvider, OAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 import { ensureUserAccount } from '../store/userAccountStore';
@@ -101,6 +102,48 @@ const LoginPage = ({ navigation }) => {
       setError('Error creating account');
     }
   };
+
+  const handleAppleSignIn = async () => {
+    try {
+      const rawNonce = Array.from({ length: 32 }, () =>
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 62))
+      ).join('');
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        rawNonce
+      );
+
+      const appleCred = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+        state: rawNonce, // any random string
+      });
+
+      if (!appleCred.identityToken) throw new Error('No identityToken from Apple');
+
+      const provider = new OAuthProvider('apple.com');
+      const firebaseCred = provider.credential({
+        idToken: appleCred.identityToken,
+        rawNonce, // IMPORTANT: raw (not hashed) nonce
+      });
+
+      const userCredential = await signInWithCredential(auth, firebaseCred);
+      const user = userCredential.user;
+
+      // ensure Firestore user doc if you need (like you do for Google)
+      await ensureUserAccount({ userId: user.uid }, user.email);
+
+      setUser(user);
+      navigation.navigate('FridgePage');
+    } catch (e) {
+      console.log(e);
+      setError('Apple sign-in failed');
+    }
+  };
+
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -225,7 +268,7 @@ const LoginPage = ({ navigation }) => {
               </View>
             </TouchableOpacity>
 
-            {/* {Platform.OS === 'ios' && (
+            {Platform.OS === 'ios' && (
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
                 buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
@@ -233,7 +276,7 @@ const LoginPage = ({ navigation }) => {
                 style={{ width: '100%', height: 44, marginTop: 12 }}
                 onPress={handleAppleSignIn}
               />
-            )} */}
+            )}
           </View>
 
         </View>

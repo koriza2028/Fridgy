@@ -90,7 +90,7 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile}) => {
             label={
               <View style={styles.menuItem}>
                 <MaterialIcons name="group" size={20} style={styles.icon}/>
-                <Text style={styles.menuText}>Family Mode</Text>
+                <Text style={styles.menuText}>Account & Family</Text>
               </View>
             } toScale={1}
           />

@@ -67,7 +67,7 @@ const UserSlot = ({ user, isCurrentUser, isOwner, loadFamilyMembers}) => {
   return (
     <View style={[styles.userBox, { backgroundColor: buttonColor, justifyContent: "start" }]}>
       {isCurrentUser ? (
-        <Text style={styles.userText}>You, {user.email} </Text>
+        <Text style={styles.userText}>You (best person in the world)</Text>
       ) : (
         <>
           <Text style={styles.userText}>{user.email}</Text>

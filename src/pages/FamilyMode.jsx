@@ -10,13 +10,15 @@ import {
   TextInput,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import * as Linking from 'expo-linking';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
-import Entypo from 'react-native-vector-icons/Entypo';
+// import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+// import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
+// import Entypo from 'react-native-vector-icons/Entypo';
 
 import UserSlots from '../components/usersettings/UserSlots';
 import useAuthStore from '../store/authStore';
@@ -370,10 +372,10 @@ export default function FamilyModePage() {
           {/* Delete Family button at the bottom */}
           {isOwner && (
             <Pressable
-              style={styles.deleteFamilyButton}
+              style={styles.dangerTextButton}
               onPress={handleDeleteFamily}
             >
-              <Text style={styles.deleteFamilyText}>Delete Family</Text>
+              <Text style={styles.dangerText}>Delete Family</Text>
             </Pressable>
           )}
           {!isOwner && (

@@ -10,13 +10,13 @@ PODS:
     - React-Core
   - Expo (52.0.47):
     - ExpoModulesCore
-  - ExpoAppleAuthentication (7.2.4):
+  - ExpoAppleAuthentication (7.1.3):
     - ExpoModulesCore
   - ExpoAsset (11.0.5):
     - ExpoModulesCore
   - ExpoBlur (14.0.3):
     - ExpoModulesCore
-  - ExpoCrypto (14.1.5):
+  - ExpoCrypto (14.0.2):
     - ExpoModulesCore
   - ExpoFileSystem (18.0.12):
     - ExpoModulesCore
@@ -57,6 +57,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - ExpoRandom (14.0.1):
+    - ExpoModulesCore
   - ExpoWebBrowser (14.2.0):
     - ExpoModulesCore
   - fast_float (6.1.4)
@@ -71,11 +73,11 @@ PODS:
     - libavif/core
     - libdav1d (>= 0.6.0)
   - libdav1d (1.2.0)
-  - PurchasesHybridCommon (16.0.2):
-    - RevenueCat (= 5.33.1)
-  - PurchasesHybridCommonUI (16.0.2):
-    - PurchasesHybridCommon (= 16.0.2)
-    - RevenueCatUI (= 5.33.1)
+  - PurchasesHybridCommon (16.2.2):
+    - RevenueCat (= 5.34.0)
+  - PurchasesHybridCommonUI (16.2.2):
+    - PurchasesHybridCommon (= 16.2.2)
+    - RevenueCatUI (= 5.34.0)
   - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
@@ -1692,9 +1694,9 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
-  - RevenueCat (5.33.1)
-  - RevenueCatUI (5.33.1):
-    - RevenueCat (= 5.33.1)
+  - RevenueCat (5.34.0)
+  - RevenueCatUI (5.34.0):
+    - RevenueCat (= 5.34.0)
   - RNCAsyncStorage (1.23.1):
     - DoubleConversion
     - glog
@@ -1758,7 +1760,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNLocalize (3.5.1):
+  - RNLocalize (3.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1779,11 +1781,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNPaywalls (9.1.0):
-    - PurchasesHybridCommonUI (= 16.0.2)
+  - RNPaywalls (9.2.2):
+    - PurchasesHybridCommonUI (= 16.2.2)
     - React-Core
-  - RNPurchases (9.1.0):
-    - PurchasesHybridCommon (= 16.0.2)
+  - RNPurchases (9.2.2):
+    - PurchasesHybridCommon (= 16.2.2)
     - React-Core
   - RNReactNativeHapticFeedback (2.3.3):
     - DoubleConversion
@@ -1938,7 +1940,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNVectorIcons (10.2.0):
+  - RNVectorIcons (10.3.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1988,6 +1990,7 @@ DEPENDENCIES:
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoRandom (from `../node_modules/expo-random/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -2113,6 +2116,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linking/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  ExpoRandom:
+    :path: "../node_modules/expo-random/ios"
   ExpoWebBrowser:
     :path: "../node_modules/expo-web-browser/ios"
   fast_float:
@@ -2270,10 +2275,10 @@ SPEC CHECKSUMS:
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
   EXImageLoader: e5da974e25b13585c196b658a440720c075482d5
   Expo: 1687edb10c76b0c0f135306d6ae245379f50ed54
-  ExpoAppleAuthentication: 4d2e0c88a4463229760f1fbb9a937a810efb6863
+  ExpoAppleAuthentication: 52631ed9dcb71c65712a447bbb9a5667bb8fcf0c
   ExpoAsset: 48386d40d53a8c1738929b3ed509bcad595b5516
   ExpoBlur: 392c1207f71d0ecf22371621c1fbd44ba84d9742
-  ExpoCrypto: a9f1d75baeea6ef8b03c1660621585196c382e85
+  ExpoCrypto: e97e864c8d7b9ce4a000bca45dddb93544a1b2b4
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoFont: f354e926f8feae5e831ec8087f36652b44a0b188
   ExpoImage: d840b256050f4428d2942bc2b6e9251f9e0d7021
@@ -2281,6 +2286,7 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
   ExpoLinking: d5c183998ca6ada66ff45e407e0f965b398a8902
   ExpoModulesCore: c25d77625038b1968ea1afefc719862c0d8dd993
+  ExpoRandom: d1444df65007bdd4070009efd5dab18e20bf0f00
   ExpoWebBrowser: dc39a88485f007e61a3dff05d6a75f22ab4a2e92
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
@@ -2289,8 +2295,8 @@ SPEC CHECKSUMS:
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
-  PurchasesHybridCommon: ae7a0a6e105ecdde3e8816a004e57f0a2a7b9261
-  PurchasesHybridCommonUI: f94430070f5ec1cc9513666402871dc70f42ec36
+  PurchasesHybridCommon: 62f852419aae7041792217593998f7ac3f8b567d
+  PurchasesHybridCommonUI: 365fd90992bd91e6d330f5a91dcc8459a5a6ba14
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
@@ -2348,24 +2354,24 @@ SPEC CHECKSUMS:
   React-utils: ed818f19ab445000d6b5c4efa9d462449326cc9f
   ReactCodegen: f853a20cc9125c5521c8766b4b49375fec20648b
   ReactCommon: 300d8d9c5cb1a6cd79a67cf5d8f91e4d477195f9
-  RevenueCat: b0ed01125b05a45b8264a2951ad68acb61942038
-  RevenueCatUI: e6fad6a8bec67d910da78cd171328f1104afea77
+  RevenueCat: eb2aa042789d9c99ad5172bd96e28b96286d6ada
+  RevenueCatUI: 03025a80b64ce8ff8e43f47a7eb9dbbb6b4f486e
   RNCAsyncStorage: 66991bb6672ed988a8c56289a08bf4fc3a29d4b3
   RNFlashList: 648e2273693600985aaa72a2ef4700e815500901
   RNGestureHandler: fffddeb8af59709c6d8de11b6461a6af63cad532
-  RNLocalize: 7656712a8d03c9b9a394613d52f817331e8de2e6
-  RNPaywalls: eba34d47d5903c262171032a0eab0eba5dfba8f9
-  RNPurchases: 791e8c81fa5bbd192b77894740c63bd9f813a5ac
+  RNLocalize: 9b5bc41c885b6138233c9ce6de8affb22cbc1e4f
+  RNPaywalls: c11528c07f8250a7fc818c61fbf267317560336e
+  RNPurchases: 7993b33416e67d5863140b5c62c682b34719f475
   RNReactNativeHapticFeedback: a4429a7c923cdd31d44c74417b8330d8e93737bd
   RNReanimated: 2e5069649cbab2c946652d3b97589b2ae0526220
   RNScreens: 362f4c861dd155f898908d5035d97b07a3f1a9d1
-  RNVectorIcons: 3bf5f38dcb1aaf587c4101e9f3fcad5c8f5a88b2
+  RNVectorIcons: c95fdae217b0ed388f2b4d7ed7a4edc457c1df47
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 31728d255210df1cdd52ccb51afae7517b82c254
+PODFILE CHECKSUM: ce289a1b959f7440ad7b09584108bfbc71c4818d
 
 COCOAPODS: 1.16.2
