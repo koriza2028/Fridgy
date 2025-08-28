@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { View, Alert, StyleSheet, Text } from 'react-native';
 
 import Purchases from 'react-native-purchases';
-import { Platform } from 'react-native';
+import { Platform, AppState } from 'react-native';
 
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome6';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -32,16 +32,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useAuthStore from './store/authStore';
 import useProductStore from './store/productStore';
 import { initAuthStore } from './store/initAuthStore';
+import { usePremiumStore } from './store/premiumStore';
 
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptInvite } from './store/inviteStore';
-
-Purchases.configure({
-  apiKey: Platform.select({
-    ios: 'appl_DRjPbwCMfRjHzVNpvVFmyNQtMgA',
-  }),
-});
 
 const linking = {
   prefixes: ['fridgy://'],
@@ -255,6 +250,38 @@ const App = () => {
   }, [user]);
 
   const PENDING_INVITE_KEY = 'pendingInviteCode';
+
+
+  const refreshEntitlements = usePremiumStore(s => s.refreshEntitlements);
+  const applyInfo = usePremiumStore(s => s.applyCustomerInfo);
+
+  useEffect(() => {
+  // Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+
+  Purchases.configure({
+    apiKey: Platform.select({
+      ios: 'appl_DRjPbwCMfRjHzVNpvVFmyNQtMgA',
+    }),
+  });
+
+  const removeListener = Purchases.addCustomerInfoUpdateListener((info) => {
+    applyInfo && applyInfo(info); // guard in case hot reload races
+  });
+
+  refreshEntitlements();
+
+  const sub = AppState.addEventListener('change', (state) => {
+    if (state === 'active') refreshEntitlements();
+  });
+
+  return () => {
+    removeListener?.();
+    sub?.remove?.();
+  };
+}, []);
+
+
+
 
   // Unified invite capture: works for cold and warm starts
   useEffect(() => {

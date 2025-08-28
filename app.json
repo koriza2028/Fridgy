@@ -19,7 +19,6 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.CreativeMinds.Fridgy",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "We use this to offer subscriptions",
         "SKAdNetworkItems": [],
         "CFBundleURLTypes": [
           {

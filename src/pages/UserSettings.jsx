@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+// Updated subscription page (pure JavaScript) with RevenueCat offerings.
+// Monthly only; Yearly kept commented for later use.
+// Assumes Purchases.configure(...) is called at app startup.
+
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Pressable,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
   Alert,
-  Linking
+  Linking,
+  Platform,
 } from 'react-native';
 
 import Purchases from 'react-native-purchases';
@@ -54,278 +58,226 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
+// Change to your actual entitlement identifier from RevenueCat Dashboard
+const ENTITLEMENT_ID = 'Pro';
 
 export default function UserSettingsPage() {
-
   const [fontsLoaded] = useFonts({
-      'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
-      'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
-      'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+    'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
   const openTerms = () => {
     const url = 'https://freedgytos.carrd.co/';
     Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          console.warn("Can't open URL:", url);
-        }
-      })
-      .catch((err) => console.error('An error occurred', err));
+      .then((supported) => { if (supported) Linking.openURL(url); })
+      .catch(() => {});
   };
 
   const openPrivacy = () => {
     const url = 'https://freedgypp.carrd.co/';
     Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          console.warn("Can't open URL:", url);
-        }
-      })
-      .catch((err) => console.error('An error occurred', err));
+      .then((supported) => { if (supported) Linking.openURL(url); })
+      .catch(() => {});
   };
 
-  // const [offering, setOffering] = useState(null);
+  const openManageSubscriptions = () => {
+    const ios = 'https://apps.apple.com/account/subscriptions';
+    // const android = 'https://play.google.com/store/account/subscriptions';
+    Linking.openURL(Platform.OS === 'ios' ? ios : android).catch(() => {});
+  };
 
-  // useEffect(() => {
-  //   const fetchOfferings = async () => {
-  //     try {
-  //       const offerings = await Purchases.getOfferings();
-  //       if (offerings.current) {
-  //         setOffering(offerings.current);
-  //       } else {
-  //         console.warn("No current offering available");
-  //       }
-  //     } catch (e) {
-  //       console.warn("Error fetching offerings", e);
-  //     }
-  //   };
+  // ---- RevenueCat offerings (Monthly only; Yearly is commented) ----
+  const [offering, setOffering] = useState(null);
+  const [loadingPrices, setLoadingPrices] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState('monthly'); // 'annual' kept for later
 
-  //   fetchOfferings();
-  // }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        // Optional for debugging:
+        // Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+        const o = await Purchases.getOfferings();
+        // console.log('RC Offerings (full):', JSON.stringify(o, null, 2));
 
-  // const handlePurchase = async () => {
-  //   if (!offering) {
-  //     Alert.alert("Please try again later", "No subscription options available at the moment.");
-  //     return;
-  //   }
+        setOffering(o && o.current ? o.current : null);
+      } catch (e) {
+        console.warn('Error fetching offerings', e);
+      } finally {
+        setLoadingPrices(false);
+      }
+    })();
+  }, []);
 
-  //   const packageToBuy = offering.availablePackages[0]; // Or pick by identifier
+  // Find monthly package robustly
+  const monthlyPkg =
+    (offering && offering.monthly) ||
+    (offering && Array.isArray(offering.availablePackages)
+      ? offering.availablePackages.find((p) => {
+          const id = String(p && p.identifier ? p.identifier : '').toLowerCase();
+          const type = String(p && p.packageType ? p.packageType : '').toLowerCase();
+          return id.includes('month') || id.includes('rc_month') || type.includes('month');
+        })
+      : null);
 
+  // // Yearly (kept for future use)
+  // const annualPkg =
+  //   (offering && offering.annual) ||
+  //   (offering && Array.isArray(offering.availablePackages)
+  //     ? offering.availablePackages.find((p) => {
+  //         const id = String(p && p.identifier ? p.identifier : '').toLowerCase();
+  //         const type = String(p && p.packageType ? p.packageType : '').toLowerCase();
+  //         return id.includes('year') || id.includes('rc_annual') || type.includes('year');
+  //       })
+  //     : null);
+
+  const monthlyProduct = monthlyPkg && (monthlyPkg.product || monthlyPkg.storeProduct);
+  // const annualProduct = annualPkg && annualPkg.storeProduct;
+
+  const monthlyPriceStr = monthlyProduct && monthlyProduct.priceString;
+  // const annualPriceStr = annualProduct && annualProduct.priceString;
+
+  // // Optional per-month calc for annual
+  // let annualPerMonth = '';
+  // if (annualProduct && annualProduct.price && annualProduct.currencyCode) {
+  //   const per = annualProduct.price / 12;
   //   try {
-  //     const { customerInfo } = await Purchases.purchasePackage(packageToBuy);
-
-  //     if (customerInfo.entitlements.active['com.CreativeMinds.Fridgy.Monthly']) {
-  //       Alert.alert("Success", "You're now a premium user!");
-  //       // optionally trigger update in state/store
-  //     }
-  //   } catch (e) { 
-  //     if (!e.userCancelled) {
-  //       Alert.alert("Purchase failed", e.message);
-  //     }
+  //     annualPerMonth = ` (~${new Intl.NumberFormat(undefined, { style: 'currency', currency: annualProduct.currencyCode }).format(per)}/month)`;
+  //   } catch (e) {
+  //     annualPerMonth = ` (~${(annualProduct.price / 12).toFixed(2)}/month)`;
   //   }
-  // };
+  // }
 
-  
-  const premiumFeatures = [
-  {
-    icon: <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon} />,
-    label: 'Invite up to 5 members to your family account',
-    base: '–',
-    premium: '✓',
-  },
-  {
-    icon: <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon} />,
-    label: 'Upload own pictures',
-    base: '–',
-    premium: '✓',
-  },
-  {
-    icon: <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon} />,
-    label: 'Meal planner max days',
-    base: '7',
-    premium: '∞',
-  },
-  {
-    icon: <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon} />,
-    label: 'Autobasket size',
-    base: '5',
-    premium: '∞',
-  },
-  {
-    icon: <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon} />,
-    label: 'Secure future premium features for the same price',
-    base: '–',
-    premium: '✓',
-  },
-];
-
-
-const Feature = ({ icon, text, type = 'material' }) => (
-  <View style={styles.feature}>
-    {type === 'material'
-      ? <MaterialIcons name={icon} size={16} color={addButtonColor} />
-      : <Entypo name={icon} size={16} color={addButtonColor} />}
-    <Text style={styles.featureText}>{text}</Text>
-  </View>
-);
-
-const Plan = ({ title, price, detail, selected, onPress }) => (
-  <Pressable onPress={onPress} style={[styles.plan, selected && styles.planHighlight]}>
-    {selected && <Text style={styles.badge}>SELECTED</Text>}
-    <Text style={styles.planTitle}>{title}</Text>
-    <Text style={styles.planPrice}>{price}</Text>
-    <Text style={styles.planDetail}>{detail}</Text>
-  </Pressable>
-);
-
-
-const [selectedPlan, setSelectedPlan] = useState('yearly');
-
-  const handlePurchase = () => {
-    console.log('Purchasing plan:', selectedPlan);
+  const handlePurchase = async () => {
+    // Only monthly for now
+    const pkg = monthlyPkg; // selectedPlan === 'annual' ? annualPkg : monthlyPkg;
+    if (!pkg) {
+      Alert.alert('Not available', 'Prices are not available yet. Please try again.');
+      return;
+    }
+    try {
+      const result = await Purchases.purchasePackage(pkg);
+      const customerInfo = result && result.customerInfo ? result.customerInfo : null;
+      if (customerInfo && customerInfo.entitlements && customerInfo.entitlements.active && customerInfo.entitlements.active[ENTITLEMENT_ID]) {
+        Alert.alert('Success', "You're now a premium user!");
+      }
+    } catch (e) {
+      // RevenueCat error has e.userCancelled for user cancellations
+      if (!(e && e.userCancelled)) {
+        Alert.alert('Purchase failed', (e && e.message) ? e.message : 'Unknown error');
+      }
+    }
   };
 
+  const restorePurchases = async () => {
+    try {
+      const info = await Purchases.restorePurchases();
+      if (info && info.entitlements && info.entitlements.active && info.entitlements.active[ENTITLEMENT_ID]) {
+        Alert.alert('Restored', 'Your purchases have been restored.');
+      } else {
+        Alert.alert('No purchases', 'No active purchases were found for your account.');
+      }
+    } catch (e) {
+      Alert.alert('Restore failed', (e && e.message) ? e.message : 'Unknown error');
+    }
+  };
+
+  const buyDisabled = loadingPrices || !monthlyProduct; // || (selectedPlan==='annual' && !annualProduct)
 
   return (
     <View style={styles.UserSettingsPage}>
-      {/* <ScrollView > */}
-        <View style={styles.UserSettingsPage_ContentWrapper}>
+      <View style={styles.UserSettingsPage_ContentWrapper}>
 
-          {/* Title */}
-          <Text style={styles.title}>Unlock all Plus features</Text>
-          <Text style={styles.subtitle}>Use the app's full potential</Text>
+        {/* Title of service */}
+        <Text style={styles.title}>Fridgy Plus</Text>
+        <Text style={styles.subtitle}>Unlock all premium features</Text>
 
-          {/* Feature list */}
-          {/* <View style={styles.features}>
-            <Feature icon="group" text="Unlock family account for up to 5 users" />
-            <Feature icon="photo-camera" text="Upload your own pictures" />
-            <Feature type="entypo" icon="calendar" text="Unlimited dates for Meal Planner" />
-            <Feature icon="shopping-basket" text="Unlimited Autobasket size" />
-            <Feature type="entypo" icon="infinity" text="Access to future premium features for the same price" />
-          </View> */}
-
-          <View style={styles.listOfPremiumFeatures}>
-
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Create family account for up to 5 users</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Unlimited dates for Meal Planner</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Unlimited Autobasket size</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
-            </View>
-
-          </View>   
-
-          {/* Plans */}
-          <View style={styles.plans}>
-            <Plan
-              title="Yearly"
-              price="-"
-              detail="Billed never yet"
-              selected={selectedPlan === 'yearly'}
-              onPress={() => setSelectedPlan('yearly')}
-            />
-            <Plan
-              title="Monthly"
-              price="€3.99"
-              detail="Billed monthly"
-              selected={selectedPlan === 'monthly'}
-              onPress={() => setSelectedPlan('monthly')}
-            />
+        {/* Premium features list */}
+        <View style={styles.listOfPremiumFeatures}>
+          <View style={styles.PremiumFeature}>
+            <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Create family account for up to 5 users</Text>
           </View>
 
-          {/* <View style={styles.listOfPremiumFeatures}>
+          <View style={styles.PremiumFeature}>
+            <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
+          </View>
 
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="group" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Unlock family account for up to 5 users</Text>
-            </View>
+          <View style={styles.PremiumFeature}>
+            <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Unlimited dates for Meal Planner</Text>
+          </View>
 
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="photo-camera" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Upload your own pictures</Text>
-            </View>
+          <View style={styles.PremiumFeature}>
+            <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Unlimited Autobasket size</Text>
+          </View>
 
-            <View style={styles.PremiumFeature}>
-              <Entypo name="calendar" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Unlimited dates for Meal Planner</Text>
-            </View>
+          <View style={styles.PremiumFeature}>
+            <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
+            <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
+          </View>
+        </View>
 
-            <View style={styles.PremiumFeature}>
-              <MaterialIcons name="shopping-basket" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Unlimited Autobasket size</Text>
-            </View>
-
-            <View style={styles.PremiumFeature}>
-              <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
-              <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
-            </View>
-
-          </View>    */}
-
-          {/* <View style={styles.listOfPremiumFeatures}>
-
-            <Text style={{fontFamily: ReceiptFont, fontSize: 20, marginTop: -20, marginBottom: 20}}>Why upgrading to premium?</Text>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableHeaderCell, styles.featureCol]}></Text>
-              <Text style={styles.tableHeaderCell}>Base</Text>
-              <Text style={styles.tableHeaderCell}>Premium</Text>
-            </View>
-
-            {premiumFeatures.map((feature, index) => (
-              <View key={index} style={styles.tableRow}>
-                <View style={[styles.tableCell, styles.featureCol]}>
-                  {feature.icon}
-                  <Text style={styles.PremiumFeature_Text}>{feature.label}</Text>
-                </View>
-                <Text style={[styles.tableCell,]}>{feature.base}</Text>
-                <Text style={[styles.tableCell, styles.featureIcon]}>{feature.premium}</Text>
-              </View>
-            ))}
-          </View> */}
-
-          
-          {/* <Text style={styles.explanationHint}>* Why cannot these features be free? (i)</Text> */}
-            {/* Include a short explanation here about the costs of running the app, e.g. server costs, development time, etc. */}
-
-
-            {/* OR: MANAGE SUBSCRIPTION */}
-
-          <Pressable style={styles.upgradeButton} onPress={handlePurchase}>
-            <Text style={styles.upgradeText}>Get Freedgy Plus</Text>
+        {/* Plans (Monthly only visible; Yearly commented) */}
+        <View style={styles.plans}>
+          <Pressable
+            onPress={() => setSelectedPlan('monthly')}
+            style={[styles.plan, selectedPlan === 'monthly' && styles.planHighlight, !monthlyProduct && { opacity: 0.5 }]}
+            disabled={!monthlyProduct}
+          >
+            {selectedPlan === 'monthly' ? <Text style={styles.badge}>SELECTED</Text> : null}
+            <Text style={styles.planTitle}>Monthly</Text>
+            <Text style={styles.planPrice}>
+              {loadingPrices ? 'Loading…' : (monthlyProduct ? (monthlyPriceStr + '/month') : 'Unavailable')}
+            </Text>
+            <Text style={styles.planDetail}>Billed monthly</Text>
           </Pressable>
 
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={openTerms}><Text>Terms</Text></TouchableOpacity>
-            <TouchableOpacity onPress={openPrivacy}><Text>Privacy</Text></TouchableOpacity>
-          </View>
-          
-        </View>
-      {/* </ScrollView> */}
 
-      
+          {/* <Pressable
+            onPress={() => setSelectedPlan('annual')}
+            style={[styles.plan, selectedPlan === 'annual' && styles.planHighlight, !annualProduct && { opacity: 0.5 }]}
+            disabled={!annualProduct}
+          >
+            {selectedPlan === 'annual' ? <Text style={styles.badge}>SELECTED</Text> : null}
+            <Text style={styles.planTitle}>Annual</Text>
+            <Text style={styles.planPrice}>
+              {loadingPrices ? 'Loading…' : (annualProduct ? (annualPriceStr + '/year' + annualPerMonth) : 'Unavailable')}
+            </Text>
+            <Text style={styles.planDetail}>Billed yearly</Text>
+          </Pressable> */}
+        </View>
+
+        {/* Auto-renew disclosure (required) */}
+        <View style={{ marginTop: 12, paddingHorizontal: 6 }}>
+          <Text style={{ fontSize: 12, color: '#555', textAlign: 'center' }}>
+            Auto-renews until canceled. Manage or cancel in Settings &gt; Apple ID &gt; Subscriptions.
+          </Text>
+          {/* If you offer a free trial, add:
+              "Free trial converts to a paid subscription unless canceled at least 24 hours before it ends." */}
+        </View>
+
+        {/* CTA */}
+        <Pressable
+          style={[styles.upgradeButton, buyDisabled && { opacity: 0.6 }]}
+          onPress={handlePurchase}
+          disabled={buyDisabled}
+        >
+          <Text style={styles.upgradeText}>
+            {loadingPrices ? 'Loading…' : 'Continue – Monthly'}
+          </Text>
+        </Pressable>
+
+        {/* Footer: restore, manage, terms, privacy */}
+        <View style={styles.footer}>
+          {/* <TouchableOpacity onPress={restorePurchases}><Text>Restore Purchases</Text></TouchableOpacity> */}
+          <TouchableOpacity onPress={openTerms}><Text>Terms of Use</Text></TouchableOpacity>
+          <TouchableOpacity onPress={openPrivacy}><Text>Privacy Policy</Text></TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -340,37 +292,22 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: height*0.1,
     height: height*0.8,
-    // borderWidth: 1,
   },
 
   title: { 
     fontSize: 20, 
     fontWeight: 'bold', 
-    textAlign: 'center', 
-    marginTop: 10 
+    textAlign: 'left', 
+    marginTop: 10,
+    paddingLeft: 10,
   },
 
   subtitle: { 
     fontSize: 14, 
     color: '#555', 
-    textAlign: 'center', 
-    marginVertical: 10 
-  },
-
-  features: { 
-    marginTop: 10 
-  },
-
-  feature: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 12 
-  },
-
-  featureText: { 
-    marginLeft: 8, 
-    fontSize: 14, 
-    color: '#333' 
+    textAlign: 'left', 
+    marginVertical: 10,
+    paddingLeft: 10,
   },
 
   plans: { 
@@ -425,7 +362,6 @@ const styles = StyleSheet.create({
   listOfPremiumFeatures: {
     marginTop: 10,
     padding: 10,
-    // borderWidth: 1,
   },
   PremiumFeature: {
     flexDirection: 'row',
@@ -434,21 +370,15 @@ const styles = StyleSheet.create({
   },
   PremiumFeature_Icon: {
     marginRight: 10,
-    fontSize: 18,
+    fontSize: 20,
     color: addButtonColor,
   },
   PremiumFeature_Text: {
     flexWrap: 'wrap',
     flexShrink: 1,
     fontFamily: MainFont,
-    fontSize: TextFontSize,
+    fontSize: 14,
     color: blackTextColor,
-  },
-  featureIcon: {
-    fontSize: 16,
-    fontFamily: MainFont_Bold,
-    color: addButtonColor,
-    // color: '#14db71'
   },
 
   upgradeButton: {
@@ -471,11 +401,6 @@ const styles = StyleSheet.create({
     fontFamily: MainFont_SemiBold,
     color: 'white',
   },
-  upgradeIcon: {
-    color: 'white',
-    marginHorizontal: 10,
-    fontSize: TextFontSize + 4,
-  },
 
   footer: {
     flexDirection: 'row',
@@ -486,113 +411,3 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   }
 });
-
-// const styles = StyleSheet.create({
-//   UserSettingsPage: {
-//     flex: 1,
-//     backgroundColor: backgroundColor,
-//     // alignItems: 'center',
-//     // justifyContent: 'center'
-//   },
-//   UserSettingsPage_ContentWrapper: {
-//     paddingHorizontal: 6,
-//     // paddingVertical: 24,
-//     height: height*0.6,
-//     // alignItems: 'center',
-//     justifyContent: 'center',
-//     // borderWidth: 1,
-//   },
-//   sectionHeader: {
-//     fontFamily: MainFont_Bold,
-//     fontSize: 18,
-//     marginBottom: 8,
-//     color: '#222',
-//   },
-//   explanationHint: {
-//     marginTop: 10,
-//     fontSize: TextFontSize,
-//     fontFamily: MainFont,
-//     color: greyTextColor2,
-//   },
-//   upgradeButton: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     backgroundColor: addButtonColor,
-//     height: 42,
-//     width: width*0.84,
-//     borderRadius: 20,
-//     borderColor: '#ccc',
-//     borderWidth: 1,
-//     paddingHorizontal: 10,
-//     position: 'absolute',
-//     bottom: 30,
-//     alignSelf: 'center'
-//   },
-//   upgradeText: {
-//     fontSize: TextFontSize + 2,
-//     fontFamily: MainFont_SemiBold,
-//     color: 'white',
-//   },
-//   upgradeIcon: {
-//     color: 'white',
-//     marginHorizontal: 10,
-//     fontSize: TextFontSize + 4,
-//   },
-
-//   listOfPremiumFeatures: {
-//     marginTop: 10,
-//     padding: 10,
-//     // borderWidth: 1,
-//   },
-//   PremiumFeature: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginTop: 16,
-//   },
-//   PremiumFeature_Icon: {
-//     marginRight: 10,
-//     fontSize: 18,
-//     color: addButtonColor,
-//   },
-//   PremiumFeature_Text: {
-//     flexWrap: 'wrap',
-//     flexShrink: 1,
-//     fontFamily: MainFont_SemiBold,
-//     fontSize: TextFontSize,
-//     color: blackTextColor,
-//   },
-//   featureIcon: {
-//     fontSize: 16,
-//     fontFamily: MainFont_Bold,
-//     color: addButtonColor,
-//     // color: '#14db71'
-//   },
-
-
-// tableRow: {
-//   flexDirection: 'row',
-//   alignItems: 'center',
-//   marginVertical: 12,
-// },
-
-// tableHeaderCell: {
-//   fontFamily: MainFont_Bold,
-//   fontSize: TextFontSize,
-//   flex: 1,
-//   textAlign: 'center',
-// },
-
-// tableCell: {
-//   flex: 1,
-//   textAlign: 'center',
-// },
-
-// featureCol: {
-//   flex: 2,
-//   flexDirection: 'row',
-//   alignItems: 'center',
-//   gap: 4, // if using React Native 0.71+
-// },
-
-// });

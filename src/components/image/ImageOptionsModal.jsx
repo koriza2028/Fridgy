@@ -13,6 +13,13 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+import { useNavigation } from '@react-navigation/native';
+import { usePremiumStore } from '../../store/premiumStore';
+
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Entypo from 'react-native-vector-icons/Entypo';
+import { buttonColor } from '../../../assets/Styles/styleVariables';
+
 import { FlashList } from '@shopify/flash-list';
 
 import AppImage from './AppImage';
@@ -170,6 +177,29 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
   const filteredStaticImages = staticImageOptions.filter((item) =>
     item.key.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const navigation = useNavigation();
+  const isPremium = usePremiumStore(s => s.isPremium);
+
+  const onPressGallery = async () => {
+    // if (!isPremium) {
+    //   onClose();
+    //   navigation.navigate('UserSettingsPage');
+    //   return;
+    // }
+    await pickImageFromGallery();
+  };
+
+  const onPressCamera = async () => {
+    // if (!isPremium) {
+    //   onClose();
+    //   navigation.navigate('UserSettingsPage');
+    //   return;
+    // }
+    await takePhoto();
+  };
+
+
   return (
     <Modal visible={modalVisible} animationType="fade" transparent>
 
@@ -180,7 +210,7 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
           <Text style={styles.title}>Choose an Image</Text>
 
           {/* Upload Options */}
-          <View style={styles.uploadOptions}>
+          {/* <View style={styles.uploadOptions}>
             <TouchableOpacity onPress={pickImageFromGallery} style={styles.uploadButton}>
               <Text style={styles.uploadText}>Pick from Gallery</Text>
             </TouchableOpacity>
@@ -188,9 +218,34 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
             <TouchableOpacity onPress={takePhoto} style={styles.uploadButton}>
               <Text style={styles.uploadText}>Take a Photo</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
-          
+          <View style={styles.uploadOptions}>
+            <TouchableOpacity style={[styles.uploadButton, !isPremium && styles.uploadButtonLocked]}
+              onPress={onPressGallery}
+            >
+              <Text style={styles.uploadText}>Pick from Gallery</Text>
+              {!isPremium && (
+                <View style={styles.lockBadge}>
+                  <MaterialIcons name="star" size={12} color="#fff" />
+                  <Text style={styles.lockBadgeText}>Plus</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.uploadButton, !isPremium && styles.uploadButtonLocked]}
+              onPress={onPressCamera}
+            >
+              <Text style={styles.uploadText}>Take a Photo</Text>
+              {!isPremium && (
+                <View style={styles.lockBadge}>
+                  <MaterialIcons name="star" size={12} color="#fff" />
+                  <Text style={styles.lockBadgeText}>Plus</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+   
 
           {/* Static Images */}
           {enableStaticImages && (
@@ -300,6 +355,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: MainFont_SemiBold,
   },
+
+  uploadButton: {
+    padding: 8,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 6,
+    width: '48%',
+    alignItems: 'center',
+    position: 'relative', // needed for the badge
+  },
+  uploadButtonLocked: {
+    // opacity: 0.8,
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: -6,
+    right: 6,
+    backgroundColor: buttonColor,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  lockBadgeText: {
+    color: '#fff',
+    fontFamily: MainFont_Bold,
+    fontSize: 10,
+    letterSpacing: 0.3,
+  },
+
 });
 
 export default ImageOptionsModal;

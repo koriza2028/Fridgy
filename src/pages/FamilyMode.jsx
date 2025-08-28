@@ -3,37 +3,29 @@ import {
   View,
   Text,
   ScrollView,
-  Button,
   Pressable,
   Share,
   Alert,
-  TextInput,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import * as Linking from 'expo-linking';
+import { useNavigation } from '@react-navigation/native';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-// import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-// import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
-// import Entypo from 'react-native-vector-icons/Entypo';
 
 import UserSlots from '../components/usersettings/UserSlots';
 import useAuthStore from '../store/authStore';
-import { toggleUserMode, setUsername } from '../store/userAccountStore';
+import { toggleUserMode } from '../store/userAccountStore';
 
-import {
-  createInvite,
-  listInvites,
-  revokeInvite,
-} from '../store/inviteStore';
+import { createInvite, listInvites /*, revokeInvite */ } from '../store/inviteStore';
 
 import useFamilyStore from '../store/familyStore';
-import { deleteFamilyIfOwner, exitFamilyMembership } from '../store/familyStore'
-import { useFonts } from 'expo-font';
+import { deleteFamilyIfOwner, exitFamilyMembership } from '../store/familyStore';
 
+import { useFonts } from 'expo-font';
 import {
   addButtonColor,
   backgroundColor,
@@ -49,14 +41,23 @@ import {
   TextFontSize,
 } from '../../assets/Styles/styleVariables';
 
+// Premium gate (standard)
+import PremiumGate from '../components/PremiumGate';
+import { usePremiumStore } from '../store/premiumStore';
+import UserSettingsPage from './UserSettings';
+
 const { width, height } = Dimensions.get('window');
 
+// Adjust to your real route name for the paywall/subscription page
+const SUBSCRIPTION_ROUTE_NAME = 'Subscription';
+
 export default function FamilyModePage() {
+  const navigation = useNavigation();
 
   const [fontsLoaded] = useFonts({
-      'Inter': require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
-      'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
-      'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
+    Inter: require('../../assets/fonts/Inter/Inter_18pt-Regular.ttf'),
+    'Inter-Bold': require('../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
+    'Inter-SemiBold': require('../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
   // ── auth context ──────────────────────────────────────────────────────
@@ -66,64 +67,41 @@ export default function FamilyModePage() {
     user: s.user,
     lastUsedMode: s.lastUsedMode,
   }));
-
   const setFamilyId = useAuthStore((s) => s.setFamilyId);
   const setLastUsedMode = useAuthStore((s) => s.setLastUsedMode);
-  // ───────────────────────────────────────────────────────────────────────
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
+
+  // ── premium (RevenueCat) ──────────────────────────────────────────────
+  const isPremium = usePremiumStore((s) => s.isPremium);
+  const refreshEntitlements = usePremiumStore((s) => s.refreshEntitlements);
+  useEffect(() => {
+    // In case App.js hasn’t refreshed yet, do one pull on mount.
+    refreshEntitlements?.();
+  }, [refreshEntitlements]);
 
   // ── family store ───────────────────────────────────────────────────────
   const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
   const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
 
-  // ───────────────────────────────────────────────────────────────────────
+  // Only fetch owner id when premium + in a family
+  useEffect(() => {
+    if (!isPremium || !familyId) {
+      clearOwnerId();
+      return;
+    }
+    const load = async () => {
+      await fetchOwnerId(familyId);
+    };
+    load();
+  }, [isPremium, familyId]);
 
-  // ── username editing local state ──────────────────────────────────────
-  // Store username inputs locally by userId to allow editing
-  const [usernameEdits, setUsernameEdits] = useState({});
-  // To track which usernames are being edited (show TextInput or Text)
-  const [editingUserIds, setEditingUserIds] = useState(new Set());
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── invite state ──────────────────────────────────────────────────────
+  // ── invites ───────────────────────────────────────────────────────────
   const [invites, setInvites] = useState([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
-  // ───────────────────────────────────────────────────────────────────────
 
-  const deleteAccount = useAuthStore((s) => s.deleteAccount);
-  const [deleting, setDeleting] = useState(false);
-
-  const onPressDelete = () => {
-    Alert.alert(
-      "Delete account?",
-      "This cannot be undone. If you own a family, deletion will be blocked.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              await deleteAccount();
-            } catch (e) {
-              Alert.alert(
-                "Could not delete account",
-                e && e.message ? e.message : "Unknown error"
-              );
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ]
-    );
-  };
-
-
-  // ── load invites ──────────────────────────────────────────────────────
   const loadInvites = async () => {
-    if (!familyId) return;
+    if (!isPremium || !familyId) return;
     setLoadingInvites(true);
     try {
       const items = await listInvites({ familyId });
@@ -135,24 +113,39 @@ export default function FamilyModePage() {
       setLoadingInvites(false);
     }
   };
-  // ───────────────────────────────────────────────────────────────────────
 
-  // ── fetch ownerId and members on familyId change ───────────────────────
-  useEffect(() => {
-    if (!familyId) {
-      clearOwnerId();
+  // ── account deletion ──────────────────────────────────────────────────
+  const [deleting, setDeleting] = useState(false);
+  const onPressDelete = () => {
+    Alert.alert(
+      'Delete account?',
+      'This cannot be undone. If you own a family, deletion will be blocked.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteAccount();
+            } catch (e) {
+              Alert.alert('Could not delete account', e && e.message ? e.message : 'Unknown error');
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // ── create & share invite (premium only) ───────────────────────────────
+  const handleCreateInvite = async () => {
+    if (!isPremium) {
+      Alert.alert('Premium required', 'Family invites are available with Fridgy Plus.');
       return;
     }
-    const load = async () => {
-      await fetchOwnerId(familyId);
-    };
-    load();
-  }, [familyId]);
-
-  // ───────────────────────────────────────────────────────────────────────
-
-  // ── create & share invite ─────────────────────────────────────────────
-  const handleCreateInvite = async () => {
     if (!familyId) {
       Alert.alert('Error', 'You must be in family mode to invite.');
       return;
@@ -160,111 +153,69 @@ export default function FamilyModePage() {
     try {
       const code = await createInvite({ familyId, ownerId });
       const link = Linking.createURL('invite', { queryParams: { code } });
-      await Share.share({
-        title: 'Join my family',
-        message: `${link}`,
-      });
+      await Share.share({ title: 'Join my family', message: `${link}` });
       loadInvites();
     } catch (err) {
       console.error('Create invite failed', err);
       Alert.alert('Error', err.message);
     }
   };
-  // ───────────────────────────────────────────────────────────────────────
 
-  const handleToggle = useCallback(async (targetMode) => {
-    if (!user?.uid) {
-      Alert.alert('Not logged in');
-      return;
-    }
-
-    if (targetMode === lastUsedMode) return;
-
-    if (targetMode === 'family') {
-      if (familyId) {
-        // User already in a family, switch directly
-        try {
-          const res = await toggleUserMode({
-            userId: user.uid,
-            lastUsedMode,
-          });
-          setFamilyId(res.familyId);
-          setLastUsedMode(res.mode);
-        } catch (e) {
-          console.error('Toggle failed:', e);
-          Alert.alert('Error', e.message);
-        }
-      } else {
-        // Ask to create family if not in one
-        Alert.alert(
-          'Create Family?',
-          'You are not in a family yet. Do you want to create one?',
-          [
-            {
-              text: 'No',
-              style: 'cancel',
-              onPress: () => {},
-            },
-            {
-              text: 'Yes',
-              onPress: async () => {
-                try {
-                  const res = await toggleUserMode({
-                    userId: user.uid,
-                    lastUsedMode,
-                  });
-                  setFamilyId(res.familyId);
-                  setLastUsedMode(res.mode);    
-                } catch (e) {
-                  console.error('Toggle failed:', e);
-                  Alert.alert('Error', e.message);
-                }
-              },
-            },
-          ],
-          { cancelable: false }
-        );
+  // ── mode switching with gating ─────────────────────────────────────────
+  const handleToggle = useCallback(
+    async (targetMode) => {
+      if (!user?.uid) {
+        Alert.alert('Not logged in');
+        return;
       }
-    } else {
-      // Switching to solo mode
+
+      if (targetMode === lastUsedMode) return;
+
+      // Block switching to family if not premium
+      if (targetMode === 'family' && !isPremium) {
+        Alert.alert('Premium required', 'Family Mode is available with Fridgy Plus.', [
+          { text: 'Not now', style: 'cancel' },
+          {
+            text: 'See subscription',
+            onPress: () => navigation.navigate(UserSettingsPage),
+          },
+        ]);
+        return;
+      }
+
       try {
-        const res = await toggleUserMode({
-          userId: user.uid,
-          lastUsedMode,
-        });
+        const res = await toggleUserMode({ userId: user.uid, lastUsedMode });
         setFamilyId(res.familyId);
         setLastUsedMode(res.mode);
       } catch (e) {
         console.error('Toggle failed:', e);
         Alert.alert('Error', e.message);
       }
-    }
-  });
+    },
+    [user, lastUsedMode, isPremium, navigation, setFamilyId, setLastUsedMode]
+  );
 
+  // ── family deletion / quit ─────────────────────────────────────────────
   const handleDeleteFamily = async () => {
-    Alert.alert(
-      "Delete Family",
-      "Are you sure you want to delete the entire family?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteFamilyIfOwner({ familyId, requesterId: user.uid });
-              clearOwnerId();
-              setFamilyId(null); // ⬅️ Clear local familyId
-              setLastUsedMode('personal'); // ⬅️ Switch to personal mode
-              Alert.alert("Deleted", "Family has been deleted.");
-            } catch (err) {
-              console.error("Failed to delete family", err);
-              Alert.alert("Error", "Failed to delete family");
-            }
-          },
+    Alert.alert('Delete Family', 'Are you sure you want to delete the entire family?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteFamilyIfOwner({ familyId, requesterId: user.uid });
+            clearOwnerId();
+            setFamilyId(null);
+            setLastUsedMode('personal');
+            Alert.alert('Deleted', 'Family has been deleted.');
+          } catch (err) {
+            console.error('Failed to delete family', err);
+            Alert.alert('Error', 'Failed to delete family');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleQuitFamily = () => {
@@ -280,8 +231,8 @@ export default function FamilyModePage() {
             try {
               await exitFamilyMembership({ userId: user.uid, familyId });
               Alert.alert('Success', 'You have left the family.');
-              setFamilyId(null); // ⬅️ Clear local familyId
-              setLastUsedMode('personal'); // ⬅️ Switch to personal mode
+              setFamilyId(null);
+              setLastUsedMode('personal');
             } catch (err) {
               console.error('Failed to quit family', err);
               Alert.alert('Error', err.message);
@@ -293,105 +244,100 @@ export default function FamilyModePage() {
     );
   };
 
-  const changeMode =
-    lastUsedMode === 'family'
-      ? 'Switch to Personal Mode'
-      : 'Switch to Family Mode';
   const isOwner = user?.uid === ownerId;
+
   return (
-  <View style={styles.UserSettingsPage}>
-    {/* Mode toggle buttons */}
-    <View style={styles.modeToggleContainer}>
-      {/* Personal Mode Button */}
-      <Pressable
-        onPress={() => handleToggle('personal')}
-        style={[
-          styles.modeToggleButton,
-          lastUsedMode === 'personal' && styles.modeToggleButtonSelected,
-        ]}
-      >
-        <MaterialIcons
-          name="person-outline"
-          size={20}
-          style={[
-            styles.icon,
-            lastUsedMode === 'personal' && { color: 'white' },
-          ]}
-        />
-      </Pressable>
-
-      {/* Family Mode Button */}
-      <Pressable
-        onPress={() => handleToggle('family')}
-        style={[
-          styles.modeToggleButton,
-          lastUsedMode === 'family' && styles.modeToggleButtonSelected,
-        ]}
-      >
-        <MaterialIcons
-          name="group"
-          size={20}
-          style={[
-            styles.icon,
-            lastUsedMode === 'family' && { color: 'white' },
-          ]}
-        />
-      </Pressable>
-    </View>
-
-    {lastUsedMode === 'personal' && (
-      <View style={styles.personalModeInfo}>
-        <Text style={styles.personalModeInfoText}>
-          You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
-        </Text>
-
-        <TouchableOpacity
-          onPress={onPressDelete}
-          disabled={deleting}
-          style={styles.dangerTextButton}
-          accessibilityRole="button"
-          accessibilityLabel="Delete account"
+    <View style={styles.UserSettingsPage}>
+      {/* Mode toggle buttons */}
+      <View style={styles.modeToggleContainer}>
+        {/* Personal Mode Button */}
+        <Pressable
+          onPress={() => handleToggle('personal')}
+          style={[styles.modeToggleButton, lastUsedMode === 'personal' && styles.modeToggleButtonSelected]}
         >
-          {deleting ? (
-            <ActivityIndicator />
-          ) : (
-            <Text style={styles.dangerText}>Delete account</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    )}
-
-    {/* Content shown only in family mode */}
-    {lastUsedMode === 'family' && (
-      <ScrollView>
-        <View style={styles.UserSettingsPage_ContentWrapper}>
-          <UserSlots
-            currentUser={user}
-            createInvite={handleCreateInvite}
+          <MaterialIcons
+            name="person-outline"
+            size={20}
+            style={[styles.icon, lastUsedMode === 'personal' && { color: 'white' }]}
           />
-          {/* Delete Family button at the bottom */}
-          {isOwner && (
-            <Pressable
-              style={styles.dangerTextButton}
-              onPress={handleDeleteFamily}
-            >
-              <Text style={styles.dangerText}>Delete Family</Text>
-            </Pressable>
-          )}
-          {!isOwner && (
-            <Pressable
-              style={styles.quitFamilyButton}
-              onPress={handleQuitFamily}
-            >
-              <Text style={styles.quitFamilyText}>Quit Family</Text>
-            </Pressable>
-          )}
-        </View>
-      </ScrollView>
-    )}
-  </View>
-  );
+        </Pressable>
 
+        {/* Family Mode Button — disabled if not premium */}
+        <Pressable
+          disabled={!isPremium}
+          onPress={() => handleToggle('family')}
+          style={[
+            styles.modeToggleButton,
+            lastUsedMode === 'family' && styles.modeToggleButtonSelected,
+            !isPremium && styles.modeToggleButtonDisabled,
+          ]}
+        >
+          <MaterialIcons
+            name={!isPremium ? 'lock' : 'group'}
+            size={20}
+            style={[styles.icon, lastUsedMode === 'family' && { color: 'white' }, !isPremium && { color: '#999' }]}
+          />
+        </Pressable>
+      </View>
+
+      {/* Upsell if not premium */}
+      
+
+      {/* Personal mode content is always available */}
+      {lastUsedMode === 'personal' && (
+        <View style={styles.personalModeInfo}>
+          <Text style={styles.personalModeInfoText}>
+            You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
+          </Text>
+
+          {!isPremium && (
+            <View style={styles.premiumCallout}>
+              <Text style={styles.premiumCalloutTitle}>Family Mode is a Plus feature</Text>
+              <Text style={styles.premiumCalloutText}>
+                Invite up to 5 members, share lists, and more. Unlock with Fridgy Plus.
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate(UserSettingsPage)} style={styles.premiumCTA}>
+                <Text style={styles.premiumCTAText}>See subscription options</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <TouchableOpacity
+            onPress={onPressDelete}
+            disabled={deleting}
+            style={styles.dangerTextButton}
+            accessibilityRole="button"
+            accessibilityLabel="Delete account"
+          >
+            {deleting ? <ActivityIndicator /> : <Text style={styles.dangerText}>Delete account</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Family mode content only when premium (via PremiumGate) AND in family mode */}
+      <PremiumGate
+        fallback={null /* we already show an upsell above */}
+      >
+        {lastUsedMode === 'family' && (
+          <ScrollView>
+            <View style={styles.UserSettingsPage_ContentWrapper}>
+              <UserSlots currentUser={user} createInvite={handleCreateInvite} />
+
+              {isOwner ? (
+                <Pressable style={styles.dangerTextButton} onPress={handleDeleteFamily}>
+                  <Text style={styles.dangerText}>Delete Family</Text>
+                </Pressable>
+              ) : (
+                <Pressable style={styles.quitFamilyButton} onPress={handleQuitFamily}>
+                  <Text style={styles.quitFamilyText}>Quit Family</Text>
+                </Pressable>
+              )}
+            </View>
+          </ScrollView>
+        )}
+      </PremiumGate>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -403,106 +349,103 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 24,
   },
-  sectionHeader: {
-    fontFamily: MainFont_Bold,
-    fontSize: 18,
-    marginBottom: 8,
-    color: '#222',
-  },
-  memberRow: {
+
+  // Toggle buttons
+  modeToggleContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+    gap: 16,
+  },
+  modeToggleButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#eee',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  usernameText: {
-    flex: 1,
-    fontFamily: MainFont,
-    fontSize: 16,
-    color: '#000',
+  modeToggleButtonSelected: {
+    backgroundColor: buttonColor,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  usernameInput: {
-    flex: 1,
-    borderColor: '#888',
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    fontSize: 16,
-    fontFamily: MainFont,
-    height: 36,
+  modeToggleButtonDisabled: {
+    backgroundColor: '#f2f2f2',
   },
-  editButtons: {
-    flexDirection: 'row',
-    marginLeft: 8,
-  },
-  editIcon: {
-    paddingHorizontal: 8,
-  },
-  removeButton: {
-    marginLeft: 12,
-    padding: 4,
-  },
-  inviteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
+  icon: {
+    color: greyTextColor,
+    fontSize: 24,
   },
 
-  Text_SwitchMode: {
+  // Personal mode info
+  personalModeInfo: {
+    marginTop: 16,
+    marginHorizontal: 4,
+    padding: 12,
+    borderRadius: 8,
+  },
+  personalModeInfoText: {
+    fontFamily: MainFont,
     fontSize: TextFontSize + 2,
+    color: greyTextColor2,
+    lineHeight: 20,
+  },
+
+  // Danger buttons
+  dangerTextButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+  },
+  dangerText: {
+    color: '#D00',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Quit family (additions to avoid missing styles)
+  quitFamilyButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+  },
+  quitFamilyText: {
+    color: '#D00',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Premium upsell
+  premiumCallout: {
+    marginTop: 16,
+    marginHorizontal: 4,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#f7f7fb',
+  },
+  premiumCalloutTitle: {
+    fontFamily: MainFont_Bold,
+    fontSize: TextFontSize + 2,
+    color: '#222',
+    marginBottom: 4,
+  },
+  premiumCalloutText: {
+    fontFamily: MainFont,
+    fontSize: TextFontSize,
+    color: greyTextColor2,
+  },
+  premiumCTA: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: addButtonColor,
+  },
+  premiumCTAText: {
+    color: '#fff',
     fontFamily: MainFont_SemiBold,
   },
-
-
-  modeToggleContainer: {
-  flexDirection: 'row',
-  justifyContent: 'center',
-  marginTop: 20,
-  gap: 16,
-},
-
-modeToggleButton: {
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: '#eee',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-
-modeToggleButtonSelected: {
-  backgroundColor: buttonColor,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.25,
-  shadowRadius: 4,
-  elevation: 5,
-},
-icon: {
-  color: greyTextColor,
-  fontSize: 24,
-},
-
-personalModeInfo: {
-  marginTop: 16,
-  marginHorizontal: 4,
-  padding: 12,
-  borderRadius: 8,
-},
-personalModeInfoText: {
-  fontFamily: MainFont_SemiBold,
-  fontSize: TextFontSize + 2,
-  color: greyTextColor2,
-  lineHeight: 20,
-  // textAlign: 'center',
-},
-
-dangerTextButton: {
-  alignSelf: "flex-start",
-  paddingVertical: 8,
-},
-dangerText: {
-  color: "#D00",
-  fontSize: 16,
-  fontWeight: "600",
-},
 });

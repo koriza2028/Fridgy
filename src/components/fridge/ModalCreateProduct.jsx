@@ -14,7 +14,7 @@ import {
 } from "react-native";
 
 import ImageWithUpload from "../../components/ImageWithUpload";
-import { useFocusEffect } from '@react-navigation/native';
+// import { useFocusEffect } from '@react-navigation/native';
 import Modal from "react-native-modal";
 import { BlurView } from "expo-blur";
 import Entypo from "react-native-vector-icons/Entypo";
@@ -38,6 +38,7 @@ import {
   greyTextColor,
   blackTextColor,
 } from "../../../assets/Styles/styleVariables";
+
 
 import { categories } from "../../../assets/Variables/categories";
 import { useFonts } from "expo-font";
@@ -517,9 +518,4 @@ const styles = StyleSheet.create({
   },
 
 
-  // StaticImageLabel: { fontSize: 14, marginBottom: 6, color: greyTextColor, textAlign: 'center' },
-  // StaticImageRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
-  // StaticThumbnail: { width: 60, height: 60, borderRadius: 8, marginHorizontal: 5, borderWidth: 1, borderColor: '#ccc' },
-  // SelectedStaticImage: { borderColor: buttonColor, borderWidth: 2 },
-  // imageModalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, alignItems: 'center' },
 });
