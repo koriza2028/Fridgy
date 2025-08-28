@@ -22,6 +22,8 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import FontAwesomeIcons from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 
+import ButtonBouncing from '../components/Button_Bouncing.jsx';
+
 import UserSlots from '../components/usersettings/UserSlots';
 import useAuthStore from '../store/authStore';
 import { toggleUserMode, setUsername } from '../store/userAccountStore';
@@ -91,7 +93,7 @@ export default function UserSettingsPage() {
   // ---- RevenueCat offerings (Monthly only; Yearly is commented) ----
   const [offering, setOffering] = useState(null);
   const [loadingPrices, setLoadingPrices] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState('monthly'); // 'annual' kept for later
+  const [selectedPlan, setSelectedPlan] = useState('Monthly'); // 'annual' kept for later
 
   useEffect(() => {
     (async () => {
@@ -190,8 +192,8 @@ export default function UserSettingsPage() {
       <View style={styles.UserSettingsPage_ContentWrapper}>
 
         {/* Title of service */}
-        <Text style={styles.title}>Fridgy Plus</Text>
-        <Text style={styles.subtitle}>Unlock all premium features</Text>
+        <Text style={styles.title}>Unlock all Plus features</Text>
+        <Text style={styles.subtitle}>Use app's full potential</Text>
 
         {/* Premium features list */}
         <View style={styles.listOfPremiumFeatures}>
@@ -217,23 +219,23 @@ export default function UserSettingsPage() {
 
           <View style={styles.PremiumFeature}>
             <Entypo name="infinity" size={14} style={styles.PremiumFeature_Icon}/>
-            <Text style={styles.PremiumFeature_Text}>Access to the future premium features for the same price</Text>
+            <Text style={styles.PremiumFeature_Text}>Access to the future Plus features for the same price</Text>
           </View>
         </View>
 
         {/* Plans (Monthly only visible; Yearly commented) */}
         <View style={styles.plans}>
           <Pressable
-            onPress={() => setSelectedPlan('monthly')}
-            style={[styles.plan, selectedPlan === 'monthly' && styles.planHighlight, !monthlyProduct && { opacity: 0.5 }]}
+            onPress={() => setSelectedPlan('Monthly')}
+            style={[styles.plan, selectedPlan === 'Monthly' && styles.planHighlight, !monthlyProduct && { opacity: 0.5 }]}
             disabled={!monthlyProduct}
           >
-            {selectedPlan === 'monthly' ? <Text style={styles.badge}>SELECTED</Text> : null}
-            <Text style={styles.planTitle}>Monthly</Text>
+            {selectedPlan === 'Monthly' ? <Text style={styles.badge}>SELECTED</Text> : null}
+            <Text style={styles.planTitle}>Monthly plan</Text>
             <Text style={styles.planPrice}>
-              {loadingPrices ? 'Loading…' : (monthlyProduct ? (monthlyPriceStr + '/month') : 'Unavailable')}
+              {loadingPrices ? 'Loading…' : (monthlyProduct ? (monthlyPriceStr) : 'Unavailable')}
             </Text>
-            <Text style={styles.planDetail}>Billed monthly</Text>
+            <Text style={styles.planDetail}>Billed every month</Text>
           </Pressable>
 
 
@@ -254,26 +256,38 @@ export default function UserSettingsPage() {
         {/* Auto-renew disclosure (required) */}
         <View style={{ marginTop: 12, paddingHorizontal: 6 }}>
           <Text style={{ fontSize: 12, color: '#555', textAlign: 'center' }}>
-            Auto-renews until canceled. Manage or cancel in Settings &gt; Apple ID &gt; Subscriptions.
+            Subscriptions auto-renew until canceled. Manage them or cancel in Settings &gt; Apple ID &gt; Subscriptions.
           </Text>
           {/* If you offer a free trial, add:
               "Free trial converts to a paid subscription unless canceled at least 24 hours before it ends." */}
         </View>
 
         {/* CTA */}
-        <Pressable
+        {/* <TouchableOpacity
           style={[styles.upgradeButton, buyDisabled && { opacity: 0.6 }]}
           onPress={handlePurchase}
           disabled={buyDisabled}
         >
           <Text style={styles.upgradeText}>
-            {loadingPrices ? 'Loading…' : 'Continue – Monthly'}
+            {loadingPrices ? 'Loading…' : 'Purchase ' + selectedPlan + ' for ' + monthlyPriceStr}
           </Text>
-        </Pressable>
+        </TouchableOpacity> */}
+
+        <ButtonBouncing
+          style={[styles.upgradeButton, buyDisabled && { opacity: 0.6 }, {backgroundColor: addButtonColor}]}
+          innerStyle={{backgroundColor: addButtonColor, height: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 20,}}
+          onPress={handlePurchase}
+          disabled={buyDisabled}
+          label={
+            <Text style={styles.upgradeText}>
+              {loadingPrices ? 'Loading…' : 'Purchase ' + selectedPlan + ' for ' + monthlyPriceStr}
+            </Text>}
+          toScale={0.95}
+        ></ButtonBouncing>
 
         {/* Footer: restore, manage, terms, privacy */}
         <View style={styles.footer}>
-          {/* <TouchableOpacity onPress={restorePurchases}><Text>Restore Purchases</Text></TouchableOpacity> */}
+          <TouchableOpacity onPress={restorePurchases}><Text>Restore Purchases</Text></TouchableOpacity>
           <TouchableOpacity onPress={openTerms}><Text>Terms of Use</Text></TouchableOpacity>
           <TouchableOpacity onPress={openPrivacy}><Text>Privacy Policy</Text></TouchableOpacity>
         </View>
@@ -289,13 +303,13 @@ const styles = StyleSheet.create({
   },
 
   UserSettingsPage_ContentWrapper: { 
-    padding: 20,
+    padding: 10,
     paddingTop: height*0.1,
     height: height*0.8,
   },
 
   title: { 
-    fontSize: 20, 
+    fontSize: 30, 
     fontWeight: 'bold', 
     textAlign: 'left', 
     marginTop: 10,
@@ -303,10 +317,10 @@ const styles = StyleSheet.create({
   },
 
   subtitle: { 
-    fontSize: 14, 
+    fontSize: 16, 
     color: '#555', 
     textAlign: 'left', 
-    marginVertical: 10,
+    marginVertical: 4,
     paddingLeft: 10,
   },
 
@@ -349,8 +363,8 @@ const styles = StyleSheet.create({
   },
 
   planPrice: { 
-    fontSize: 14, 
-    fontWeight: '600', 
+    fontSize: 16, 
+    fontFamily: MainFont_Bold,
     marginBottom: 2 
   },
 
@@ -390,8 +404,8 @@ const styles = StyleSheet.create({
     width: width*0.8,
     borderRadius: 20,
     borderColor: '#ccc',
-    borderWidth: 1,
-    paddingHorizontal: 10,
+    // borderWidth: 1,
+    // paddingHorizontal: 10,
     position: 'absolute',
     bottom: 50,
     alignSelf: 'center'

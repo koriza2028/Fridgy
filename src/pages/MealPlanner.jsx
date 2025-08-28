@@ -228,16 +228,6 @@ export default function MealPlannerPage({ navigation }) {
     }
   };
 
-  const listHeader = (
-  <View style={styles.navigation}>
-    <ButtonBouncing onPress={() => changeDate(-1)} style={styles.ButtonArrows}
-      label={<Entypo name="arrow-long-left" size={30} />}/>
-    <Text style={styles.TextDate}>{formatDateDisplay(selectedDate)}</Text>
-    <ButtonBouncing onPress={() => changeDate(1)} style={styles.ButtonArrows}
-      label={<Entypo name="arrow-long-right" size={30} />}/>
-  </View>
-);
-
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View style={styles.MealPlannerPage}>
@@ -245,17 +235,13 @@ export default function MealPlannerPage({ navigation }) {
 
         <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
 
-        {/* <View style={styles.navigation}>
-
+        <View style={styles.navigation}>
           <ButtonBouncing onPress={() => changeDate(-1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-left" size={30} />}/>
-
           <Text style={styles.TextDate}>{formatDateDisplay(selectedDate)}</Text>
-
           <ButtonBouncing onPress={() => changeDate(1)} style={styles.ButtonArrows}
             label={<Entypo name="arrow-long-right" size={30} />}/>
-
-        </View> */}
+        </View>
         
         
           {searchQuery.length > 0 ? (
@@ -280,7 +266,6 @@ export default function MealPlannerPage({ navigation }) {
         cards.length > 0 ? (
             
           <SwipeListView
-            ListHeaderComponent={listHeader}
             stickyHeaderIndices={[0]}
             data={cards}
             keyExtractor={(item) => `${item.id}_${selectedDate}`}
@@ -351,7 +336,7 @@ const styles = StyleSheet.create({
     height: 30,
     alignItems: 'center',
     // paddingHorizontal: 10,
-    marginTop: 10,
+    // marginTop: 10,
     marginBottom: 30,
   },
   addMore_Button: {

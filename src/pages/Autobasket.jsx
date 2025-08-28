@@ -1,6 +1,7 @@
+// AutoBasketPage.jsx
 // Refactored AutoBasketPage to align with BasketPage styling and structure
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,7 +12,8 @@ import {
   Keyboard,
   FlatList,
   LayoutAnimation,
-  Image
+  Image,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -24,6 +26,8 @@ import {
   removeProductFromAutoBasket
 } from '../store/autoBasketStore';
 import { fetchAllProducts } from '../store/fridgeStore';
+
+import { usePremiumStore } from '../store/premiumStore';
 
 import SearchInput from '../components/Search';
 import BasketItem from '../components/basket/BasketItem';
@@ -44,6 +48,9 @@ export default function AutoBasketPage() {
     return { userId, familyId, currentMode };
   });
 
+  const isPremium = usePremiumStore(s => s.isPremium);
+  const MAX_FREE_ITEMS = 5;
+
   const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +58,8 @@ export default function AutoBasketPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
   const [openRowKey, setOpenRowKey] = useState(null);
+
+  const canAddMore = isPremium || autoBasket.length < MAX_FREE_ITEMS;
 
   useFocusEffect(
     useCallback(() => {
@@ -75,8 +84,9 @@ export default function AutoBasketPage() {
     setSearchQuery(text);
     if (text) {
       const results = products.filter(
-        (p) => !autoBasket.some((a) => a.productId === p.id) &&
-               p.name.toLowerCase().includes(text.toLowerCase())
+        (p) =>
+          !autoBasket.some((a) => a.productId === p.id) &&
+          p.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredData(results);
     } else {
@@ -86,6 +96,10 @@ export default function AutoBasketPage() {
 
   const addProduct = async (item) => {
     try {
+      if (!isPremium && autoBasket.length >= MAX_FREE_ITEMS) {
+        Alert.alert('Limit reached', `Free plan allows up to ${MAX_FREE_ITEMS} items in AutoBasket.`);
+        return;
+      }
       await addProductToAutoBasket(ctx, item);
       setSearchQuery('');
       setFilteredData([]);
@@ -133,6 +147,20 @@ export default function AutoBasketPage() {
 
           <SearchInput placeholder="Find a product" query={searchQuery} onChangeText={handleSearch} />
 
+          {/* Limit/Counter */}
+          <View style={styles.limitRow}>
+            {isPremium ? (
+              <View style={styles.limitRowInner}>
+                {/* <Text style={styles.limitText}>{autoBasket.length}</Text> */}
+                <Entypo name="infinity" size={16} style={styles.infinityIcon} />
+              </View>
+            ) : (
+              <Text style={styles.limitText}>
+                You have {autoBasket.length} / {MAX_FREE_ITEMS} items in your AutoBasket
+              </Text>
+            )}
+          </View>
+
           <View style={styles.BasketPage_ListOfBasketItems}>
             {searchQuery.length > 0 ? (
               <FlatList
@@ -143,6 +171,8 @@ export default function AutoBasketPage() {
                   <ButtonBouncing
                     style={{ borderRadius: 6 }}
                     onPress={() => addProduct(item)}
+                    isDisabled={!canAddMore}
+                    disabled={!canAddMore}
                     label={
                       <View style={[styles.fridgeItem, styles.searchItem]}>
                         <AppImage
@@ -183,16 +213,16 @@ export default function AutoBasketPage() {
                   </View>
                 )}
               />
-              ) : (
-                <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height*0.218, paddingLeft: 10,}}>
-                  <Image
-                    source={require('../../assets/ProductImages/emptyBasket.png')}
-                    style={{ width: 184, height: 184, resizeMode: 'contain' }}
-                  />
-                  <Text style={{ fontFamily: MainFont, marginTop: 10 }}
-                    >Add some items that you always want to have in your basket!
-                  </Text>
-                </View>
+            ) : (
+              <View style={{ alignItems: 'center', position: 'absolute', width: width, top: height * 0.218, paddingLeft: 10 }}>
+                <Image
+                  source={require('../../assets/ProductImages/emptyBasket.png')}
+                  style={{ width: 184, height: 184, resizeMode: 'contain' }}
+                />
+                <Text style={{ fontFamily: MainFont, marginTop: 10 }}>
+                  Add some items that you always want to have in your basket!
+                </Text>
+              </View>
             )}
           </View>
 
@@ -229,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: deleteButtonColor, // imported from styleVariables
+    color: deleteButtonColor,
   },
   BasketPage: {
     flex: 1,
@@ -271,5 +301,26 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     fontSize: 12,
     fontFamily: MainFont,
+  },
+
+  // Counter styles
+  limitRow: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    alignItems: 'flex-start',
+  },
+  limitRowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  limitText: {
+    fontFamily: MainFont,
+    fontSize: 12,
+    color: '#666',
+  },
+  infinityIcon: {
+    marginLeft: 6,
+    color: '#666',
   },
 });

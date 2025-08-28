@@ -182,20 +182,20 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
   const isPremium = usePremiumStore(s => s.isPremium);
 
   const onPressGallery = async () => {
-    // if (!isPremium) {
-    //   onClose();
-    //   navigation.navigate('UserSettingsPage');
-    //   return;
-    // }
+    if (!isPremium) {
+      // onClose();
+      // navigation.navigate('UserSettingsPage');
+      return;
+    }
     await pickImageFromGallery();
   };
 
   const onPressCamera = async () => {
-    // if (!isPremium) {
-    //   onClose();
-    //   navigation.navigate('UserSettingsPage');
-    //   return;
-    // }
+    if (!isPremium) {
+      // onClose();
+      // navigation.navigate('UserSettingsPage');
+      return;
+    }
     await takePhoto();
   };
 
