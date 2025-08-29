@@ -3,11 +3,13 @@ import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
 
 import AppImage from '../image/AppImage';
 
-import { deleteButtonColor } from '../../../assets/Styles/styleVariables';
-
+import { addButtonColor, deleteButtonColor } from '../../../assets/Styles/styleVariables';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export default function IngredientItem({ ingredient, isRemovable = true, onRemove, isMandatory, isEditing, isCreatingNew }) {
+import ButtonBouncing from '../Button_Bouncing';
+
+export default function IngredientItem({ ingredient, isRemovable = true, onRemove, isMandatory, isEditing, isCreatingNew, addToBasketOption, props }) {
 
   const removeProduct = () => {
     const id = ingredient._id || ingredient.productId;
@@ -30,6 +32,13 @@ export default function IngredientItem({ ingredient, isRemovable = true, onRemov
       { cancelable: true }
     );
   };
+
+  const handleMoveToBasket = async (id) => {
+          await moveProductToBasket(ctx, id);
+          props.onChange();
+          props.onMoveToBasket();
+          // Карин сделай чтобы все функции были доступны здесь, без пропсов
+      };
 
 
   // const borderColor = ingredient.amount > 0 ? 'green' : 'red';
@@ -54,6 +63,16 @@ export default function IngredientItem({ ingredient, isRemovable = true, onRemov
                 {/* <Text>-</Text> */}
                 <MaterialIcons name={'remove-circle'} size={22} color={deleteButtonColor} />
               </Pressable>)}
+
+              {(addToBasketOption && 
+                <ButtonBouncing
+                  onPress={() => handleMoveToBasket(props.product.id)}
+                  style={styles.SendToBasket_Button} textStyle={styles.SendToBasket_Button_Text}
+                  label={<MaterialCommunityIcons name="cart-arrow-right" size={24} color={addButtonColor} />}
+              ></ButtonBouncing>
+
+              )}
+
             </View>
 
 
@@ -70,6 +89,7 @@ const styles = StyleSheet.create({
         
         // justifyContent: 'space-between',
         width: '100%',
+        position: 'relative',
         // borderColor: '#C0C0C0',
         // borderWidth: 1,
         // backgroundColor: 'white',
@@ -124,6 +144,15 @@ const styles = StyleSheet.create({
       },
       IngredientItem_RemoveButton_Text: {
         fontSize: 20,
-      }
+      },
+
+      SendToBasket_Button: {
+          position: 'absolute',
+          right: -20,
+          padding: 4,
+          borderRadius: 6,
+          bottom: '10%'
+      },
+
 
 });

@@ -7,7 +7,7 @@ import useNotificationsStore from '../store/notificationsStore';
 import IngredientItem from '../components/cooking/IngredientCard';
 
 import { useFonts } from 'expo-font';
-import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, TextFontSize } from '../../assets/Styles/styleVariables';
+import { addButtonColor, backgroundColor, buttonColor, MainFont, MainFont_Bold, MainFont_SemiBold, MainFont_Title, TextFontSize } from '../../assets/Styles/styleVariables';
 
 const NotificationsModal = ({ isVisible, onClose }) => {
   const [fontsLoaded] = useFonts({
@@ -48,17 +48,20 @@ const NotificationsModal = ({ isVisible, onClose }) => {
 
               return (
                 <View key={date} style={{ marginBottom: 20 }}>
-                  <Text style={styles.dateHeader}>
-                    {new Date(date).toLocaleDateString('de-DE')}:
-                  </Text>
+                  
                   {recipesWithMissing.map(([recipeId, { title, ingredients }]) => (
                     <View key={recipeId} style={styles.recipeBlock}>
-                      <Text style={styles.recipeTitle}>{title}</Text>
+                      <Text style={styles.dateHeader}>
+                        {/* Missing ingredients to cook {title} on {new Date(date).toLocaleDateString('de-DE')} */}
+                        Missing ingredients for {title}:
+                      </Text>
+                      {/* <Text style={styles.recipeTitle}>{title}</Text> */}
                       {ingredients.map((ingredient, index) => (
                         <IngredientItem
                           key={`${recipeId}-${ingredient.productId}-${index}`}
                           ingredient={ingredient}
                           isRemovable={false}
+                          addToBasketOption={true}
                         />
                       ))}
                     </View>
@@ -82,12 +85,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 60,
-    paddingHorizontal: 20,
+    // paddingHorizontal: 10,
   },
   title: {
     fontSize: 24,
-    fontFamily: MainFont_Bold,
-    marginBottom: 20,
+    fontFamily: MainFont_Title,
+    color: addButtonColor,
+    marginBottom: 10,
     textAlign: 'center',
   },
   closeButton: {
@@ -100,9 +104,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   dateHeader: {
-    fontWeight: 'bold',
+    fontFamily: MainFont_SemiBold,
     fontSize: 16,
     marginBottom: 6,
+    marginLeft: 10,
   },
   recipeBlock: {
     marginLeft: 10,
