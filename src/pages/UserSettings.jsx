@@ -174,16 +174,39 @@ export default function UserSettingsPage() {
 
   const restorePurchases = async () => {
     try {
-      const info = await Purchases.restorePurchases();
-      if (info && info.entitlements && info.entitlements.active && info.entitlements.active[ENTITLEMENT_ID]) {
+      // Returns CustomerInfo
+      const customerInfo = await Purchases.restorePurchases();
+
+      // Helpful during review / debugging
+      console.log('[Restore] customerInfo:', JSON.stringify({
+        entitlements: {
+          active: Object.keys(customerInfo?.entitlements?.active ?? {}),
+        },
+        allPurchasedProductIdentifiers: customerInfo?.allPurchasedProductIdentifiers,
+        latestExpirationDate: customerInfo?.latestExpirationDate,
+      }, null, 2));
+
+      const isActive =
+        !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID]?.isActive;
+
+      if (isActive) {
         Alert.alert('Restored', 'Your purchases have been restored.');
       } else {
-        Alert.alert('No purchases', 'No active purchases were found for your account.');
+        // Not active could mean: never purchased on this Apple ID, expired sub, or mismatch of IDs.
+        const hadAnyPurchase = (customerInfo?.allPurchasedProductIdentifiers?.length ?? 0) > 0;
+        const msg = hadAnyPurchase
+          ? 'We found past purchases, but no active entitlement. It may have expired or doesn’t match your current plan.'
+          : 'No past purchases were found for this Apple ID on this app.';
+        Alert.alert('No purchases', msg);
       }
     } catch (e) {
-      Alert.alert('Restore failed', (e && e.message) ? e.message : 'Unknown error');
+      // Surface StoreKit/RC messages (useful for Apple review notes)
+      const message = (e && (e.message || e.code)) ? `${e.message || e.code}` : 'Unknown error';
+      console.warn('[Restore] error:', e);
+      Alert.alert('Restore failed', message);
     }
   };
+
 
   const buyDisabled = loadingPrices || !monthlyProduct; // || (selectedPlan==='annual' && !annualProduct)
 
