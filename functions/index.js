@@ -137,7 +137,7 @@ console.log("[sync] key prefix:", apiKey ? apiKey.slice(0, 3) : "none"); // shou
 
   const hit = async (appUserId) => {
     const url = `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`;
-    const resp = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}`, "X-Platform": "ios", "X-Is-Sandbox": "true" } });
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}`, "X-Platform": "ios" } });
     const text = await resp.text().catch(() => "");
     console.log("RC GET", resp.status, appUserId, text.slice(0, 400));
 

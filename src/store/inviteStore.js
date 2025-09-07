@@ -52,55 +52,65 @@ export const fetchInvite = async (inviteId) => {
   return { id: snap.id, ...snap.data() };
 };
 
-/** Accept an invite: join family, mark invite used, best-effort RC sync */
+// assumes you have this helper somewhere already
+// const getUsernameById = async (userId) => { ... }
+
 export const acceptInvite = async ({ userId }, inviteId) => {
   if (!userId) throw new Error("User must be logged in to accept an invite");
+  if (!inviteId) throw new Error("Invite code is missing");
 
+  // 1) Load invite
   const inviteRef = doc(db, "invites", inviteId);
   const inviteSnap = await getDoc(inviteRef);
   if (!inviteSnap.exists()) throw new Error("Invite not found");
 
   const invite = inviteSnap.data();
-
   if (invite.used) throw new Error("Invite code has already been used");
   if (invite.expiresAt && Date.now() > invite.expiresAt) {
     throw new Error("Invite code has expired");
   }
 
   const { familyId } = invite;
+  if (!familyId) throw new Error("Invite is missing familyId");
 
-  // 1) Assign user to family (create-or-merge user doc)
+  // 2) Add member: write user doc + push into family.members
   await setDoc(
     doc(db, "users", userId),
     { familyId, lastUsedMode: "family" },
     { merge: true }
   );
 
-  // 2) Add user to family's members
   await updateDoc(doc(db, "families", familyId), {
     members: arrayUnion(userId),
   });
 
-  // 3) Mark invite as used (optionally cache username)
-  const usedByUsername = await getUsernameById(userId);
-  await updateDoc(inviteRef, {
-    used: true,
-    usedBy: userId,
-    usedByUsername: usedByUsername || null,
-    usedAt: serverTimestamp(),
-  });
-
-  // 4) Best-effort manual sync (don’t block UX if it fails)
+  // 3) Mark invite used (optionally cache username)
   try {
-    const familySnap = await getDoc(doc(db, 'families', familyId));
-    console.log("i am here", familySnap);
+    const usedByUsername = await getUsernameById(userId);
+    await updateDoc(inviteRef, {
+      used: true,
+      usedBy: userId,
+      usedByUsername: usedByUsername || null,
+      usedAt: serverTimestamp(),
+    });
+  } catch {
+    // non-fatal for UX
+  }
+
+  // 4) Stabilize UX: pause the Family-Mode guard briefly, then trigger a sync
+  try {
+    // give Firestore + callable/webhook a few seconds to settle
+    useFamilyStore.getState().pauseGuard?.(10000); // 10s grace
+  } catch {}
+  try {
     await useFamilyStore.getState().syncFamilyPremiumNow?.(familyId);
-  } catch (e) {
-    if (__DEV__) console.log("[Invite] premium sync skipped:", e?.message);
+  } catch {
+    // non-fatal; the live family listener will still flip on when the backend updates
   }
 
   return familyId;
 };
+
 
 /** Revoke (delete) an invite */
 export const revokeInvite = async ({ inviteId }) => {

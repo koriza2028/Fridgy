@@ -333,6 +333,15 @@ const App = () => {
     }
   };
 
+  // App.js (inside your AppState 'active' handler)
+  const sub = AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+      try { useFamilyStore.getState().pauseGuard(10000); } catch {}
+      refreshEntitlements();
+    }
+  });
+
+
   // Consume invite code after login
   useEffect(() => {
     if (!user?.uid) return;

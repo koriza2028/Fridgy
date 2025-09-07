@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, ScrollView, Pressable, Share, Alert, StyleSheet, Dimensions,
   TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import * as Linking from 'expo-linking';
-import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import UserSlots from '../components/usersettings/UserSlots';
@@ -39,8 +39,7 @@ export default function FamilyModePage() {
   });
 
   // ── auth context ──────────────────────────────────────────────────────
-  const { userId, familyId, user, lastUsedMode } = useAuthStore((s) => ({
-    userId: s.user?.uid,
+  const { familyId, user, lastUsedMode } = useAuthStore((s) => ({
     familyId: s.familyId,
     user: s.user,
     lastUsedMode: s.lastUsedMode,
@@ -50,9 +49,20 @@ export default function FamilyModePage() {
   const deleteAccount = useAuthStore((s) => s.deleteAccount);
 
   // ── premium (combined) ────────────────────────────────────────────────
-  const hasPlus  = usePremiumStore(s => s.hasPlus);
-  const familyPlus = useFamilyStore(s => s.familyPremiumActive);
+  const rcLoaded = usePremiumStore(s => s.rcLoaded);
   const rcActive = usePremiumStore((s) => s.isPremium);
+  const { familyPremiumActive, familyPremiumLoaded, guardPauseUntil } = useFamilyStore(s => ({
+    familyPremiumActive: s.familyPremiumActive,
+    familyPremiumLoaded: s.familyPremiumLoaded,
+    guardPauseUntil: s.guardPauseUntil,
+  }));
+
+  const grace = Date.now() < (guardPauseUntil || 0);
+
+  const canUseFamilyMode =
+    (!rcLoaded || !familyPremiumLoaded)
+      ? undefined
+      : (!!familyId && (rcActive || familyPremiumActive || grace));
   const refreshEntitlements = usePremiumStore((s) => s.refreshEntitlements);
   useEffect(() => { refreshEntitlements?.(); }, [refreshEntitlements]);
 
@@ -66,6 +76,32 @@ export default function FamilyModePage() {
     if (!familyId) { clearOwnerId(); return; }
     (async () => { await fetchOwnerId(familyId); })();
   }, [familyId]);
+
+  useFocusEffect(   
+    React.useCallback(() => {
+      if (!familyId) return;
+      const noPremiumVisible = !rcActive && !familyPremiumActive;
+      if (noPremiumVisible) {
+        try {
+          const s = useFamilyStore.getState();
+          s.pauseGuard(12000); // 12s is plenty
+          s.syncFamilyPremiumNow?.(familyId)?.catch(() => {});
+        } catch {}
+      }
+     // no cleanup needed
+    }, [familyId, rcActive, familyPremiumActive])
+  );
+
+  useEffect(() => {
+    if (lastUsedMode !== 'family' || !user?.uid) return;
+    if (!rcLoaded || !familyPremiumLoaded) return;            // still loading → do nothing
+    if (Date.now() < (guardPauseUntil || 0)) return;          // grace window → do nothing
+
+    if (canUseFamilyMode === false) {
+      useAuthStore.getState().setLastUsedMode('personal');
+      Alert.alert('Access changed', 'Your Family Mode access has been revoked.');
+    }
+  }, [lastUsedMode, canUseFamilyMode, rcLoaded, familyPremiumLoaded, guardPauseUntil, user?.uid]);
 
   // ── invites ───────────────────────────────────────────────────────────
   const [invites, setInvites] = useState([]);
@@ -108,20 +144,25 @@ export default function FamilyModePage() {
     );
   };
 
-  // ── create & share invite (owner only) ────────────────────────────────
+    // ── create & share invite (owner only) ────────────────────────────────
+    // in FamilyModePage
   const handleCreateInvite = async () => {
-    if (!familyId) {
-      Alert.alert('Error', 'You must be in a family to invite.');
-      return;
-    }
-    if (user?.uid !== ownerId) {
-      Alert.alert('Owner only', 'Only the family owner can create invites.');
-      return;
-    }
+    if (!familyId) { Alert.alert('Error', 'You must be in a family to invite.'); return; }
+    if (user?.uid !== ownerId) { Alert.alert('Owner only', 'Only the family owner can create invites.'); return; }
+
+    // 👇 prevent the “locked” flash while the app bounces to the Share sheet
+    try { useFamilyStore.getState().pauseGuard(12000); } catch {}
+
     try {
       const code = await createInvite({ familyId, ownerId });
       const link = Linking.createURL('invite', { queryParams: { code } });
       await Share.share({ title: 'Join my family', message: `${link}` });
+
+      // optional: kick a best-effort RC→family sync when you return
+      setTimeout(() => {
+        try { useFamilyStore.getState().syncFamilyPremiumNow?.(familyId); } catch {}
+      }, 0);
+
       loadInvites();
     } catch (err) {
       console.error('Create invite failed', err);
@@ -129,12 +170,13 @@ export default function FamilyModePage() {
     }
   };
 
+
   // ── mode switching with gating (use hasPlus) ──────────────────────────
   const handleToggle = useCallback(
     async (targetMode) => {
       if (!user?.uid) { Alert.alert('Not logged in'); return; }
       if (targetMode === lastUsedMode) return;
-      if (targetMode === 'family' && !hasPlus) {
+      if (targetMode === 'family' && !canUseFamilyMode) {
         Alert.alert('Plus required', 'Family Mode is available with Fridgy Plus.', [
           { text: 'Not now', style: 'cancel' },
           { text: 'See subscription', onPress: () => navigation.navigate(SUBSCRIPTION_ROUTE_NAME) },
@@ -151,7 +193,7 @@ export default function FamilyModePage() {
         Alert.alert('Error', e.message);
       }
     },
-    [user, lastUsedMode, hasPlus, navigation, setFamilyId, setLastUsedMode]
+    [user, lastUsedMode, canUseFamilyMode, navigation, setFamilyId, setLastUsedMode]
   );
 
   // ── family deletion / quit ────────────────────────────────────────────
@@ -206,7 +248,7 @@ export default function FamilyModePage() {
   const isOwner = user?.uid === ownerId;
 
   // UI lock for family mode button now uses hasPlus (combined)
-  const familyModeDisabled = !hasPlus;
+  const familyModeDisabled = !canUseFamilyMode;
 
   return (
     <View style={styles.UserSettingsPage}>
@@ -251,7 +293,7 @@ export default function FamilyModePage() {
             You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
           </Text>
 
-          {!hasPlus && (
+          {!canUseFamilyMode && (
             <View style={styles.premiumCallout}>
               <Text style={styles.premiumCalloutTitle}>Family Mode is a Plus feature</Text>
               <Text style={styles.premiumCalloutText}>
@@ -263,15 +305,6 @@ export default function FamilyModePage() {
               >
                 <Text style={styles.premiumCTAText}>See subscription options</Text>
               </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Optional tiny badge to show why Plus is active */}
-          {hasPlus && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ fontSize: 12, color: '#2e7d32' }}>
-                {familyPlus && !rcActive ? 'Plus via Family' : 'Plus Active'}
-              </Text>
             </View>
           )}
 
@@ -288,7 +321,7 @@ export default function FamilyModePage() {
       )}
 
       {/* Family mode content (render only when in family mode and Plus is active — personal or family) */}
-      {lastUsedMode === 'family' && hasPlus && (
+      {lastUsedMode === 'family' && canUseFamilyMode && (
         <ScrollView>
           <View style={styles.UserSettingsPage_ContentWrapper}>
             <UserSlots currentUser={user} createInvite={handleCreateInvite} />
