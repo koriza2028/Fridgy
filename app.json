@@ -3,7 +3,7 @@
     "name": "Freedgy",
     "owner": "fridgyminds",
     "slug": "Freedgy",
-    "scheme": "freedgy",
+    "scheme": "fridgy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon2.png",
@@ -19,14 +19,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.CreativeMinds.Fridgy",
       "infoPlist": {
-        "SKAdNetworkItems": [],
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLSchemes": [
-              "fridgy"
-            ]
-          }
-        ]
+        "SKAdNetworkItems": []
       },
       "appleTeamId": "SY9H89HY87"
     },

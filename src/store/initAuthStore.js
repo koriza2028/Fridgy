@@ -2,6 +2,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc } from 'firebase/firestore';
 import app, { db } from '../firebaseConfig';
 import useAuthStore from './authStore';
+import usePremiumStore from './premiumStore';
 
 const auth = getAuth(app);
 
@@ -25,6 +26,7 @@ export function initAuthStore() {
         lastUsedMode,
         loading: false,  // loading finished
       });
+      await usePremiumStore.getState().initPremiumListeners({ doInitialRefresh: true });
     } else {
       useAuthStore.setState({
         user: null,

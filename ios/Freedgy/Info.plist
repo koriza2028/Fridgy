@@ -30,6 +30,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>fridgy</string>
+          <string>com.CreativeMinds.Fridgy</string>
         </array>
       </dict>
     </array>

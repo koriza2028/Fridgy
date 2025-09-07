@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1",
+    "expo": "~52.0.47",
+    "react": "18.3.1",
+    "react-native": "0.76.9"
+  },
+  "name": "functions",
+  "version": "1.0.0",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  }
+}

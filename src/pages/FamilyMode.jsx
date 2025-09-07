@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Share,
-  Alert,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  ActivityIndicator,
+  View, Text, ScrollView, Pressable, Share, Alert, StyleSheet, Dimensions,
+  TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useNavigation } from '@react-navigation/native';
-
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import UserSlots from '../components/usersettings/UserSlots';
@@ -27,28 +18,15 @@ import { deleteFamilyIfOwner, exitFamilyMembership } from '../store/familyStore'
 
 import { useFonts } from 'expo-font';
 import {
-  addButtonColor,
-  backgroundColor,
-  blackTextColor,
-  buttonColor,
-  greyTextColor,
-  greyTextColor2,
-  MainFont,
-  MainFont_Bold,
-  MainFont_SemiBold,
-  SecondTitleFontSize,
-  SecondTitleFontWeight,
-  TextFontSize,
+  addButtonColor, backgroundColor, blackTextColor, buttonColor, greyTextColor,
+  greyTextColor2, MainFont, MainFont_Bold, MainFont_SemiBold, SecondTitleFontSize,
+  SecondTitleFontWeight, TextFontSize,
 } from '../../assets/Styles/styleVariables';
 
-// Premium gate (standard)
-import PremiumGate from '../components/PremiumGate';
+// Premium (new combined store)
 import { usePremiumStore } from '../store/premiumStore';
-import UserSettingsPage from './UserSettings';
 
 const { width, height } = Dimensions.get('window');
-
-// Adjust to your real route name for the paywall/subscription page
 const SUBSCRIPTION_ROUTE_NAME = 'Subscription';
 
 export default function FamilyModePage() {
@@ -71,37 +49,31 @@ export default function FamilyModePage() {
   const setLastUsedMode = useAuthStore((s) => s.setLastUsedMode);
   const deleteAccount = useAuthStore((s) => s.deleteAccount);
 
-  // ── premium (RevenueCat) ──────────────────────────────────────────────
-  const isPremium = usePremiumStore((s) => s.isPremium);
+  // ── premium (combined) ────────────────────────────────────────────────
+  const hasPlus  = usePremiumStore(s => s.hasPlus);
+  const familyPlus = useFamilyStore(s => s.familyPremiumActive);
+  const rcActive = usePremiumStore((s) => s.isPremium);
   const refreshEntitlements = usePremiumStore((s) => s.refreshEntitlements);
-  useEffect(() => {
-    // In case App.js hasn’t refreshed yet, do one pull on mount.
-    refreshEntitlements?.();
-  }, [refreshEntitlements]);
+  useEffect(() => { refreshEntitlements?.(); }, [refreshEntitlements]);
 
   // ── family store ───────────────────────────────────────────────────────
   const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
   const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
 
-  // Only fetch owner id when premium + in a family
+  // Fetch owner id only when in a family (no longer blocking on personal premium)
   useEffect(() => {
-    if (!isPremium || !familyId) {
-      clearOwnerId();
-      return;
-    }
-    const load = async () => {
-      await fetchOwnerId(familyId);
-    };
-    load();
-  }, [isPremium, familyId]);
+    if (!familyId) { clearOwnerId(); return; }
+    (async () => { await fetchOwnerId(familyId); })();
+  }, [familyId]);
 
   // ── invites ───────────────────────────────────────────────────────────
   const [invites, setInvites] = useState([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
 
   const loadInvites = async () => {
-    if (!isPremium || !familyId) return;
+    // Only owner sees invite list / can create
+    if (!familyId || user?.uid !== ownerId) return;
     setLoadingInvites(true);
     try {
       const items = await listInvites({ familyId });
@@ -127,27 +99,23 @@ export default function FamilyModePage() {
           style: 'destructive',
           onPress: async () => {
             setDeleting(true);
-            try {
-              await deleteAccount();
-            } catch (e) {
-              Alert.alert('Could not delete account', e && e.message ? e.message : 'Unknown error');
-            } finally {
-              setDeleting(false);
-            }
+            try { await deleteAccount(); }
+            catch (e) { Alert.alert('Could not delete account', e?.message ?? 'Unknown error'); }
+            finally { setDeleting(false); }
           },
         },
       ]
     );
   };
 
-  // ── create & share invite (premium only) ───────────────────────────────
+  // ── create & share invite (owner only) ────────────────────────────────
   const handleCreateInvite = async () => {
-    if (!isPremium) {
-      Alert.alert('Premium required', 'Family invites are available with Fridgy Plus.');
+    if (!familyId) {
+      Alert.alert('Error', 'You must be in a family to invite.');
       return;
     }
-    if (!familyId) {
-      Alert.alert('Error', 'You must be in family mode to invite.');
+    if (user?.uid !== ownerId) {
+      Alert.alert('Owner only', 'Only the family owner can create invites.');
       return;
     }
     try {
@@ -161,24 +129,15 @@ export default function FamilyModePage() {
     }
   };
 
-  // ── mode switching with gating ─────────────────────────────────────────
+  // ── mode switching with gating (use hasPlus) ──────────────────────────
   const handleToggle = useCallback(
     async (targetMode) => {
-      if (!user?.uid) {
-        Alert.alert('Not logged in');
-        return;
-      }
-
+      if (!user?.uid) { Alert.alert('Not logged in'); return; }
       if (targetMode === lastUsedMode) return;
-
-      // Block switching to family if not premium
-      if (targetMode === 'family' && !isPremium) {
-        Alert.alert('Premium required', 'Family Mode is available with Fridgy Plus.', [
+      if (targetMode === 'family' && !hasPlus) {
+        Alert.alert('Plus required', 'Family Mode is available with Fridgy Plus.', [
           { text: 'Not now', style: 'cancel' },
-          {
-            text: 'See subscription',
-            onPress: () => navigation.navigate(UserSettingsPage),
-          },
+          { text: 'See subscription', onPress: () => navigation.navigate(SUBSCRIPTION_ROUTE_NAME) },
         ]);
         return;
       }
@@ -192,10 +151,10 @@ export default function FamilyModePage() {
         Alert.alert('Error', e.message);
       }
     },
-    [user, lastUsedMode, isPremium, navigation, setFamilyId, setLastUsedMode]
+    [user, lastUsedMode, hasPlus, navigation, setFamilyId, setLastUsedMode]
   );
 
-  // ── family deletion / quit ─────────────────────────────────────────────
+  // ── family deletion / quit ────────────────────────────────────────────
   const handleDeleteFamily = async () => {
     Alert.alert('Delete Family', 'Are you sure you want to delete the entire family?', [
       { text: 'Cancel', style: 'cancel' },
@@ -246,11 +205,13 @@ export default function FamilyModePage() {
 
   const isOwner = user?.uid === ownerId;
 
+  // UI lock for family mode button now uses hasPlus (combined)
+  const familyModeDisabled = !hasPlus;
+
   return (
     <View style={styles.UserSettingsPage}>
-      {/* Mode toggle buttons */}
+      {/* Mode toggle */}
       <View style={styles.modeToggleContainer}>
-        {/* Personal Mode Button */}
         <Pressable
           onPress={() => handleToggle('personal')}
           style={[styles.modeToggleButton, lastUsedMode === 'personal' && styles.modeToggleButtonSelected]}
@@ -262,43 +223,55 @@ export default function FamilyModePage() {
           />
         </Pressable>
 
-        {/* Family Mode Button — disabled if not premium */}
         <Pressable
-          disabled={!isPremium}
+          disabled={familyModeDisabled}
           onPress={() => handleToggle('family')}
           style={[
             styles.modeToggleButton,
             lastUsedMode === 'family' && styles.modeToggleButtonSelected,
-            !isPremium && styles.modeToggleButtonDisabled,
+            familyModeDisabled && styles.modeToggleButtonDisabled,
           ]}
         >
           <MaterialIcons
-            name={!isPremium ? 'lock' : 'group'}
+            name={familyModeDisabled ? 'lock' : 'group'}
             size={20}
-            style={[styles.icon, lastUsedMode === 'family' && { color: 'white' }, !isPremium && { color: '#999' }]}
+            style={[
+              styles.icon,
+              lastUsedMode === 'family' && { color: 'white' },
+              familyModeDisabled && { color: '#999' },
+            ]}
           />
         </Pressable>
       </View>
 
-      {/* Upsell if not premium */}
-      
-
-      {/* Personal mode content is always available */}
+      {/* Personal mode content */}
       {lastUsedMode === 'personal' && (
         <View style={styles.personalModeInfo}>
           <Text style={styles.personalModeInfoText}>
             You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
           </Text>
 
-          {!isPremium && (
+          {!hasPlus && (
             <View style={styles.premiumCallout}>
               <Text style={styles.premiumCalloutTitle}>Family Mode is a Plus feature</Text>
               <Text style={styles.premiumCalloutText}>
                 Invite up to 5 members, share lists, and more. Unlock with Fridgy Plus.
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate(UserSettingsPage)} style={styles.premiumCTA}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate(SUBSCRIPTION_ROUTE_NAME)}
+                style={styles.premiumCTA}
+              >
                 <Text style={styles.premiumCTAText}>See subscription options</Text>
               </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Optional tiny badge to show why Plus is active */}
+          {hasPlus && (
+            <View style={{ marginTop: 8 }}>
+              <Text style={{ fontSize: 12, color: '#2e7d32' }}>
+                {familyPlus && !rcActive ? 'Plus via Family' : 'Plus Active'}
+              </Text>
             </View>
           )}
 
@@ -314,28 +287,36 @@ export default function FamilyModePage() {
         </View>
       )}
 
-      {/* Family mode content only when premium (via PremiumGate) AND in family mode */}
-      <PremiumGate
-        fallback={null /* we already show an upsell above */}
-      >
-        {lastUsedMode === 'family' && (
-          <ScrollView>
-            <View style={styles.UserSettingsPage_ContentWrapper}>
-              <UserSlots currentUser={user} createInvite={handleCreateInvite} />
+      {/* Family mode content (render only when in family mode and Plus is active — personal or family) */}
+      {lastUsedMode === 'family' && hasPlus && (
+        <ScrollView>
+          <View style={styles.UserSettingsPage_ContentWrapper}>
+            <UserSlots currentUser={user} createInvite={handleCreateInvite} />
 
-              {isOwner ? (
+            {isOwner ? (
+              <>
+                <Pressable style={styles.secondaryButton} onPress={loadInvites}>
+                  <Text style={styles.secondaryText}>
+                    {loadingInvites ? 'Loading invites…' : `Refresh invites (${invites.length})`}
+                  </Text>
+                </Pressable>
+
+                <Pressable style={styles.primaryButton} onPress={handleCreateInvite}>
+                  <Text style={styles.primaryText}>Create Invite</Text>
+                </Pressable>
+
                 <Pressable style={styles.dangerTextButton} onPress={handleDeleteFamily}>
                   <Text style={styles.dangerText}>Delete Family</Text>
                 </Pressable>
-              ) : (
-                <Pressable style={styles.quitFamilyButton} onPress={handleQuitFamily}>
-                  <Text style={styles.quitFamilyText}>Quit Family</Text>
-                </Pressable>
-              )}
-            </View>
-          </ScrollView>
-        )}
-      </PremiumGate>
+              </>
+            ) : (
+              <Pressable style={styles.quitFamilyButton} onPress={handleQuitFamily}>
+                <Text style={styles.quitFamilyText}>Quit Family</Text>
+              </Pressable>
+            )}
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }

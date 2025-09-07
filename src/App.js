@@ -326,6 +326,7 @@ const App = () => {
       useAuthStore.getState().setFamilyId(newFamilyId);
       useAuthStore.getState().setLastUsedMode("family");
       await AsyncStorage.removeItem(PENDING_INVITE_KEY);
+      Alert.alert("Welcome!", "You’re now part of the family 🎉");
     } catch (err) {
       console.error("Invite accept failed", err);
       Alert.alert("Invite Error", err.message);

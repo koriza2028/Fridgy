@@ -2,6 +2,7 @@ import {
   doc,
   addDoc,
   getDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   collection,
@@ -12,19 +13,15 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import useFamilyStore from "./familyStore";
 
-/**
- * Helper: Get a user's username by ID
- */
+/** Helper: fetch a user's username by id */
 const getUsernameById = async (userId) => {
-  const userSnap = await getDoc(doc(db, "users", userId));
-  return userSnap.exists() ? userSnap.data().username || null : null;
+  const snap = await getDoc(doc(db, "users", userId));
+  return snap.exists() ? snap.data().username || null : null;
 };
 
-/**
- * Create a new invite code for a family.
- * Stores who created it, and optionally caches creator’s username.
- */
+/** Create a new invite for a family */
 export const createInvite = async (
   { familyId, ownerId },
   { invitedEmail, expiresAt } = {}
@@ -32,11 +29,7 @@ export const createInvite = async (
   if (!familyId) throw new Error("Family ID is required to create an invite");
   if (!ownerId) throw new Error("Owner ID is required to create an invite");
 
-  const invitesCol = collection(db, "invites");
-
-  // Optional: cache username in the invite
   const createdByUsername = await getUsernameById(ownerId);
-
   const inviteData = {
     familyId,
     createdBy: ownerId,
@@ -44,16 +37,14 @@ export const createInvite = async (
     createdAt: serverTimestamp(),
     used: false,
     ...(invitedEmail && { invitedEmail: invitedEmail.toLowerCase() }),
-    ...(expiresAt && { expiresAt }),
+    ...(expiresAt && { expiresAt }), // number or Firestore Timestamp you pass in
   };
 
-  const docRef = await addDoc(invitesCol, inviteData);
-  return docRef.id;
+  const ref = await addDoc(collection(db, "invites"), inviteData);
+  return ref.id;
 };
 
-/**
- * Fetch an invite by its code.
- */
+/** Read an invite */
 export const fetchInvite = async (inviteId) => {
   const ref = doc(db, "invites", inviteId);
   const snap = await getDoc(ref);
@@ -61,10 +52,7 @@ export const fetchInvite = async (inviteId) => {
   return { id: snap.id, ...snap.data() };
 };
 
-/**
- * Accept an invite: adds user to family and marks invite used.
- * Also optionally stores the username of the user who used it.
- */
+/** Accept an invite: join family, mark invite used, best-effort RC sync */
 export const acceptInvite = async ({ userId }, inviteId) => {
   if (!userId) throw new Error("User must be logged in to accept an invite");
 
@@ -75,28 +63,26 @@ export const acceptInvite = async ({ userId }, inviteId) => {
   const invite = inviteSnap.data();
 
   if (invite.used) throw new Error("Invite code has already been used");
-  if (invite.expiresAt && Date.now() > invite.expiresAt)
+  if (invite.expiresAt && Date.now() > invite.expiresAt) {
     throw new Error("Invite code has expired");
+  }
 
   const { familyId } = invite;
 
-  // Assign user to family
-  const userRef = doc(db, "users", userId);
-  await updateDoc(userRef, {
-    familyId,
-    lastUsedMode: "family",
-  });
+  // 1) Assign user to family (create-or-merge user doc)
+  await setDoc(
+    doc(db, "users", userId),
+    { familyId, lastUsedMode: "family" },
+    { merge: true }
+  );
 
-  // Add user to family's member list
-  const familyRef = doc(db, "families", familyId);
-  await updateDoc(familyRef, {
+  // 2) Add user to family's members
+  await updateDoc(doc(db, "families", familyId), {
     members: arrayUnion(userId),
   });
 
-  // Optional: get username of the user accepting the invite
+  // 3) Mark invite as used (optionally cache username)
   const usedByUsername = await getUsernameById(userId);
-
-  // Mark invite used
   await updateDoc(inviteRef, {
     used: true,
     usedBy: userId,
@@ -104,42 +90,41 @@ export const acceptInvite = async ({ userId }, inviteId) => {
     usedAt: serverTimestamp(),
   });
 
+  // 4) Best-effort manual sync (don’t block UX if it fails)
+  try {
+    const familySnap = await getDoc(doc(db, 'families', familyId));
+    console.log("i am here", familySnap);
+    await useFamilyStore.getState().syncFamilyPremiumNow?.(familyId);
+  } catch (e) {
+    if (__DEV__) console.log("[Invite] premium sync skipped:", e?.message);
+  }
+
   return familyId;
 };
 
-
-/**
- * Revoke (delete) an invite.
- */
-export const revokeInvite = async ({ userId, inviteId }) => {
-  const inviteRef = doc(db, "invites", inviteId);
-  await deleteDoc(inviteRef);
+/** Revoke (delete) an invite */
+export const revokeInvite = async ({ inviteId }) => {
+  await deleteDoc(doc(db, "invites", inviteId));
 };
 
-/**
- * List all invites for a family.
- */
+/** List invites for a family */
 export const listInvites = async ({ familyId }) => {
   if (!familyId) throw new Error("Family ID is required to list invites");
-  const invitesCol = collection(db, "invites");
-  const q = query(invitesCol, where("familyId", "==", familyId));
+  const q = query(collection(db, "invites"), where("familyId", "==", familyId));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 };
 
-/**
- * Enhanced: List invites and enrich with current usernames (not cached)
- */
+/** List invites with live usernames (not just cached) */
 export const listInvitesWithUsernames = async ({ familyId }) => {
   const invites = await listInvites({ familyId });
-
   const enriched = await Promise.all(
     invites.map(async (inv) => {
       const createdByUsername =
-        inv.createdByUsername || (inv.createdBy && (await getUsernameById(inv.createdBy)));
+        inv.createdByUsername ||
+        (inv.createdBy && (await getUsernameById(inv.createdBy)));
       const usedByUsername =
         inv.usedByUsername || (inv.usedBy && (await getUsernameById(inv.usedBy)));
-
       return {
         ...inv,
         createdByUsername: createdByUsername || null,
@@ -147,6 +132,5 @@ export const listInvitesWithUsernames = async ({ familyId }) => {
       };
     })
   );
-
   return enriched;
 };
