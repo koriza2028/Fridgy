@@ -64,12 +64,19 @@ export default function FamilyModePage() {
       ? undefined
       : (!!familyId && (rcActive || familyPremiumActive || grace));
   const refreshEntitlements = usePremiumStore((s) => s.refreshEntitlements);
-  useEffect(() => { refreshEntitlements?.(); }, [refreshEntitlements]);
 
   // ── family store ───────────────────────────────────────────────────────
   const fetchOwnerId = useFamilyStore((state) => state.fetchOwnerId);
   const clearOwnerId = useFamilyStore((state) => state.clearOwnerId);
   const ownerId = useFamilyStore((state) => state.ownerId);
+
+
+  const isOwner = user?.uid === ownerId;
+
+  // UI lock for family mode button now uses hasPlus (combined)
+  const familyModeDisabled = canUseFamilyMode === false;
+
+  useEffect(() => { refreshEntitlements?.(); }, [refreshEntitlements]);
 
   // Fetch owner id only when in a family (no longer blocking on personal premium)
   useEffect(() => {
@@ -176,7 +183,7 @@ export default function FamilyModePage() {
     async (targetMode) => {
       if (!user?.uid) { Alert.alert('Not logged in'); return; }
       if (targetMode === lastUsedMode) return;
-      if (targetMode === 'family' && !canUseFamilyMode) {
+      if (targetMode === 'family' && (canUseFamilyMode === false)) {
         Alert.alert('Plus required', 'Family Mode is available with Fridgy Plus.', [
           { text: 'Not now', style: 'cancel' },
           { text: 'See subscription', onPress: () => navigation.navigate(SUBSCRIPTION_ROUTE_NAME) },
@@ -244,11 +251,6 @@ export default function FamilyModePage() {
       { cancelable: true }
     );
   };
-
-  const isOwner = user?.uid === ownerId;
-
-  // UI lock for family mode button now uses hasPlus (combined)
-  const familyModeDisabled = !canUseFamilyMode;
 
   return (
     <View style={styles.UserSettingsPage}>

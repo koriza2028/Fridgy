@@ -24,22 +24,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 
 import ButtonBouncing from '../components/Button_Bouncing.jsx';
 
-import UserSlots from '../components/usersettings/UserSlots';
-import useAuthStore from '../store/authStore';
-import { toggleUserMode, setUsername } from '../store/userAccountStore';
-
-import {
-  createInvite,
-  listInvites,
-  revokeInvite,
-} from '../store/inviteStore';
-
-import {
-  exitFamilyMembership,
-} from '../store/familyStore';
-
-import useFamilyStore from '../store/familyStore';
-
 import { useFonts } from 'expo-font';
 
 import {

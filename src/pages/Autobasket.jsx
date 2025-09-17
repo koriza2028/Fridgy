@@ -28,6 +28,7 @@ import {
 import { fetchAllProducts } from '../store/fridgeStore';
 
 import { usePremiumStore } from '../store/premiumStore';
+import useFamilyStore from '../store/familyStore';
 
 import SearchInput from '../components/Search';
 import BasketItem from '../components/basket/BasketItem';
@@ -48,8 +49,20 @@ export default function AutoBasketPage() {
     return { userId, familyId, currentMode };
   });
 
-  const isPremium = usePremiumStore(s => s.isPremium);
-  const MAX_FREE_ITEMS = 5;
+  const rcLoaded = usePremiumStore(s => s.rcLoaded);
+  const rcActive = usePremiumStore((s) => s.isPremium);
+  const { familyPremiumActive, familyPremiumLoaded, guardPauseUntil } = useFamilyStore(s => ({
+    familyPremiumActive: s.familyPremiumActive,
+    familyPremiumLoaded: s.familyPremiumLoaded,
+    guardPauseUntil: s.guardPauseUntil,
+  }));
+
+  const grace = Date.now() < (guardPauseUntil || 0);
+
+  const canUseFamilyMode =
+    (!rcLoaded || !familyPremiumLoaded)
+      ? undefined
+      : (!!ctx.familyId && (rcActive || familyPremiumActive || grace));  const MAX_FREE_ITEMS = 5;
 
   const [autoBasket, setAutoBasket] = useState([]);
   const [products, setProducts] = useState([]);
@@ -59,7 +72,22 @@ export default function AutoBasketPage() {
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
   const [openRowKey, setOpenRowKey] = useState(null);
 
-  const canAddMore = isPremium || autoBasket.length < MAX_FREE_ITEMS;
+  const canAddMore = canUseFamilyMode || autoBasket.length < MAX_FREE_ITEMS;
+
+  useFocusEffect(   
+    React.useCallback(() => {
+      if (!ctx.familyId) return;
+      const noPremiumVisible = !rcActive && !familyPremiumActive;
+      if (noPremiumVisible) {
+        try {
+          const s = useFamilyStore.getState();
+          s.pauseGuard(12000); // 12s is plenty
+          s.syncFamilyPremiumNow?.(ctx.familyId)?.catch(() => {});
+        } catch {}
+      }
+     // no cleanup needed
+    }, [ctx.familyId, rcActive, familyPremiumActive])
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -96,7 +124,7 @@ export default function AutoBasketPage() {
 
   const addProduct = async (item) => {
     try {
-      if (!isPremium && autoBasket.length >= MAX_FREE_ITEMS) {
+      if (!canUseFamilyMode && autoBasket.length >= MAX_FREE_ITEMS) {
         Alert.alert('Limit reached', `Free plan allows up to ${MAX_FREE_ITEMS} items in AutoBasket.`);
         return;
       }
@@ -149,7 +177,7 @@ export default function AutoBasketPage() {
 
           {/* Limit/Counter */}
           <View style={styles.limitRow}>
-            {isPremium ? (
+            {canUseFamilyMode ? (
               <View style={styles.limitRowInner}>
                 {/* <Text style={styles.limitText}>{autoBasket.length}</Text> */}
                 <Entypo name="infinity" size={16} style={styles.infinityIcon} />

@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { usePremiumStore } from '../../store/premiumStore';
+import useAuthStore from '../../store/authStore';
+import useFamilyStore from '../../store/familyStore';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -177,12 +179,30 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
   const filteredStaticImages = staticImageOptions.filter((item) =>
     item.key.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const { familyId, user, lastUsedMode } = useAuthStore((s) => ({
+    familyId: s.familyId,
+    user: s.user,
+    lastUsedMode: s.lastUsedMode,
+  }));
 
   const navigation = useNavigation();
-  const isPremium = usePremiumStore(s => s.isPremium);
+  const rcLoaded = usePremiumStore(s => s.rcLoaded);
+  const rcActive = usePremiumStore((s) => s.isPremium);
+  const { familyPremiumActive, familyPremiumLoaded, guardPauseUntil } = useFamilyStore(s => ({
+    familyPremiumActive: s.familyPremiumActive,
+    familyPremiumLoaded: s.familyPremiumLoaded,
+    guardPauseUntil: s.guardPauseUntil,
+  }));
+
+  const grace = Date.now() < (guardPauseUntil || 0);
+
+  const canUseFamilyMode =
+    (!rcLoaded || !familyPremiumLoaded)
+      ? undefined
+      : (!!familyId && (rcActive || familyPremiumActive || grace));
 
   const onPressGallery = async () => {
-    if (!isPremium) {
+    if (!canUseFamilyMode) {
       // onClose();
       // navigation.navigate('UserSettingsPage');
       return;
@@ -191,13 +211,29 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
   };
 
   const onPressCamera = async () => {
-    if (!isPremium) {
+    if (!canUseFamilyMode) {
       // onClose();
       // navigation.navigate('UserSettingsPage');
       return;
     }
     await takePhoto();
   };
+
+  useFocusEffect(   
+    React.useCallback(() => {
+      if (!familyId) return;
+      const noPremiumVisible = !rcActive && !familyPremiumActive;
+      if (noPremiumVisible) {
+        try {
+          const s = useFamilyStore.getState();
+          s.pauseGuard(12000); // 12s is plenty
+          s.syncFamilyPremiumNow?.(familyId)?.catch(() => {});
+        } catch {}
+      }
+     // no cleanup needed
+    }, [familyId, rcActive, familyPremiumActive])
+  );
+
 
 
   return (
@@ -221,11 +257,11 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
           </View> */}
 
           <View style={styles.uploadOptions}>
-            <TouchableOpacity style={[styles.uploadButton, !isPremium && styles.uploadButtonLocked]}
+            <TouchableOpacity style={[styles.uploadButton, !canUseFamilyMode && styles.uploadButtonLocked]}
               onPress={onPressGallery}
             >
               <Text style={styles.uploadText}>Pick from Gallery</Text>
-              {!isPremium && (
+              {!canUseFamilyMode && (
                 <View style={styles.lockBadge}>
                   <MaterialIcons name="star" size={12} color="#fff" />
                   <Text style={styles.lockBadgeText}>Plus</Text>
@@ -233,11 +269,11 @@ const ImageOptionsModal = ({ enableStaticImages, modalVisible, onSelect, onClose
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.uploadButton, !isPremium && styles.uploadButtonLocked]}
+            <TouchableOpacity style={[styles.uploadButton, !canUseFamilyMode && styles.uploadButtonLocked]}
               onPress={onPressCamera}
             >
               <Text style={styles.uploadText}>Take a Photo</Text>
-              {!isPremium && (
+              {!canUseFamilyMode && (
                 <View style={styles.lockBadge}>
                   <MaterialIcons name="star" size={12} color="#fff" />
                   <Text style={styles.lockBadgeText}>Plus</Text>

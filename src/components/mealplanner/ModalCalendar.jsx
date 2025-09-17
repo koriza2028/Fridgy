@@ -9,9 +9,12 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import ButtonBouncing from '../Button_Bouncing';
 import { usePremiumStore } from '../../store/premiumStore';
+import useAuthStore from '../../store/authStore';
+import useFamilyStore from '../../store/familyStore';
 
 import { useFonts } from 'expo-font';
 import { buttonColor, MainFont, SecondTitleFontSize } from '../../../assets/Styles/styleVariables';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -28,9 +31,27 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
     'Inter-Bold': require('../../../assets/fonts/Inter/Inter_18pt-Bold.ttf'),
   });
 
-  const isPremium = usePremiumStore(s => s.isPremium);
+  const { familyId, user, lastUsedMode } = useAuthStore((s) => ({
+    familyId: s.familyId,
+    user: s.user,
+    lastUsedMode: s.lastUsedMode,
+  }));
 
-  const isLockedDate = (ds) => !isPremium && ds > maxFreeStr; // past OK; only future beyond window is locked
+  const rcLoaded = usePremiumStore(s => s.rcLoaded);
+  const rcActive = usePremiumStore((s) => s.isPremium);
+  const { familyPremiumActive, familyPremiumLoaded, guardPauseUntil } = useFamilyStore(s => ({
+    familyPremiumActive: s.familyPremiumActive,
+    familyPremiumLoaded: s.familyPremiumLoaded,
+    guardPauseUntil: s.guardPauseUntil,
+  }));
+
+  const grace = Date.now() < (guardPauseUntil || 0);
+
+  const canUseFamilyMode =
+    (!rcLoaded || !familyPremiumLoaded)
+      ? undefined
+      : (!!familyId && (rcActive || familyPremiumActive || grace));
+  const isLockedDate = (ds) => !canUseFamilyMode && ds > maxFreeStr; // past OK; only future beyond window is locked
 
 
   const todayStr = useMemo(() => ymdLocalString(new Date()), []);
@@ -41,6 +62,22 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
   }, []);
 
   const [shouldRender, setShouldRender] = useState(isVisible);
+
+  useFocusEffect(   
+    React.useCallback(() => {
+      if (!familyId) return;
+      const noPremiumVisible = !rcActive && !familyPremiumActive;
+      if (noPremiumVisible) {
+        try {
+          const s = useFamilyStore.getState();
+          s.pauseGuard(12000); // 12s is plenty
+          s.syncFamilyPremiumNow?.(familyId)?.catch(() => {});
+        } catch {}
+      }
+     // no cleanup needed
+    }, [familyId, rcActive, familyPremiumActive])
+  );
+
   useEffect(() => {
     if (isVisible) {
       setShouldRender(true);
@@ -56,7 +93,7 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
     const dateStr = day?.dateString;
     if (!dateStr) return;
 
-    if (!isPremium && dateStr > maxFreeStr) {
+    if (!canUseFamilyMode && dateStr > maxFreeStr) {
       // Normally maxDate disables taps; guard here just in case.
       Alert.alert('Plus feature', 'Planning more than 7 days ahead requires Plus.');
       return;
@@ -88,7 +125,7 @@ export default function CalendarModal({ isVisible, onClose, onDaySelect, selecte
         <View style={styles.modalContent}>
           <Text style={styles.header}>Select a date</Text>
 
-          {!isPremium && (
+          {!canUseFamilyMode && (
             <Text style={styles.freeHint}>
               You can plan up to {maxFreeStr} (next 7 days). Upgrade to unlock all future dates.
             </Text>
