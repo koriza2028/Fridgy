@@ -129,21 +129,38 @@ export default function FamilyModePage() {
     }
   };
 
-  // ── mode switching with gating (use hasPlus) ──────────────────────────
+  // ── mode switching with HARD gate (no auto-create) ────────────────────
   const handleToggle = useCallback(
     async (targetMode) => {
       if (!user?.uid) { Alert.alert('Not logged in'); return; }
       if (targetMode === lastUsedMode) return;
-      if (targetMode === 'family' && !hasPlus) {
-        Alert.alert('Plus required', 'Family Mode is available with Fridgy Plus.', [
-          { text: 'Not now', style: 'cancel' },
-          { text: 'See subscription', onPress: () => navigation.navigate(SUBSCRIPTION_ROUTE_NAME) },
-        ]);
-        return;
+
+      if (targetMode === 'family') {
+        // CHANGED: block unless user has personal Plus OR already in a family
+        const hasPersonalPlus = !!rcActive;
+        const isInFamily = !!familyId;
+
+        if (!hasPersonalPlus && !isInFamily) {
+          Alert.alert(
+            'Family Mode locked',
+            'To use Family Mode, either subscribe to Plus or join an existing family via invite.'
+          );
+          return;
+        }
+
+        // CHANGED: require active Plus source (personal or family)
+        if (!hasPlus) {
+          Alert.alert('Plus required', 'Family Mode requires an active Plus (personal or family).', [
+            { text: 'Not now', style: 'cancel' },
+            { text: 'See subscription', onPress: () => navigation.navigate(SUBSCRIPTION_ROUTE_NAME) },
+          ]);
+          return;
+        }
       }
 
       try {
-        const res = await toggleUserMode({ userId: user.uid, lastUsedMode });
+        // CHANGED: ensure your backend does NOT auto-create a family on toggle
+        const res = await toggleUserMode({ userId: user.uid, lastUsedMode /*, allowAutoCreate: false */ });
         setFamilyId(res.familyId);
         setLastUsedMode(res.mode);
       } catch (e) {
@@ -151,7 +168,7 @@ export default function FamilyModePage() {
         Alert.alert('Error', e.message);
       }
     },
-    [user, lastUsedMode, hasPlus, navigation, setFamilyId, setLastUsedMode]
+    [user, lastUsedMode, hasPlus, rcActive, familyId, navigation, setFamilyId, setLastUsedMode]
   );
 
   // ── family deletion / quit ────────────────────────────────────────────
@@ -205,8 +222,17 @@ export default function FamilyModePage() {
 
   const isOwner = user?.uid === ownerId;
 
-  // UI lock for family mode button now uses hasPlus (combined)
-  const familyModeDisabled = !hasPlus;
+  // CHANGED: Disable family button unless user has personal Plus OR already in a family
+  const familyModeDisabled = !rcActive && !familyId;
+
+  // CHANGED: Safety net – snap back to personal if in an invalid family state
+  useEffect(() => {
+    if (lastUsedMode === 'family' && !rcActive && !familyId) {
+      setLastUsedMode('personal');
+      setFamilyId(null);
+      // Optionally: Alert once to explain; keeping silent to avoid noise.
+    }
+  }, [lastUsedMode, rcActive, familyId, setLastUsedMode, setFamilyId]);
 
   return (
     <View style={styles.UserSettingsPage}>
@@ -251,11 +277,12 @@ export default function FamilyModePage() {
             You are in Personal Mode now. If you want to share your data with other users, switch to the Family Mode.
           </Text>
 
-          {!hasPlus && (
+          {/* CHANGED: Upsell shows only when user has neither personal Plus nor a family */}
+          {!rcActive && !familyId && (
             <View style={styles.premiumCallout}>
               <Text style={styles.premiumCalloutTitle}>Family Mode is a Plus feature</Text>
               <Text style={styles.premiumCalloutText}>
-                Invite up to 5 members, share lists, and more. Unlock with Fridgy Plus.
+                Join an existing family via invite, or unlock with Fridgy Plus to create your own.
               </Text>
               <TouchableOpacity
                 onPress={() => navigation.navigate(SUBSCRIPTION_ROUTE_NAME)}

@@ -7,7 +7,7 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 
 import AppImage from '../components/image/AppImage';
 
-import CalendarModal from '../components/mealplanner.jsx/ModalCalendar.jsx';
+import CalendarModal from '../components/mealplanner/ModalCalendar.jsx';
 import MealCard from '../components/cooking/MealCard.jsx';
 import SearchInput from '../components/Search';
 import AddNewButton from '../components/Button_AddNew.jsx';

@@ -39,6 +39,9 @@ const useFamilyStore = create((set, get) => ({
       familyPremiumActive: false,
       familyPremiumUntil: null,
       _unsubFamily: null,
+      // --- CHANGED: also clear identity lists so UI can't think a family still exists
+      ownerId: null,
+      familyMembers: [],
     });
   },
 
@@ -57,6 +60,9 @@ const useFamilyStore = create((set, get) => ({
         familyPremiumActive: false,
         familyPremiumUntil: null,
         _unsubFamily: null,
+        // --- CHANGED: also clear these to avoid stale "family present" signals
+        ownerId: null,
+        familyMembers: [],
       });
       return;
     }
@@ -64,7 +70,13 @@ const useFamilyStore = create((set, get) => ({
     const ref = doc(db, 'families', familyId);
     const unsub = onSnapshot(ref, (snap) => {
       if (!snap.exists()) {
-        set({ familyPremiumActive: false, familyPremiumUntil: null });
+        set({
+          familyPremiumActive: false,
+          familyPremiumUntil: null,
+          // --- CHANGED: keep identity in sync on non-existent family
+          ownerId: null,
+          familyMembers: [],
+        });
         return;
       }
       const d = snap.data() || {};
