@@ -6,6 +6,8 @@ import Entypo from 'react-native-vector-icons/Entypo';
 
 const { width, height } = Dimensions.get("window");
 
+// import SearchInput from './Search';
+
 import { useFonts } from 'expo-font';
 import { backgroundColor, MainFont, SecondTitleFontSize } from '../../assets/Styles/styleVariables';
 

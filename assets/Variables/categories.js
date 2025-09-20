@@ -31,8 +31,8 @@ export const categories = [
     // {tagName: 'Chicken', tagIcon: '🍗', tagType: 1},
     // {tagName: 'Beef', tagIcon: '🥩', tagType: 1},
     // {tagName: 'Pork', tagIcon: '🍖', tagType: 1},
-    {tagName: 'Meat products', tagIcon: '🥓', tagType: 1},
-    {tagName: 'Meat', tagIcon: '🥩', tagType: 1},
+    {tagName: 'Meet products', tagIcon: '🥓', tagType: 1},
+    {tagName: 'Meet', tagIcon: '🥩', tagType: 1},
     {tagName: 'Fish', tagIcon: '🍣', tagType: 1},
     {tagName: 'Frozen food', tagIcon: '❄️', tagType: 1},
 ];

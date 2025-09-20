@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Pressable, Alert } from 'react-native';
 import Modal from 'react-native-modal';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 import ButtonBouncing from './Button_Bouncing';
 
@@ -11,7 +11,6 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import useAuthStore from '../store/authStore';
 import { usePremiumStore } from '../store/premiumStore'; // ← NEW
-import useFamilyStore from '../store/familyStore'; // ← NEW
 
 import { useFonts } from 'expo-font';
 import {
@@ -31,42 +30,9 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile }) => {
 
   const navigation = useNavigation();
   const logout = useAuthStore((state) => state.logout);
-  const { familyId, user, lastUsedMode } = useAuthStore((s) => ({
-    familyId: s.familyId,
-    user: s.user,
-    lastUsedMode: s.lastUsedMode,
-  }));
 
   // ← NEW: read premium status from your global store
-  const rcLoaded = usePremiumStore(s => s.rcLoaded);
-  const rcActive = usePremiumStore((s) => s.isPremium);
-  const { familyPremiumActive, familyPremiumLoaded, guardPauseUntil } = useFamilyStore(s => ({
-    familyPremiumActive: s.familyPremiumActive,
-    familyPremiumLoaded: s.familyPremiumLoaded,
-    guardPauseUntil: s.guardPauseUntil,
-  }));
-
-  const grace = Date.now() < (guardPauseUntil || 0);
-
-  const canUseFamilyMode =
-    (!rcLoaded || !familyPremiumLoaded)
-      ? undefined
-      : (!!familyId && (rcActive || familyPremiumActive || grace));
-
-  useFocusEffect(   
-    React.useCallback(() => {
-      if (!familyId) return;
-      const noPremiumVisible = !rcActive && !familyPremiumActive;
-      if (noPremiumVisible) {
-        try {
-          const s = useFamilyStore.getState();
-          s.pauseGuard(12000); // 12s is plenty
-          s.syncFamilyPremiumNow?.(familyId)?.catch(() => {});
-        } catch {}
-      }
-     // no cleanup needed
-    }, [familyId, rcActive, familyPremiumActive])
-  );
+  const isPremium = usePremiumStore(s => s.isPremium);
 
   const handleLogout = () => {
     Alert.alert(
@@ -112,9 +78,9 @@ const UserOptionsModal = ({ isVisible, onClose, onViewProfile }) => {
           label={
             <View style={styles.menuItem}>
               <MaterialIcons
-                name={canUseFamilyMode ? 'star' : 'star-border'}
+                name={isPremium ? 'star' : 'star-border'}
                 size={20}
-                style={[styles.icon, canUseFamilyMode && { color: buttonColor }]}
+                style={[styles.icon, isPremium && { color: buttonColor }]}
               />
               <Text style={styles.menuText}>Premium Features</Text>
 
