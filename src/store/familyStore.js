@@ -7,11 +7,9 @@ import {
   updateDoc,
   arrayRemove,
   writeBatch,
-  onSnapshot,
-  runTransaction
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import useAuthStore from './authStore';
 
 /**
  * Family store with live premium subscription state
@@ -27,8 +25,6 @@ const useFamilyStore = create((set, get) => ({
   // Premium state (from families/{id})
   familyPremiumActive: false,
   familyPremiumUntil: null,
-  familyPremiumLoaded: false,
-  guardPauseUntil: 0,  
 
   // Internal unsubscribe for the live family listener
   _unsubFamily: null,
@@ -43,7 +39,6 @@ const useFamilyStore = create((set, get) => ({
       familyPremiumActive: false,
       familyPremiumUntil: null,
       _unsubFamily: null,
-      familyPremiumLoaded: true,
     });
   },
 
@@ -61,18 +56,15 @@ const useFamilyStore = create((set, get) => ({
       set({
         familyPremiumActive: false,
         familyPremiumUntil: null,
-        familyPremiumLoaded: true,
         _unsubFamily: null,
       });
       return;
     }
 
-    set({ familyPremiumLoaded: false });
-
     const ref = doc(db, 'families', familyId);
     const unsub = onSnapshot(ref, (snap) => {
       if (!snap.exists()) {
-        set({ familyPremiumActive: false, familyPremiumUntil: null, familyPremiumLoaded: true });
+        set({ familyPremiumActive: false, familyPremiumUntil: null });
         return;
       }
       const d = snap.data() || {};
@@ -89,15 +81,10 @@ const useFamilyStore = create((set, get) => ({
       set({
         familyPremiumActive: active,
         familyPremiumUntil: untilMs || null,
-        familyPremiumLoaded: true,
       });
     });
 
     set({ _unsubFamily: unsub });
-  },
-
-  pauseGuard(ms = 8000) {
-    set({ guardPauseUntil: Date.now() + ms });
   },
 
   /**
@@ -203,27 +190,26 @@ export async function exitFamilyMembership({ userId, familyId }) {
     throw new Error('Must provide both userId and familyId');
   }
 
-  const famRef  = doc(db, 'families', familyId);
-  const userRef = doc(db, 'users', userId);
+  const famRef = doc(db, 'families', familyId);
+  const famSnap = await getDoc(famRef);
+  if (!famSnap.exists()) throw new Error('Family not found');
 
-  await runTransaction(db, async (tx) => {
-    const famSnap = await tx.get(famRef);
-    if (!famSnap.exists()) throw new Error('Family not found');
+  const familyData = famSnap.data();
+  if (familyData.createdBy === userId) {
+    throw new Error('Family owner cannot leave the family');
+  }
 
-    const data = famSnap.data();
-    if (data.createdBy === userId) {
-      throw new Error('Family owner cannot leave the family');
-    }
-
-    // Remove the member and clear their family + force personal mode
-    tx.update(famRef, { members: arrayRemove(userId) });
-    tx.update(userRef, { familyId: null, lastUsedMode: 'personal' });
+  // Remove member from family
+  await updateDoc(famRef, {
+    members: arrayRemove(userId),
   });
 
-  // (Optional) If you want to proactively clear local listeners/UI right away:
-  useFamilyStore.getState().clearFamilyPremium?.();
-  useAuthStore.getState().setFamilyId?.(null);
-  useAuthStore.getState().setLastUsedMode?.('personal');
+  // Update user doc to remove family association
+  const acctRef = doc(db, 'users', userId);
+  await updateDoc(acctRef, {
+    familyId: null,
+    lastUsedMode: 'personal',
+  });
 }
 
 /**

@@ -12,11 +12,18 @@ export const usePremiumStore = create((set, get) => ({
   expirationDate: null,
   productId: null,
   isSandbox: false,
+
+  // Combined/reactive flag
+  hasPlus: false,               // ✅ reactive: personal OR family
+
   // Internals
   _rcUnsub: null,
-  rcLoaded: false, 
   _familyUnsub: null,
   _familyPlus: false,           // mirror of familyStore.familyPremiumActive
+
+  // ---- helpers ----
+  _recomputeHasPlus: () =>
+    set((s) => ({ hasPlus: !!s.isPremium || !!s._familyPlus })),
 
   // ---- Mutators ----
   applyCustomerInfo: (customerInfo) => {
@@ -30,7 +37,6 @@ export const usePremiumStore = create((set, get) => ({
         expirationDate: ent.expirationDate || null,
         productId: ent.productIdentifier || null,
         isSandbox: !!ent.isSandbox,
-        rcLoaded: true,
       });
     } else {
       set({
@@ -39,9 +45,9 @@ export const usePremiumStore = create((set, get) => ({
         expirationDate: null,
         productId: null,
         isSandbox: !!customerInfo?.entitlements?.all?.[ENTITLEMENT_ID]?.isSandbox,
-        rcLoaded: true,
       });
     }
+    get()._recomputeHasPlus();
   },
 
   refreshEntitlements: async () => {
@@ -50,7 +56,6 @@ export const usePremiumStore = create((set, get) => ({
       get().applyCustomerInfo(info);
       return info;
     } catch {
-      set({ rcLoaded: true });
       return null;
     }
   },
@@ -78,6 +83,7 @@ export const usePremiumStore = create((set, get) => ({
       (s) => s.familyPremiumActive,
       (val) => {
         set({ _familyPlus: !!val });
+        get()._recomputeHasPlus();
       }
     );
     set({ _familyUnsub: familyUnsub });
@@ -85,6 +91,8 @@ export const usePremiumStore = create((set, get) => ({
     if (doInitialRefresh) {
       await get().refreshEntitlements();
     }
+    // ensure hasPlus is computed at least once
+    get()._recomputeHasPlus();
   },
 
   cleanup: () => {
@@ -97,6 +105,7 @@ export const usePremiumStore = create((set, get) => ({
       _rcUnsub: null,
       _familyUnsub: null,
       _familyPlus: false,
+      hasPlus: false,
       status: 'unknown',
       isPremium: false,
       expirationDate: null,
