@@ -1,0 +1,41 @@
+{
+  "Fridge": {
+    "emptyFridgeText": "Tu nevera está vacía. ¡Añadamos algunos productos!",
+    "productNamePlaceholder": "Nombre de un producto...",
+    "category": "Categoría",
+    "productDetailsPlaceholder": "Detalles del producto...",
+    "saveButton": "Guardar",
+    "searchPlaceholder": "Buscar un producto",
+    "allFilter": "Todos",
+    "availableSectionTitle": "Productos disponibles",
+    "notInFridgeSectionTitle": "Actualmente no en la nevera",
+    "defaultCategoryOther": "Otro",
+    "defaultCategoryTypeGeneral": "general",
+
+    "cannotDeleteUsed": "Este producto se utiliza en una receta o en la cesta y no se puede eliminar.",
+    "confirmDeletionTitle": "Confirmar eliminación",
+    "confirmDeletionMessage": "¿Estás seguro de que quieres eliminar este elemento?",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+
+    "errorTitle": "Error",
+    "errorSaveMessage": "Error al guardar el producto. Inténtalo de nuevo.",
+    "errorDeleteMessage": "Error al eliminar el producto. Inténtalo de nuevo.",
+
+    "categoryList": {
+      "Basics": "Productos básicos",
+      "Fruit": "Frutas",
+      "Vegetable": "Verduras",
+      "Juice": "Jugo",
+      "Milk product": "Producto lácteo",
+      "Yogurt": "Yogur",
+      "Cream": "Crema",
+      "Cheese": "Queso",
+      "Meat products": "Productos de carne",
+      "Meat": "Carne",
+      "Fish": "Pescado",
+      "Frozen food": "Comida congelada"
+    }
+  },
+  "RecipeCreate": {}
+}

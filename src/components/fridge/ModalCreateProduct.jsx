@@ -25,6 +25,8 @@ import ButtonBouncing from "../Button_Bouncing";
 import useAuthStore from '../../store/authStore';
 import { addOrUpdateProduct, deleteProduct } from "../../store/fridgeStore";
 
+import { useTranslation } from 'react-i18next';
+
 import {
   buttonColor,
   deleteButtonColor,
@@ -61,6 +63,7 @@ export default function ModalCreateProduct({
       'Inter-SemiBold': require('../../../assets/fonts/Inter/Inter_18pt-SemiBold.ttf'),
   });
 
+  const { t } = useTranslation();
 
   const ctx = useAuthStore((state) => {
     const userId = state.user?.uid;
@@ -116,12 +119,12 @@ export default function ModalCreateProduct({
   const confirmDelete = (id) => {
     if (usedIngredients.includes(id)) {
       Alert.alert(
-        "This product is used in a recipe or in the basket and cannot be deleted."
+        t('Fridge.cannotDeleteUsed')
       );
     } else {
       Alert.alert(
-        "Confirm Deletion",
-        "Are you sure you want to delete this item?",
+        t('Fridge.confirmDeletionTitle'),
+        t('Fridge.confirmDeletionMessage'),
         [
           { text: "Cancel", style: "cancel" },
           { text: "Delete", onPress: () => removeProduct(id), style: "destructive" },
@@ -149,8 +152,7 @@ export default function ModalCreateProduct({
       // resetForm();
       onChange();
     } catch (error) {
-      console.error("Error saving product:", error);
-      Alert.alert("Error", "Failed to save product. Please try again.");
+      Alert.alert("Error", t('Fridge.errorSaveMessage'));
     }
   };
 
@@ -161,7 +163,7 @@ export default function ModalCreateProduct({
       onChange();
     } catch (error) {
       console.error("Error deleting product:", error);
-      Alert.alert("Error", "Failed to delete product. Please try again.");
+      Alert.alert("Error", t('Fridge.errorDeleteMessage'));
     }
   };
 
@@ -254,13 +256,13 @@ export default function ModalCreateProduct({
                         const capitalized = text.charAt(0).toUpperCase() + text.slice(1);
                         setName(capitalized);
                       }}
-                      placeholder='Name of a product...'
+                      placeholder={t('Fridge.productNamePlaceholder')}
                       placeholderTextColor={'#9e9e9e'}
                     />
                   </View>
 
                   <Pressable style={[styles.productDataEntry, styles.productCategory]} onPress={() => setIsCategoryModalVisible(true)}>
-                    <Text style={styles.productCategory_Text}>Category:</Text>
+                    <Text style={styles.productCategory_Text}>{t('Fridge.categoryLabel')}</Text>
                     <Text style={{fontFamily: MainFont_Bold, marginLeft: 4, color: blackTextColor}}>
                       {category?.tagName || defaultCategory.name}
                     </Text>
@@ -282,7 +284,7 @@ export default function ModalCreateProduct({
                       keyboardType="numeric"
                       value={amount !== undefined && amount !== null ? String(amount) : ""}
                       onChangeText={text => setAmount(text)}
-                      placeholder='Amount...'
+                      placeholder={t('Fridge.amountPlaceholder')}
                       placeholderTextColor={'#9e9e9e'}
                     />
                   </View>
@@ -291,7 +293,7 @@ export default function ModalCreateProduct({
                     style={[styles.productDataEntry, styles.productNotes]}
                     onChangeText={text => setNotes(text)}
                     autoCapitalize="sentences"
-                    placeholder='Product details...'
+                    placeholder={t('Fridge.productDetailsPlaceholder')}
                     placeholderTextColor={'#9e9e9e'}
                     value={notes || ''}
                     multiline={true}
@@ -324,7 +326,7 @@ export default function ModalCreateProduct({
                       toScale={0.95}
                       onPress={createOrUpdateProduct}
                       disabled={isSaveDisabled}
-                      label={<Text style={styles.Button_UpdateProduct_Text}>Save</Text>}
+                      label={<Text style={styles.Button_UpdateProduct_Text}>{t('Fridge.saveButton')}</Text>}
                     />
 
                   </View>

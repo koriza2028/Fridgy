@@ -104,15 +104,17 @@ export default function FridgePage({ navigation }) {
     <View style={styles.FridgePage}>
       <ScrollView>
         <View style={styles.FridgePage_ContentWrapper}>
-          <SearchInput placeholder={'Find a product'} query={searchQuery} onChangeText={setSearchQuery} />
+          <SearchInput placeholder={t('Fridge.searchPlaceholder')} query={searchQuery} onChangeText={setSearchQuery} />
 
           <View style={styles.ProductFilter}>
-            {['All', ...categoryNames].map((category, index) => (
+            {[t('Fridge.allFilter'), ...categoryNames].map((category, index) => (
               <Pressable key={index}
                 style={[styles.ProductFilterCategory, selectedCategory === category && styles.SelectedCategory]}
                 onPress={() => filterByCategory(category)}>
                 <Text style={[styles.ProductFilterCategory_Text, selectedCategory === category && styles.SelectedCategory_Text]}>
-                  {category}
+                  {/* {category} */}
+                  {t(category)}
+
                 </Text>
               </Pressable>
             ))}
@@ -131,7 +133,7 @@ export default function FridgePage({ navigation }) {
               ) : (
                 <>
                   {filteredAvailable.length > 0 && (
-                    <CollapsibleSection title="Available Products">
+                    <CollapsibleSection title={t('Fridge.availableSectionTitle')}>
                       {filteredAvailable.map(product => (
                         <ProductCard
                           key={product.id}
@@ -146,7 +148,7 @@ export default function FridgePage({ navigation }) {
                   )}
 
                   {filteredArchived.length > 0 && (
-                    <CollapsibleSection title="Currently not in fridge">
+                    <CollapsibleSection title={t('Fridge.notInFridgeSectionTitle')}>
                       {filteredArchived.map(product => (
                         <ProductCard
                           key={product.id}
@@ -169,7 +171,7 @@ export default function FridgePage({ navigation }) {
               onChange={() => refreshProducts(ctx)}
               product={selectedProduct ? {
                 ...selectedProduct,
-                category: selectedProduct.category || { name: "Other", icon: "❓", type: "general" }
+                category: selectedProduct.category || { name: t('Fridge.defaultCategoryOther'), icon: "❓", type: "general" }
               } : null}
               usedIngredients={usedIngredients}
             />

@@ -4,6 +4,38 @@
     "productNamePlaceholder": "Name eines Produkts...",
     "category": "Kategorie",
     "productDetailsPlaceholder": "Produktdetails...",
-    "saveButton": "Speichern"
-  }
+    "saveButton": "Speichern",
+    "searchPlaceholder": "Produkt finden",
+    "allFilter": "Alle",
+    "availableSectionTitle": "Verfügbare Produkte",
+    "notInFridgeSectionTitle": "Momentan nicht im Kühlschrank",
+    "defaultCategoryOther": "Andere",
+    "defaultCategoryTypeGeneral": "allgemein",
+
+    "cannotDeleteUsed": "Dieses Produkt wird in einem Rezept oder im Einkaufszettel verwendet und kann nicht gelöscht werden.",
+    "confirmDeletionTitle": "Löschen bestätigen",
+    "confirmDeletionMessage": "Bist du sicher, dass du dieses Element löschen möchtest?",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+
+    "errorTitle": "Fehler",
+    "errorSaveMessage": "Speichern des Produkts fehlgeschlagen. Bitte versuche es erneut.",
+    "errorDeleteMessage": "Löschen des Produkts fehlgeschlagen. Bitte versuche es erneut.",
+
+    "categoryList": {
+      "Basics": "Grundnahrungsmittel",
+      "Fruit": "Obst",
+      "Vegetable": "Gemüse",
+      "Juice": "Saft",
+      "Milk product": "Milchprodukt",
+      "Yogurt": "Joghurt",
+      "Cream": "Sahne",
+      "Cheese": "Käse",
+      "Meat products": "Fleischprodukte",
+      "Meat": "Fleisch",
+      "Fish": "Fisch",
+      "Frozen food": "Tiefkühlkost"
+    }
+  },
+  "RecipeCreate": {}
 }

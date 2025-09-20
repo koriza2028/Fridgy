@@ -1,0 +1,41 @@
+{
+  "Fridge": {
+    "emptyFridgeText": "Ton frigo est vide. Ajoutons quelques produits !",
+    "productNamePlaceholder": "Nom d’un produit...",
+    "category": "Catégorie",
+    "productDetailsPlaceholder": "Détails du produit...",
+    "saveButton": "Enregistrer",
+    "searchPlaceholder": "Rechercher un produit",
+    "allFilter": "Tous",
+    "availableSectionTitle": "Produits disponibles",
+    "notInFridgeSectionTitle": "Actuellement pas dans le frigo",
+    "defaultCategoryOther": "Autre",
+    "defaultCategoryTypeGeneral": "général",
+
+    "cannotDeleteUsed": "Ce produit est utilisé dans une recette ou dans le panier et ne peut pas être supprimé.",
+    "confirmDeletionTitle": "Confirmer la suppression",
+    "confirmDeletionMessage": "Es-tu sûr de vouloir supprimer cet élément ?",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+
+    "errorTitle": "Erreur",
+    "errorSaveMessage": "Échec de l’enregistrement du produit. Veuillez réessayer.",
+    "errorDeleteMessage": "Échec de la suppression du produit. Veuillez réessayer.",
+
+    "categoryList": {
+      "Basics": "Produits de base",
+      "Fruit": "Fruits",
+      "Vegetable": "Légumes",
+      "Juice": "Jus",
+      "Milk product": "Produit laitier",
+      "Yogurt": "Yaourt",
+      "Cream": "Crème",
+      "Cheese": "Fromage",
+      "Meat products": "Produits carnés",
+      "Meat": "Viande",
+      "Fish": "Poisson",
+      "Frozen food": "Surgelés"
+    }
+  },
+  "RecipeCreate": {}
+}

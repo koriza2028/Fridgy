@@ -19,23 +19,22 @@ export const tags = [
 ];
 
 
+
 export const categories = [
-    {tagName: 'Basics', tagIcon: '🥚', tagType: 1},
-    {tagName: 'Fruit', tagIcon: '🍌', tagType: 1},
-    {tagName: 'Vegetable', tagIcon: '🥕', tagType: 1},
-    {tagName: 'Juice', tagIcon: '🧃', tagType: 1},
-    {tagName: 'Milk product', tagIcon: '🥛', tagType: 1},
-    {tagName: 'Yogurt', tagIcon: '🍶', tagType: 1},
-    {tagName: 'Cream', tagIcon: '🧈', tagType: 1},
-    {tagName: 'Cheese', tagIcon: '🧀', tagType: 1},
-    // {tagName: 'Chicken', tagIcon: '🍗', tagType: 1},
-    // {tagName: 'Beef', tagIcon: '🥩', tagType: 1},
-    // {tagName: 'Pork', tagIcon: '🍖', tagType: 1},
-    {tagName: 'Meet products', tagIcon: '🥓', tagType: 1},
-    {tagName: 'Meet', tagIcon: '🥩', tagType: 1},
-    {tagName: 'Fish', tagIcon: '🍣', tagType: 1},
-    {tagName: 'Frozen food', tagIcon: '❄️', tagType: 1},
+  { tagNameKey: 'Fridge.categoryList.Basics', tagIcon: '🥚', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Fruit', tagIcon: '🍌', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Vegetable', tagIcon: '🥕', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Juice', tagIcon: '🧃', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Milk product', tagIcon: '🥛', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Yogurt', tagIcon: '🍶', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Cream', tagIcon: '🧈', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Cheese', tagIcon: '🧀', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Meat products', tagIcon: '🥓', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Meat', tagIcon: '🥩', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Fish', tagIcon: '🍣', tagType: 1 },
+  { tagNameKey: 'Fridge.categoryList.Frozen food', tagIcon: '❄️', tagType: 1 }
 ];
 
-export const categoryNames = categories.map(category => category.tagName);
+
+export const categoryNames = categories.map(c => c.tagNameKey);
 
